@@ -1,4 +1,4 @@
-package com.acaris.ui.theme
+package com.acaris.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
