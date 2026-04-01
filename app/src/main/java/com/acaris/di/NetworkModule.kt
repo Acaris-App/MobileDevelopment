@@ -1,5 +1,6 @@
 package com.acaris.di
 
+import com.acaris.BuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,8 +22,10 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {
-        return HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+        return if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
+        } else {
+            HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.NONE)
         }
     }
 
