@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.acaris.core.navigation.Screen
 import com.acaris.core.ui.theme.AcarisTheme
+import com.acaris.features.onboarding.ui.screen.WelcomeScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -27,16 +28,34 @@ class MainActivity : ComponentActivity() {
             AcarisTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     val navController = rememberNavController()
+
                     NavHost(
                         navController = navController,
-                        startDestination = Screen.Login.route,
+                        startDestination = Screen.Welcome.route,
                         modifier = Modifier.padding(innerPadding)
                     ) {
+
+                        composable(route = Screen.Welcome.route) {
+                            WelcomeScreen(
+                                onLoginClick = {
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                                    }
+                                },
+                                onRegisterClick = {
+                                    // TODO: Navigasi ke Halaman Register
+                                }
+                            )
+                        }
+
+                        // Rute Halaman Login
                         composable(route = Screen.Login.route) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(text = "Halaman Login")
                             }
                         }
+
+                        // Rute Halaman Dashboard
                         composable(route = Screen.Dashboard.route) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(text = "Halaman Dashboard Dosen/Admin")

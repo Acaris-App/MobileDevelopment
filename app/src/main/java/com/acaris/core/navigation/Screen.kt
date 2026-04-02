@@ -1,8 +1,11 @@
 package com.acaris.core.navigation
 
 sealed class Screen(val route: String) {
+    object Welcome : Screen("welcome_screen")
+
     // Auth
     object Login : Screen("login_screen")
+    object Register : Screen("register_screen")
 
     // Main Screens
     object Dashboard : Screen("dashboard_screen")
