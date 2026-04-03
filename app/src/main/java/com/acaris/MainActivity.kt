@@ -18,6 +18,7 @@ import com.acaris.core.navigation.Screen
 import com.acaris.core.ui.theme.AcarisTheme
 import com.acaris.features.onboarding.ui.screen.WelcomeScreen
 import com.acaris.core.ui.components.Tester
+import com.acaris.features.auth.ui.screen.LoginScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -40,7 +41,6 @@ class MainActivity : ComponentActivity() {
                         composable(route = Screen.Welcome.route) {
                             WelcomeScreen(
                                 onLoginClick = {
-                                    // Pindah ke Login (tanpa popUpTo agar bisa di-back)
                                     navController.navigate(Screen.Login.route)
                                 },
                                 onRegisterClick = {
@@ -57,9 +57,22 @@ class MainActivity : ComponentActivity() {
 
                         // 3. Rute Halaman Login
                         composable(route = Screen.Login.route) {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(text = "Halaman Login")
-                            }
+                            LoginScreen(
+                                onBackClick = {
+                                    navController.popBackStack()
+                                },
+                                onNavigateToDashboard = {
+                                    navController.navigate(Screen.Dashboard.route) {
+                                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                                    }
+                                },
+                                onNavigateToRegister = {
+                                    navController.navigate(Screen.Register.route)
+                                },
+                                onNavigateToForgotPassword = {
+                                    navController.navigate(Screen.ForgotPassword.route)
+                                }
+                            )
                         }
 
                         // 4. Rute Halaman Dashboard
