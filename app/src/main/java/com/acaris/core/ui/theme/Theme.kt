@@ -15,10 +15,10 @@ private val DarkColorScheme = darkColorScheme(
     onPrimary = TextDark,
     secondary = PastelMint,
     onSecondary = TextDark,
-    background = TextDark,
-    onBackground = SurfaceWhite,
+    background = AppBackgroundDark,
+    onBackground = AppBackgroundLight,
     surface = TextDark,
-    onSurface = SurfaceWhite
+    onSurface = AppBackgroundLight
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -26,8 +26,8 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = TextDark,
     secondary = PastelMint,
     onSecondary = TextDark,
-    background = SurfaceWhite,
-    onBackground = TextDark,
+    background = AppBackgroundLight,
+    onBackground = AppBackgroundDark,
     surface = PastelYellow,
     onSurface = TextDark
 )

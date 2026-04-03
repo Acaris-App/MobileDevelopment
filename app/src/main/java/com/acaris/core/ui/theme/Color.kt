@@ -22,6 +22,8 @@ val PastelCyan = Color(0xFF8EECF5)
 val PastelMint = Color(0xFF98F5E1)
 val PastelGreen = Color(0xFFB9FBC0)
 
+val AppBackgroundDark = Color(0xFF1E293B)
+val AppBackgroundLight = Color(0xFFECF0F3)
 val TextDark = Color(0xFF1A1A1A)
 val TextGray = Color(0xFF757575)
 val SurfaceWhite = Color(0xFFFFFFFF)

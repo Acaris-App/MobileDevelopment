@@ -1,4 +1,4 @@
-package com.acaris
+package com.acaris // Sesuaikan dengan nama package-mu
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import com.acaris.core.navigation.Screen
 import com.acaris.core.ui.theme.AcarisTheme
 import com.acaris.features.onboarding.ui.screen.WelcomeScreen
+import com.acaris.core.ui.components.Tester
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -35,27 +36,33 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
 
+                        // 1. Rute Halaman Welcome
                         composable(route = Screen.Welcome.route) {
                             WelcomeScreen(
                                 onLoginClick = {
-                                    navController.navigate(Screen.Login.route) {
-                                        popUpTo(Screen.Welcome.route) { inclusive = true }
-                                    }
+                                    // Pindah ke Login (tanpa popUpTo agar bisa di-back)
+                                    navController.navigate(Screen.Login.route)
                                 },
                                 onRegisterClick = {
-                                    // TODO: Navigasi ke Halaman Register
+                                    // 👇 MENGARAH KE LAYAR TESTING SEMENTARA
+                                    navController.navigate("tester_dialog")
                                 }
                             )
                         }
 
-                        // Rute Halaman Login
+                        // 👇 2. RUTE SEMENTARA UNTUK TESTING DIALOG
+                        composable(route = "tester_dialog") {
+                            Tester()
+                        }
+
+                        // 3. Rute Halaman Login
                         composable(route = Screen.Login.route) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(text = "Halaman Login")
                             }
                         }
 
-                        // Rute Halaman Dashboard
+                        // 4. Rute Halaman Dashboard
                         composable(route = Screen.Dashboard.route) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(text = "Halaman Dashboard Dosen/Admin")
