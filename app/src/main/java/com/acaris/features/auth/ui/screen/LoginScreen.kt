@@ -4,13 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +35,7 @@ import com.acaris.features.auth.ui.mapper.toUiModel
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
-    onNavigateToDashboard: () -> Unit,
+    onLoginSuccess: (String) -> Unit,
     onNavigateToRegister: () -> Unit,
     onNavigateToForgotPassword: () -> Unit
 ) {
@@ -43,7 +46,7 @@ fun LoginScreen(
         onLoginClick = { email, password -> viewModel.login(email, password) },
         onResetState = { viewModel.resetState() },
         onBackClick = onBackClick,
-        onNavigateToDashboard = onNavigateToDashboard,
+        onLoginSuccess = onLoginSuccess,
         onNavigateToRegister = onNavigateToRegister,
         onNavigateToForgotPassword = onNavigateToForgotPassword
     )
@@ -55,16 +58,20 @@ fun LoginScreenContent(
     onLoginClick: (String, String) -> Unit,
     onResetState: () -> Unit,
     onBackClick: () -> Unit,
-    onNavigateToDashboard: () -> Unit,
+    onLoginSuccess: (String) -> Unit,
     onNavigateToRegister: () -> Unit,
     onNavigateToForgotPassword: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    // 🌟 PERBAIKAN BUG 1: Menggunakan rememberSaveable agar data aman saat rotasi layar
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
 
     // Logika Real-time Validation untuk Email
     val emailPattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[a-z]+\$"
     val isEmailValid = email.isEmpty() || email.matches(emailPattern.toRegex())
+
+    // 🌟 PERBAIKAN BUG 2 (Persiapan): Membuat pengingat state untuk scroll
+    val scrollState = rememberScrollState()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -75,6 +82,8 @@ fun LoginScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 24.dp)
+                // 🌟 PERBAIKAN BUG 2 (Penerapan): Memungkinkan layar di-scroll saat orientasi landscape
+                .verticalScroll(scrollState)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -161,7 +170,8 @@ fun LoginScreenContent(
                 )
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            // 🌟 PENTING: Karena sekarang ada di dalam ScrollView, gunakan height statis, BUKAN weight(1f)
+            Spacer(modifier = Modifier.height(64.dp))
 
             // Footer Daftar
             Row(
@@ -173,13 +183,11 @@ fun LoginScreenContent(
             ) {
                 Text(
                     text = "Belum punya akun? ",
-                    // 🌟 WARNA ABU-ABU DINAMIS
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
 
                 Text(
                     text = "Daftar",
-                    // 🌟 WARNA BIRU DIGANTI PRIMARY TEMA
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -199,7 +207,7 @@ fun LoginScreenContent(
                 confirmText = "Lanjut ke Dashboard",
                 onConfirm = {
                     onResetState()
-                    onNavigateToDashboard()
+                    onLoginSuccess(userUi.role.toString().lowercase())
                 },
                 content = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -244,7 +252,7 @@ fun LoginScreenPreview() {
             onLoginClick = { _, _ -> },
             onResetState = {},
             onBackClick = {},
-            onNavigateToDashboard = {},
+            onLoginSuccess = {},
             onNavigateToRegister = {},
             onNavigateToForgotPassword = {}
         )

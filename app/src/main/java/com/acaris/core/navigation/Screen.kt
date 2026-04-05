@@ -9,7 +9,9 @@ sealed class Screen(val route: String) {
     object ForgotPassword : Screen("forgot_password_screen")
 
     // Main Screens
-    object Dashboard : Screen("dashboard_screen")
+    object HomeMahasiswa : Screen("home_mahasiswa_screen")
+    object DashboardDosen : Screen("dashboard_dosen_screen")
+    object DashboardAdmin : Screen("dashboard_admin_screen")
     object Profile : Screen("profile_screen")
 
     // Fitur Dosen

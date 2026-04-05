@@ -1,5 +1,6 @@
 package com.acaris.features.auth.di
 
+import com.acaris.core.datastore.AuthPreferences
 import com.acaris.features.auth.data.remote.datasource.AuthApiService
 import com.acaris.features.auth.data.repository.AuthRepositoryImpl
 import com.acaris.features.auth.domain.repository.AuthRepository
@@ -21,7 +22,10 @@ object AuthModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(apiService: AuthApiService): AuthRepository {
-        return AuthRepositoryImpl(apiService)
+    fun provideAuthRepository(
+        apiService: AuthApiService,
+        authPreferences: AuthPreferences
+    ): AuthRepository {
+        return AuthRepositoryImpl(apiService, authPreferences)
     }
 }

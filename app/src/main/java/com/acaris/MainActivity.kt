@@ -37,32 +37,37 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
 
-                        // 1. Rute Halaman Welcome
+                        // Rute Halaman Welcome
                         composable(route = Screen.Welcome.route) {
                             WelcomeScreen(
                                 onLoginClick = {
                                     navController.navigate(Screen.Login.route)
                                 },
                                 onRegisterClick = {
-                                    // 👇 MENGARAH KE LAYAR TESTING SEMENTARA
                                     navController.navigate("tester_dialog")
                                 }
                             )
                         }
 
-                        // 👇 2. RUTE SEMENTARA UNTUK TESTING DIALOG
                         composable(route = "tester_dialog") {
                             Tester()
                         }
 
-                        // 3. Rute Halaman Login
+                        // Rute Halaman Login
                         composable(route = Screen.Login.route) {
                             LoginScreen(
                                 onBackClick = {
                                     navController.popBackStack()
                                 },
-                                onNavigateToDashboard = {
-                                    navController.navigate(Screen.Dashboard.route) {
+                                onLoginSuccess = { role ->
+                                    val targetRoute = when (role) {
+                                        "mahasiswa" -> Screen.HomeMahasiswa.route
+                                        "dosen" -> Screen.DashboardDosen.route
+                                        "admin" -> Screen.DashboardAdmin.route
+                                        else -> Screen.Welcome.route
+                                    }
+
+                                    navController.navigate(targetRoute) {
                                         popUpTo(Screen.Welcome.route) { inclusive = true }
                                     }
                                 },
@@ -75,12 +80,27 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 4. Rute Halaman Dashboard
-                        composable(route = Screen.Dashboard.route) {
+                        // Rute Halaman Dashboard
+                        composable(route = Screen.HomeMahasiswa.route) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(text = "Halaman Dashboard Dosen/Admin")
+                                Text(text = "Halaman Home Mahasiswa")
                             }
                         }
+
+                        composable(route = Screen.DashboardDosen.route) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = "Halaman Dashboard Dosen")
+                            }
+                        }
+
+                        composable(route = Screen.DashboardAdmin.route) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = "Halaman Dashboard Admin")
+                            }
+                        }
+
+                        composable(route = Screen.Register.route) { }
+                        composable(route = Screen.ForgotPassword.route) { }
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.acaris.features.auth.data.repository
 
+import com.acaris.core.datastore.AuthPreferences
 import com.acaris.features.auth.data.mapper.toDomain
 import com.acaris.features.auth.data.remote.datasource.AuthApiService
 import com.acaris.features.auth.data.remote.model.LoginRequestModel
@@ -8,7 +9,8 @@ import com.acaris.features.auth.domain.repository.AuthRepository
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val apiService: AuthApiService
+    private val apiService: AuthApiService,
+    private val authPreferences: AuthPreferences
 ) : AuthRepository {
 
     override suspend fun login(email: String, password: String): Result<User> {
@@ -18,9 +20,16 @@ class AuthRepositoryImpl @Inject constructor(
 
             if (response.isSuccessful) {
                 val body = response.body()
-
                 if (body != null && body.status && body.data != null) {
-                    val userDomain = body.data.user.toDomain(body.data.token)
+
+                    val token = body.data.token
+                    val userDomain = body.data.user.toDomain(token)
+
+                    authPreferences.saveAuthSession(
+                        token = token,
+                        role = userDomain.role.lowercase()
+                    )
+
                     Result.success(userDomain)
                 } else {
                     Result.failure(Exception(body?.message ?: "Login gagal."))
