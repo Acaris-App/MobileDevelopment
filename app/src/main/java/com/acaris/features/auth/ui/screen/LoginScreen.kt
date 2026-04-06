@@ -24,11 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomDialog
-import com.acaris.core.ui.component.CustomPrimaryButton
+import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.ui.theme.AcarisTheme
+import com.acaris.core.utils.ValidationUtils
 import com.acaris.features.auth.presentation.model.LoginState
 import com.acaris.features.auth.presentation.viewmodel.LoginViewModel
 import com.acaris.features.auth.ui.components.AuthTextField
+import com.acaris.features.auth.ui.components.RoleSelectionSheet
 import com.acaris.features.auth.ui.mapper.toUiModel
 
 @Composable
@@ -36,7 +38,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
     onLoginSuccess: (String) -> Unit,
-    onNavigateToRegister: () -> Unit,
+    onNavigateToRegister: (String) -> Unit,
     onNavigateToForgotPassword: () -> Unit
 ) {
     val loginState by viewModel.loginState.collectAsState()
@@ -59,18 +61,15 @@ fun LoginScreenContent(
     onResetState: () -> Unit,
     onBackClick: () -> Unit,
     onLoginSuccess: (String) -> Unit,
-    onNavigateToRegister: () -> Unit,
+    onNavigateToRegister: (String) -> Unit,
     onNavigateToForgotPassword: () -> Unit
 ) {
-    // 🌟 PERBAIKAN BUG 1: Menggunakan rememberSaveable agar data aman saat rotasi layar
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
 
-    // Logika Real-time Validation untuk Email
-    val emailPattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[a-z]+\$"
-    val isEmailValid = email.isEmpty() || email.matches(emailPattern.toRegex())
-
-    // 🌟 PERBAIKAN BUG 2 (Persiapan): Membuat pengingat state untuk scroll
+    var showRoleSheet by rememberSaveable { mutableStateOf(false) }
+    val isEmailError = email.isNotEmpty() && !ValidationUtils.isValidEmail(email)
+    val isFormReady = ValidationUtils.isValidEmail(email) && password.isNotEmpty()
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -82,7 +81,6 @@ fun LoginScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 24.dp)
-                // 🌟 PERBAIKAN BUG 2 (Penerapan): Memungkinkan layar di-scroll saat orientasi landscape
                 .verticalScroll(scrollState)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -114,7 +112,7 @@ fun LoginScreenContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Silakan masukan data kredensial Anda",
+                text = "Silakan masukkan data kredensial Anda",
                 color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -128,8 +126,8 @@ fun LoginScreenContent(
                 onValueChange = { email = it },
                 label = "Email",
                 placeholder = "Masukkan email Anda",
-                isError = !isEmailValid,
-                errorMessage = "Format email tidak valid (harus memakai @)"
+                isError = isEmailError,
+                errorMessage = "Format email tidak valid"
             )
 
             AuthTextField(
@@ -151,8 +149,6 @@ fun LoginScreenContent(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            val isFormReady = email.isNotEmpty() && password.isNotEmpty() && isEmailValid
-
             if (loginState is LoginState.Loading) {
                 CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.primary,
@@ -161,19 +157,15 @@ fun LoginScreenContent(
             } else {
                 CustomPrimaryButton(
                     text = "Masuk",
-                    onClick = {
-                        if (isFormReady) onLoginClick(email, password)
-                    },
+                    onClick = { onLoginClick(email, password) },
+                    enabled = isFormReady,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
                 )
             }
 
-            // 🌟 PENTING: Karena sekarang ada di dalam ScrollView, gunakan height statis, BUKAN weight(1f)
             Spacer(modifier = Modifier.height(64.dp))
 
-            // Footer Daftar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -191,7 +183,7 @@ fun LoginScreenContent(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
-                        .clickable { onNavigateToRegister() }
+                        .clickable { showRoleSheet = true }
                         .padding(start = 4.dp)
                 )
             }
@@ -215,7 +207,8 @@ fun LoginScreenContent(
                             Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Berhasil Masuk!", style = MaterialTheme.typography.titleLarge)
+                        Text("Berhasil Masuk!", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text("Halo, ${userUi.name}.", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
@@ -233,7 +226,8 @@ fun LoginScreenContent(
                             Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.onError, modifier = Modifier.size(40.dp))
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Login Gagal", style = MaterialTheme.typography.titleLarge)
+                        Text("Login Gagal", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(state.message, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
                     }
                 }
@@ -241,6 +235,13 @@ fun LoginScreenContent(
         }
         else -> { }
     }
+    RoleSelectionSheet(
+        showSheet = showRoleSheet,
+        onDismiss = { showRoleSheet = false },
+        onRoleSelected = { role ->
+            onNavigateToRegister(role)
+        }
+    )
 }
 
 @Preview(showBackground = true, device = "id:pixel_5")

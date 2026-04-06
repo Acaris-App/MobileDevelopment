@@ -1,4 +1,4 @@
-package com.acaris.core.ui.component
+package com.acaris.core.ui.components
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -25,13 +25,15 @@ import androidx.compose.ui.unit.sp
 fun CustomPrimaryButton(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true // 🌟 PARAMETER BARU DITAMBAHKAN
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
+    // Animasi hanya berjalan jika tombol aktif
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1f,
+        targetValue = if (isPressed && enabled) 0.92f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
@@ -44,9 +46,13 @@ fun CustomPrimaryButton(
         modifier = modifier.scale(scale).height(60.dp),
         shape = RoundedCornerShape(30.dp),
         interactionSource = interactionSource,
+        enabled = enabled, // 🌟 DISAMBUNGKAN KE KOMPONEN BAWAAN
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.background
+            contentColor = MaterialTheme.colorScheme.background,
+            // 🌟 Warna saat tombol mati (Disabled)
+            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+            disabledContentColor = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
         )
     ) {
         Text(
@@ -61,12 +67,15 @@ fun CustomPrimaryButton(
 fun CustomOutlinedButton(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true // 🌟 PARAMETER BARU DITAMBAHKAN
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+
+    // Animasi hanya berjalan jika tombol aktif
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1f,
+        targetValue = if (isPressed && enabled) 0.92f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
@@ -79,10 +88,14 @@ fun CustomOutlinedButton(
         modifier = modifier.scale(scale).height(60.dp),
         shape = RoundedCornerShape(30.dp),
         interactionSource = interactionSource,
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+        enabled = enabled, // 🌟 DISAMBUNGKAN KE KOMPONEN BAWAAN
+        // 🌟 Border memudar saat tombol mati
+        border = BorderStroke(2.dp, if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.primary,
-            containerColor = MaterialTheme.colorScheme.background
+            containerColor = MaterialTheme.colorScheme.background,
+            // 🌟 Teks memudar saat tombol mati
+            disabledContentColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         )
     ) {
         Text(

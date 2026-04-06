@@ -29,8 +29,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.acaris.core.ui.component.CustomOutlinedButton
-import com.acaris.core.ui.component.CustomPrimaryButton
+import com.acaris.core.ui.components.CustomOutlinedButton
+import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.ui.theme.AcarisTheme
 
 // 1. Buat tipe dialog yang mungkin muncul

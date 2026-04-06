@@ -1,4 +1,4 @@
-package com.acaris // Sesuaikan dengan nama package-mu
+package com.acaris
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -16,9 +16,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.acaris.core.navigation.Screen
 import com.acaris.core.ui.theme.AcarisTheme
-import com.acaris.features.onboarding.ui.screen.WelcomeScreen
-import com.acaris.core.ui.components.Tester
 import com.acaris.features.auth.ui.screen.LoginScreen
+import com.acaris.features.auth.ui.screen.RegisterScreen
+import com.acaris.features.onboarding.ui.screen.WelcomeScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -37,23 +37,23 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
 
-                        // Rute Halaman Welcome
+                        // ==========================================
+                        // RUTE ONBOARDING / WELCOME
+                        // ==========================================
                         composable(route = Screen.Welcome.route) {
                             WelcomeScreen(
                                 onLoginClick = {
                                     navController.navigate(Screen.Login.route)
                                 },
-                                onRegisterClick = {
-                                    navController.navigate("tester_dialog")
+                                onRegisterClick = { role ->
+                                    navController.navigate("${Screen.Register.route}/$role")
                                 }
                             )
                         }
 
-                        composable(route = "tester_dialog") {
-                            Tester()
-                        }
-
-                        // Rute Halaman Login
+                        // ==========================================
+                        // RUTE LOGIN
+                        // ==========================================
                         composable(route = Screen.Login.route) {
                             LoginScreen(
                                 onBackClick = {
@@ -71,8 +71,10 @@ class MainActivity : ComponentActivity() {
                                         popUpTo(Screen.Welcome.route) { inclusive = true }
                                     }
                                 },
-                                onNavigateToRegister = {
-                                    navController.navigate(Screen.Register.route)
+                                onNavigateToRegister = { role ->
+                                    navController.navigate("${Screen.Register.route}/$role") {
+                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                    }
                                 },
                                 onNavigateToForgotPassword = {
                                     navController.navigate(Screen.ForgotPassword.route)
@@ -80,7 +82,39 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // Rute Halaman Dashboard
+                        // ==========================================
+                        // RUTE REGISTER (Menerima Parameter Role)
+                        // ==========================================
+                        composable(route = "${Screen.Register.route}/{role}") { backStackEntry ->
+                            val role = backStackEntry.arguments?.getString("role") ?: "mahasiswa"
+
+                            RegisterScreen(
+                                role = role,
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                },
+                                onNavigateToLogin = {
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(Screen.Welcome.route) { inclusive = false }
+                                    }
+                                },
+                                onRegisterSuccess = {
+                                    val targetRoute = when (role) {
+                                        "mahasiswa" -> Screen.HomeMahasiswa.route
+                                        "dosen" -> Screen.DashboardDosen.route
+                                        else -> Screen.Welcome.route
+                                    }
+
+                                    navController.navigate(targetRoute) {
+                                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
+
+                        // ==========================================
+                        // RUTE DASHBOARD / HOME (DUMMY SEMENTARA)
+                        // ==========================================
                         composable(route = Screen.HomeMahasiswa.route) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(text = "Halaman Home Mahasiswa")
@@ -99,8 +133,12 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        composable(route = Screen.Register.route) { }
-                        composable(route = Screen.ForgotPassword.route) { }
+                        // Rute Kosong Lainnya
+                        composable(route = Screen.ForgotPassword.route) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = "Halaman Lupa Password")
+                            }
+                        }
                     }
                 }
             }
