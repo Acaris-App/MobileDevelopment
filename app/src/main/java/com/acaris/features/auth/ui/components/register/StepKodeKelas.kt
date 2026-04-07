@@ -8,6 +8,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.features.auth.ui.components.AuthTextField
 
@@ -39,4 +40,6 @@ fun StepKodeKelas(isLoading: Boolean, onSubmit: (String) -> Unit) {
             modifier = Modifier.fillMaxWidth()
         )
     }
+
+    CustomLoadingOverlay(isLoading = isLoading)
 }

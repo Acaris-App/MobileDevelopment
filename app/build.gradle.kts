@@ -1,9 +1,17 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+}
+
+val properties = Properties()
+val localPropertiesFile = project.rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    properties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -20,6 +28,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val baseUrl = properties.getProperty("BASE_URL") ?: "\"https://default.url.com/\""
+        buildConfigField("String", "BASE_URL", baseUrl)
     }
 
     buildTypes {

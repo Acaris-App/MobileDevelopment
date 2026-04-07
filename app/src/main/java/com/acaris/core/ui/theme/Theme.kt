@@ -11,24 +11,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PastelBlue,
-    onPrimary = TextDark,
-    secondary = PastelMint,
-    onSecondary = TextDark,
-    background = AppBackgroundDark,
+    primary = AcarisPrimary,         // Biru Tua
+    onPrimary = TextLight,           // Teks putih di atas tombol biru
+    secondary = AcarisSecondary,     // Biru Sedang
+    onSecondary = TextLight,         // Teks putih di atas elemen sekunder
+    tertiary = AcarisTertiary,       // Biru Muda
+    onTertiary = TextDark,           // Teks gelap di atas elemen biru muda
+    background = AppBackgroundDark,  // Tetap Dark (Sesuai request)
     onBackground = AppBackgroundLight,
-    surface = TextDark,
+    surface = TextDark,              // Warna kartu/permukaan di mode dark
     onSurface = AppBackgroundLight
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = PastelBlue,
-    onPrimary = TextDark,
-    secondary = PastelMint,
-    onSecondary = TextDark,
-    background = AppBackgroundLight,
+    primary = AcarisPrimary,         // Biru Tua
+    onPrimary = TextLight,           // Teks putih di atas tombol biru
+    secondary = AcarisSecondary,     // Biru Sedang
+    onSecondary = TextLight,         // Teks putih di atas elemen sekunder
+    tertiary = AcarisTertiary,       // Biru Muda
+    onTertiary = TextDark,           // Teks gelap di atas elemen biru muda
+    background = AppBackgroundLight, // Tetap Light (Sesuai request)
     onBackground = AppBackgroundDark,
-    surface = PastelYellow,
+    surface = SurfaceWhite,          // 🌟 (Perbaikan) Permukaan kartu jadi putih agar bersih
     onSurface = TextDark
 )
 
@@ -51,7 +55,7 @@ fun AcarisTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        shapes = Shapes,
+        shapes = Shapes, // Pastikan variabel Shapes ini ada di file Shape.kt ya
         content = content
     )
 }

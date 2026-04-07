@@ -4,6 +4,7 @@ import com.acaris.core.datastore.AuthPreferences
 import com.acaris.features.auth.data.mapper.toDomain
 import com.acaris.features.auth.data.remote.datasource.AuthApiService
 import com.acaris.features.auth.data.remote.model.LoginRequestModel
+import com.acaris.features.auth.data.remote.model.ResendOtpRequest
 import com.acaris.features.auth.data.remote.model.ValidateKodeKelasRequest
 import com.acaris.features.auth.data.remote.model.VerifyOtpRequest
 import com.acaris.features.auth.domain.model.User
@@ -28,9 +29,9 @@ class AuthRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 val body = response.body()
 
-                if (body != null && body.status && body.data != null) {
+                if (body != null && body.status == "success" && body.data != null) {
                     val token = body.data.token
-                    val userDomain = body.data.user.toDomain(token)
+                    val userDomain = body.data.user.toDomain(token, body.data.role)
 
                     authPreferences.saveAuthSession(
                         token = token,
@@ -61,7 +62,8 @@ class AuthRepositoryImpl @Inject constructor(
             val response = apiService.validateKodeKelas(ValidateKodeKelasRequest(kodeKelas))
             val body = response.body()
 
-            if (response.isSuccessful && body?.status == true) {
+            // 🌟 UBAH: Cek status == "success"
+            if (response.isSuccessful && body?.status == "success") {
                 Result.success(Unit)
             } else {
                 Result.failure(Exception(body?.message ?: "Kode kelas tidak ditemukan."))
@@ -72,7 +74,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     // ==========================================
-    // 🌟 IMPLEMENTASI REGISTER (MULTIPART)
+    // IMPLEMENTASI REGISTER (MULTIPART)
     // ==========================================
 
     override suspend fun registerMahasiswa(
@@ -80,7 +82,6 @@ class AuthRepositoryImpl @Inject constructor(
         angkatan: Int, currentSemester: Int, kodeKelas: String, profilePicture: File?
     ): Result<Unit> {
         return try {
-            // 1. Ubah SEMUA teks menjadi RequestBody
             val npmPart = npm.toRequestBody("text/plain".toMediaTypeOrNull())
             val namePart = name.toRequestBody("text/plain".toMediaTypeOrNull())
             val emailPart = email.toRequestBody("text/plain".toMediaTypeOrNull())
@@ -89,13 +90,16 @@ class AuthRepositoryImpl @Inject constructor(
             val semesterPart = currentSemester.toString().toRequestBody("text/plain".toMediaTypeOrNull())
             val kodeKelasPart = kodeKelas.toRequestBody("text/plain".toMediaTypeOrNull())
 
-            // 2. Siapkan File Gambar (Jika Ada)
             val imagePart = profilePicture?.let { file ->
-                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                val mimeType = when (file.extension.lowercase()) {
+                    "png" -> "image/png"
+                    "webp" -> "image/webp"
+                    else -> "image/jpeg"
+                }
+                val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
                 MultipartBody.Part.createFormData("profile_picture", file.name, requestFile)
             }
 
-            // 3. Tembak ke API Service
             val response = apiService.registerMahasiswa(
                 npm = npmPart,
                 name = namePart,
@@ -108,10 +112,17 @@ class AuthRepositoryImpl @Inject constructor(
             )
 
             val body = response.body()
-            if (response.isSuccessful && body?.status == true) {
+
+            if (response.isSuccessful && body?.status == "success") {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception(body?.message ?: "Gagal mendaftarkan akun mahasiswa."))
+                val errorString = response.errorBody()?.string()
+                val errorMessage = try {
+                    org.json.JSONObject(errorString ?: "").getString("message")
+                } catch (e: Exception) {
+                    body?.message ?: "Gagal mendaftarkan akun mahasiswa."
+                }
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Gagal terhubung ke server."))
@@ -128,7 +139,12 @@ class AuthRepositoryImpl @Inject constructor(
             val passwordPart = password.toRequestBody("text/plain".toMediaTypeOrNull())
 
             val imagePart = profilePicture?.let { file ->
-                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                val mimeType = when (file.extension.lowercase()) {
+                    "png" -> "image/png"
+                    "webp" -> "image/webp"
+                    else -> "image/jpeg"
+                }
+                val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
                 MultipartBody.Part.createFormData("profile_picture", file.name, requestFile)
             }
 
@@ -141,17 +157,22 @@ class AuthRepositoryImpl @Inject constructor(
             )
 
             val body = response.body()
-            if (response.isSuccessful && body?.status == true) {
+
+            if (response.isSuccessful && body?.status == "success") {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception(body?.message ?: "Gagal mendaftarkan akun dosen."))
+                val errorString = response.errorBody()?.string()
+                val errorMessage = try {
+                    org.json.JSONObject(errorString ?: "").getString("message")
+                } catch (e: Exception) {
+                    body?.message ?: "Gagal mendaftarkan akun dosen."
+                }
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Gagal terhubung ke server."))
         }
     }
-
-    // ==========================================
 
     override suspend fun uploadDokumen(
         documentType: String,
@@ -168,7 +189,8 @@ class AuthRepositoryImpl @Inject constructor(
             val response = apiService.uploadDokumen(typePart, semesterPart, filePart)
             val body = response.body()
 
-            if (response.isSuccessful && body?.status == true) {
+            // 🌟 UBAH: Cek status == "success"
+            if (response.isSuccessful && body?.status == "success") {
                 Result.success(Unit)
             } else {
                 Result.failure(Exception(body?.message ?: "Gagal mengunggah dokumen."))
@@ -184,9 +206,9 @@ class AuthRepositoryImpl @Inject constructor(
             val response = apiService.verifyOtp(request)
             val body = response.body()
 
-            if (response.isSuccessful && body?.status == true && body.data != null) {
+            if (response.isSuccessful && body?.status == "success" && body.data != null) {
                 val token = body.data.token
-                val userDomain = body.data.user.toDomain(token)
+                val userDomain = body.data.user.toDomain(token, body.data.role)
 
                 authPreferences.saveAuthSession(
                     token = token,
@@ -198,7 +220,20 @@ class AuthRepositoryImpl @Inject constructor(
                 Result.failure(Exception(body?.message ?: "Kode OTP salah atau kedaluwarsa."))
             }
         } catch (e: Exception) {
-            Result.failure(Exception("Gagal terhubung ke server. Periksa koneksi Anda."))
+            Result.failure(Exception("Error Parsing: ${e.message}"))
+        }
+    }
+
+    override suspend fun resendOtp(email: String): Result<Unit> {
+        return try {
+            val response = apiService.resendOtp(ResendOtpRequest(email))
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Gagal mengirim ulang OTP. Kode: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

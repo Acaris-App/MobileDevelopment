@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.ui.theme.AcarisTheme
 import com.acaris.core.utils.ValidationUtils
@@ -32,12 +33,13 @@ import com.acaris.features.auth.presentation.viewmodel.LoginViewModel
 import com.acaris.features.auth.ui.components.AuthTextField
 import com.acaris.features.auth.ui.components.RoleSelectionSheet
 import com.acaris.features.auth.ui.mapper.toUiModel
+import com.acaris.features.auth.ui.model.UserUiModel
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
-    onLoginSuccess: (String) -> Unit,
+    onLoginSuccess: (UserUiModel) -> Unit,
     onNavigateToRegister: (String) -> Unit,
     onNavigateToForgotPassword: () -> Unit
 ) {
@@ -60,7 +62,7 @@ fun LoginScreenContent(
     onLoginClick: (String, String) -> Unit,
     onResetState: () -> Unit,
     onBackClick: () -> Unit,
-    onLoginSuccess: (String) -> Unit,
+    onLoginSuccess: (UserUiModel) -> Unit,
     onNavigateToRegister: (String) -> Unit,
     onNavigateToForgotPassword: () -> Unit
 ) {
@@ -68,6 +70,10 @@ fun LoginScreenContent(
     var password by rememberSaveable { mutableStateOf("") }
 
     var showRoleSheet by rememberSaveable { mutableStateOf(false) }
+
+    // 🌟 KITA EKSTRAK STATUS LOADING DARI loginState
+    val isLoading = loginState is LoginState.Loading
+
     val isEmailError = email.isNotEmpty() && !ValidationUtils.isValidEmail(email)
     val isFormReady = ValidationUtils.isValidEmail(email) && password.isNotEmpty()
     val scrollState = rememberScrollState()
@@ -149,20 +155,13 @@ fun LoginScreenContent(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            if (loginState is LoginState.Loading) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-            } else {
-                CustomPrimaryButton(
-                    text = "Masuk",
-                    onClick = { onLoginClick(email, password) },
-                    enabled = isFormReady,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-            }
+            // 🌟 KITA TAMPILKAN TOMBOL SECARA UTUH (Tanpa CircularProgressIndicator kecil lagi)
+            CustomPrimaryButton(
+                text = "Masuk",
+                onClick = { onLoginClick(email, password) },
+                enabled = isFormReady && !isLoading, // Disable saat loading
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(64.dp))
 
@@ -175,12 +174,14 @@ fun LoginScreenContent(
             ) {
                 Text(
                     text = "Belum punya akun? ",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    fontSize = 16.sp
                 )
 
                 Text(
                     text = "Daftar",
                     color = MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .clickable { showRoleSheet = true }
@@ -199,7 +200,7 @@ fun LoginScreenContent(
                 confirmText = "Lanjut ke Dashboard",
                 onConfirm = {
                     onResetState()
-                    onLoginSuccess(userUi.role.toString().lowercase())
+                    onLoginSuccess(userUi)
                 },
                 content = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -235,6 +236,7 @@ fun LoginScreenContent(
         }
         else -> { }
     }
+
     RoleSelectionSheet(
         showSheet = showRoleSheet,
         onDismiss = { showRoleSheet = false },
@@ -242,6 +244,8 @@ fun LoginScreenContent(
             onNavigateToRegister(role)
         }
     )
+
+    CustomLoadingOverlay(isLoading = isLoading)
 }
 
 @Preview(showBackground = true, device = "id:pixel_5")

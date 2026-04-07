@@ -1,6 +1,6 @@
 package com.acaris.di
 
-import com.acaris.BuildConfig
+import com.acaris.BuildConfig // 🌟 Pastikan ini mengarah ke package-mu
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,9 +15,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
-    // URL backend Cloud Run
-    private const val BASE_URL = "https://api.acaris-aditganteng.com/"
 
     @Provides
     @Singleton
@@ -43,7 +40,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

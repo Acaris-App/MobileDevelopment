@@ -8,7 +8,17 @@ data class ValidateKodeKelasRequest(
 )
 
 data class VerifyOtpRequest(
+    @SerializedName("email")
     val email: String,
-    @SerializedName("otp_code")
+
+    @SerializedName("code")
     val otpCode: String
+)
+
+data class ResendOtpRequest(
+    @SerializedName("email")
+    val email: String,
+
+    @SerializedName("type")
+    val type: String = "register"
 )

@@ -12,16 +12,16 @@ import retrofit2.http.Part
 
 interface AuthApiService {
 
-    @POST("api/auth/login")
+    @POST("auth/login")
     suspend fun login(@Body request: LoginRequestModel): Response<BaseResponse<LoginResponseModel>>
 
-    @POST("api/auth/validate-kode-kelas")
+    @POST("auth/validate-kode-kelas")
     suspend fun validateKodeKelas(@Body request: ValidateKodeKelasRequest): Response<BaseResponse<Any>>
 
     @Multipart
-    @POST("api/auth/register/mahasiswa")
+    @POST("auth/register/mahasiswa")
     suspend fun registerMahasiswa(
-        @Part("npm") npm: RequestBody,
+        @Part("npm_nip") npm: RequestBody,
         @Part("name") name: RequestBody,
         @Part("email") email: RequestBody,
         @Part("password") password: RequestBody,
@@ -32,9 +32,9 @@ interface AuthApiService {
     ): Response<BaseResponse<Any>>
 
     @Multipart
-    @POST("api/auth/register/dosen")
+    @POST("auth/register/dosen")
     suspend fun registerDosen(
-        @Part("nip") nip: RequestBody,
+        @Part("npm_nip") nip: RequestBody,
         @Part("name") name: RequestBody,
         @Part("email") email: RequestBody,
         @Part("password") password: RequestBody,
@@ -42,13 +42,16 @@ interface AuthApiService {
     ): Response<BaseResponse<Any>>
 
     @Multipart
-    @POST("api/auth/register/upload-dokumen")
+    @POST("auth/register/upload-dokumen")
     suspend fun uploadDokumen(
         @Part("document_type") documentType: RequestBody,
         @Part("semester") semester: RequestBody?,
         @Part file: MultipartBody.Part
     ): Response<BaseResponse<Any>>
 
-    @POST("api/auth/verify-otp")
+    @POST("auth/verify-register-otp")
     suspend fun verifyOtp(@Body request: VerifyOtpRequest): Response<BaseResponse<LoginResponseModel>>
+
+    @POST("auth/resend-otp")
+    suspend fun resendOtp(@Body request: ResendOtpRequest): Response<BaseResponse<Any>>
 }

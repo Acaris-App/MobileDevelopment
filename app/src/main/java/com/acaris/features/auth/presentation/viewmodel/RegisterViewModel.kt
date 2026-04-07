@@ -22,6 +22,7 @@ class RegisterViewModel @Inject constructor(
     private val registerDosenUseCase: RegisterDosenUseCase,
     private val verifyOtpUseCase: VerifyOtpUseCase,
     private val uploadDokumenUseCase: UploadDokumenUseCase,
+    private val resendOtpUseCase: ResendOtpUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterState())
@@ -62,7 +63,10 @@ class RegisterViewModel @Inject constructor(
         tempEmail = email
 
         viewModelScope.launch {
-            val result = registerMahasiswaUseCase(npm, name, email, password, angkatan, semester, tempKodeKelas)
+            // 🌟 TAMBAHAN: Kirim selectedProfilePictureFile ke UseCase
+            val result = registerMahasiswaUseCase(
+                npm, name, email, password, angkatan, semester, tempKodeKelas, selectedProfilePictureFile
+            )
             result.fold(
                 onSuccess = {
                     _uiState.update { it.copy(isLoading = false, currentStep = RegisterStep.INPUT_OTP) }
@@ -79,7 +83,10 @@ class RegisterViewModel @Inject constructor(
         tempEmail = email
 
         viewModelScope.launch {
-            val result = registerDosenUseCase(nip, name, email, password)
+            // 🌟 TAMBAHAN: Kirim selectedProfilePictureFile ke UseCase
+            val result = registerDosenUseCase(
+                nip, name, email, password, selectedProfilePictureFile
+            )
             result.fold(
                 onSuccess = {
                     _uiState.update { it.copy(isLoading = false, currentStep = RegisterStep.INPUT_OTP) }
@@ -135,6 +142,20 @@ class RegisterViewModel @Inject constructor(
 
     fun onProfilePictureSelected(file: File) {
         selectedProfilePictureFile = file
+    }
+
+    fun resendOtp(onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val result = resendOtpUseCase(tempEmail)
+            result.fold(
+                onSuccess = {
+                    onSuccess()
+                },
+                onFailure = { e ->
+                    onError(e.message ?: "Gagal mengirim ulang OTP")
+                }
+            )
+        }
     }
 
     fun clearError() {

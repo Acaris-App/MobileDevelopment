@@ -1,6 +1,7 @@
 package com.acaris.features.auth.domain.usecase
 
 import com.acaris.features.auth.domain.repository.AuthRepository
+import java.io.File
 import javax.inject.Inject
 
 class RegisterMahasiswaUseCase @Inject constructor(
@@ -8,7 +9,8 @@ class RegisterMahasiswaUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         npm: String, name: String, email: String, password: String,
-        angkatan: Int, currentSemester: Int, kodeKelas: String
+        angkatan: Int, currentSemester: Int, kodeKelas: String,
+        profilePicture: File? = null
     ): Result<Unit> {
 
         if (npm.isBlank() || name.isBlank() || email.isBlank() || kodeKelas.isBlank()) {
@@ -27,6 +29,8 @@ class RegisterMahasiswaUseCase @Inject constructor(
             return Result.failure(Exception("Data semester atau angkatan tidak valid."))
         }
 
-        return repository.registerMahasiswa(npm, name, email, password, angkatan, currentSemester, kodeKelas)
+        return repository.registerMahasiswa(
+            npm, name, email, password, angkatan, currentSemester, kodeKelas, profilePicture
+        )
     }
 }

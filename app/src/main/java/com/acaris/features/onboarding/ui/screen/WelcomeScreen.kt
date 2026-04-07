@@ -1,20 +1,21 @@
 package com.acaris.features.onboarding.ui.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.acaris.R
 import com.acaris.core.ui.theme.AcarisTheme
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.ui.components.CustomOutlinedButton
@@ -42,26 +43,13 @@ fun WelcomeScreen(
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            Box(
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "Logo Acaris",
                 modifier = Modifier
-                    .size(200.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(32.dp)
-                    )
-                    .border(
-                        width = 2.dp,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        shape = RoundedCornerShape(32.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "LOGO",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                )
-            }
+                    .width(400.dp)
+                    .height(240.dp),
+            )
 
             Spacer(modifier = Modifier.height(64.dp))
 

@@ -11,14 +11,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.acaris.core.navigation.Screen
 import com.acaris.core.ui.theme.AcarisTheme
 import com.acaris.features.auth.ui.screen.LoginScreen
 import com.acaris.features.auth.ui.screen.RegisterScreen
 import com.acaris.features.onboarding.ui.screen.WelcomeScreen
+import com.acaris.features.dashboard.ui.screen.DosenDashboardScreen // 🌟 Import Layar Dashboard Baru
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -59,16 +62,25 @@ class MainActivity : ComponentActivity() {
                                 onBackClick = {
                                     navController.popBackStack()
                                 },
-                                onLoginSuccess = { role ->
-                                    val targetRoute = when (role) {
-                                        "mahasiswa" -> Screen.HomeMahasiswa.route
-                                        "dosen" -> Screen.DashboardDosen.route
-                                        "admin" -> Screen.DashboardAdmin.route
-                                        else -> Screen.Welcome.route
-                                    }
+                                // 🌟 Tangkap objek UserUiModel seutuhnya
+                                onLoginSuccess = { user ->
+                                    if (user.role?.lowercase() == "dosen") {
+                                        // Cegah Crash jika kodeKelas dari server null/kosong
+                                        val safeKode = if (user.kodeKelas.isNullOrBlank()) "BELUM_ADA" else user.kodeKelas
+                                        val safeName = if (user.name.isNullOrBlank()) "Dosen" else user.name
 
-                                    navController.navigate(targetRoute) {
-                                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                                        // Lempar ke Dashboard Sementara dengan parameter
+                                        navController.navigate("dashboard_dosen_temp/$safeName/$safeKode") {
+                                            popUpTo(Screen.Welcome.route) { inclusive = true }
+                                        }
+                                    } else if (user.role?.lowercase() == "mahasiswa") {
+                                        navController.navigate(Screen.HomeMahasiswa.route) {
+                                            popUpTo(Screen.Welcome.route) { inclusive = true }
+                                        }
+                                    } else {
+                                        navController.navigate(Screen.DashboardAdmin.route) {
+                                            popUpTo(Screen.Welcome.route) { inclusive = true }
+                                        }
                                     }
                                 },
                                 onNavigateToRegister = { role ->
@@ -99,31 +111,39 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onRegisterSuccess = {
-                                    val targetRoute = when (role) {
-                                        "mahasiswa" -> Screen.HomeMahasiswa.route
-                                        "dosen" -> Screen.DashboardDosen.route
-                                        else -> Screen.Welcome.route
-                                    }
-
-                                    navController.navigate(targetRoute) {
-                                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                                    // 🌟 Setelah berhasil mendaftar, user diarahkan ke Login (agar bisa dapat Kode Kelas)
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(Screen.Welcome.route) { inclusive = false }
                                     }
                                 }
                             )
                         }
 
                         // ==========================================
-                        // RUTE DASHBOARD / HOME (DUMMY SEMENTARA)
+                        // 🌟 RUTE DASHBOARD DOSEN (SEMENTARA)
+                        // ==========================================
+                        composable(
+                            route = "dashboard_dosen_temp/{nama}/{kode}",
+                            arguments = listOf(
+                                navArgument("nama") { type = NavType.StringType },
+                                navArgument("kode") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val nama = backStackEntry.arguments?.getString("nama") ?: "Dosen"
+                            val kode = backStackEntry.arguments?.getString("kode")?.let {
+                                if (it == "BELUM_ADA") null else it
+                            }
+
+                            // Panggil Komponen Layar yang baru kita buat
+                            DosenDashboardScreen(dosenName = nama, kodeKelas = kode)
+                        }
+
+                        // ==========================================
+                        // RUTE HOME LAINNYA
                         // ==========================================
                         composable(route = Screen.HomeMahasiswa.route) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(text = "Halaman Home Mahasiswa")
-                            }
-                        }
-
-                        composable(route = Screen.DashboardDosen.route) {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(text = "Halaman Dashboard Dosen")
                             }
                         }
 
@@ -133,7 +153,6 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        // Rute Kosong Lainnya
                         composable(route = Screen.ForgotPassword.route) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(text = "Halaman Lupa Password")

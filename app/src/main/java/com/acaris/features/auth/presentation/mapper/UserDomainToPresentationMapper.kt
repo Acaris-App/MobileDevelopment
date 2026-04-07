@@ -7,6 +7,7 @@ fun User.toPresentation(): UserPresentationModel {
     return UserPresentationModel(
         email = this.email,
         name = this.name,
-        role = this.role
+        role = this.role,
+        kodeKelas = this.kodeKelas
     )
 }

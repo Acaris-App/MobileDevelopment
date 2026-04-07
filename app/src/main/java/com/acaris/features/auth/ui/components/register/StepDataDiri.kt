@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomPrimaryButton
+import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.utils.ImageUtils
 import com.acaris.core.utils.ValidationUtils
 import com.acaris.features.auth.ui.components.AuthTextField
@@ -71,15 +72,21 @@ fun StepDataDiri(
     val isEmailError = email.isNotEmpty() && !ValidationUtils.isValidEmail(email)
     val isPasswordError = password.isNotEmpty() && !ValidationUtils.isValidPassword(password)
     val isConfirmPasswordError = confirmPassword.isNotEmpty() && password != confirmPassword
+    val isNpmError = npm.isNotEmpty() && !npm.all { it.isDigit() }
+    val isNipError = nip.isNotEmpty() && !nip.all { it.isDigit() }
+    val isAngkatanError = angkatan.isNotEmpty() && !angkatan.all { it.isDigit() }
+    val isSemesterError = semester.isNotEmpty() && !semester.all { it.isDigit() }
 
     val isFormReady = name.isNotBlank() &&
             ValidationUtils.isValidEmail(email) &&
             ValidationUtils.isValidPassword(password) &&
             password == confirmPassword &&
             if (role == "mahasiswa") {
-                npm.isNotBlank() && angkatan.isNotBlank() && semester.isNotBlank()
+                npm.isNotBlank() && !isNpmError &&
+                        angkatan.isNotBlank() && !isAngkatanError &&
+                        semester.isNotBlank() && !isSemesterError
             } else {
-                nip.isNotBlank()
+                nip.isNotBlank() && !isNipError
             }
 
     if (showConfirmDialog) {
@@ -156,9 +163,21 @@ fun StepDataDiri(
         Spacer(modifier = Modifier.height(32.dp))
 
         if (role == "mahasiswa") {
-            AuthTextField(value = npm, onValueChange = { npm = it }, label = "NPM")
+            AuthTextField(
+                value = npm,
+                onValueChange = { npm = it },
+                label = "NPM",
+                isError = isNpmError,
+                errorMessage = "NPM harus berupa angka"
+            )
         } else {
-            AuthTextField(value = nip, onValueChange = { nip = it }, label = "NIP")
+            AuthTextField(
+                value = nip,
+                onValueChange = { nip = it },
+                label = "NIP",
+                isError = isNipError,
+                errorMessage = "NIP harus berupa angka"
+            )
         }
 
         AuthTextField(value = name, onValueChange = { name = it }, label = "Nama Lengkap")
@@ -191,8 +210,22 @@ fun StepDataDiri(
 
         if (role == "mahasiswa") {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AuthTextField(value = angkatan, onValueChange = { angkatan = it }, label = "Angkatan", modifier = Modifier.weight(1f))
-                AuthTextField(value = semester, onValueChange = { semester = it }, label = "Semester", modifier = Modifier.weight(1f))
+                AuthTextField(
+                    value = angkatan,
+                    onValueChange = { angkatan = it },
+                    label = "Angkatan",
+                    modifier = Modifier.weight(1f),
+                    isError = isAngkatanError,
+                    errorMessage = "Harus angka"
+                )
+                AuthTextField(
+                    value = semester,
+                    onValueChange = { semester = it },
+                    label = "Semester",
+                    modifier = Modifier.weight(1f),
+                    isError = isSemesterError,
+                    errorMessage = "Harus angka"
+                )
             }
         }
 
@@ -213,4 +246,6 @@ fun StepDataDiri(
         }
         Spacer(modifier = Modifier.height(24.dp))
     }
+
+    CustomLoadingOverlay(isLoading = isLoading)
 }

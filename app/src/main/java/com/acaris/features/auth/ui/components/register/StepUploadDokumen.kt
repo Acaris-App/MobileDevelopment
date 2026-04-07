@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.ui.components.DottedUploadBox
 import com.acaris.core.utils.FileUtils
@@ -138,12 +139,14 @@ fun StepUploadDokumen(
         CustomPrimaryButton(
             text = "Kirim & Selesaikan",
             onClick = onFinish,
-            enabled = isAllUploaded && !isLoading,
+            enabled = isAllUploaded && !isLoading, // Disable tombol saat loading
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(40.dp))
     }
+
+    CustomLoadingOverlay(isLoading = isLoading)
 }
 
 @Composable

@@ -21,8 +21,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.features.auth.presentation.model.RegisterStep
 import com.acaris.features.auth.presentation.viewmodel.RegisterViewModel
-
-// Import komponen yang sudah kita pecah
 import com.acaris.features.auth.ui.components.register.StepKodeKelas
 import com.acaris.features.auth.ui.components.register.StepDataDiri
 import com.acaris.features.auth.ui.components.register.StepOtp
@@ -113,13 +111,23 @@ fun RegisterScreen(
                         StepDataDiri(
                             role = role,
                             isLoading = state.isLoading,
-                            onPhotoSelected = { file -> viewModel.onProfilePictureSelected(file) }, // 🌟 Tambahkan ini
+                            onPhotoSelected = { file -> viewModel.onProfilePictureSelected(file) },
                             onSubmitMahasiswa = viewModel::submitDataDiriMahasiswa,
                             onSubmitDosen = viewModel::submitDataDiriDosen,
                             onLoginClick = onNavigateToLogin
                         )
                     }
-                    RegisterStep.INPUT_OTP -> StepOtp(state.isLoading) { viewModel.submitOtp(it) }
+                    RegisterStep.INPUT_OTP ->
+                        StepOtp(
+                            isLoading = state.isLoading,
+                            onSubmit = { otp -> viewModel.submitOtp(otp) },
+                            onResendClick = {
+                                viewModel.resendOtp(
+                                    onSuccess = {},
+                                    onError = {}
+                                )
+                            }
+                        )
                     RegisterStep.UPLOAD_DOKUMEN -> {
                         StepUploadDokumen(
                             semester = viewModel.currentSemester,

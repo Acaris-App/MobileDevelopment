@@ -6,6 +6,7 @@ import com.acaris.features.auth.ui.model.UserUiModel
 fun UserPresentationModel.toUiModel(): UserUiModel {
     return UserUiModel(
         name = this.name,
-        role = this.role
+        role = this.role,
+        kodeKelas = this.kodeKelas
     )
 }

@@ -35,4 +35,6 @@ interface AuthRepository {
         password: String,
         profilePicture: File? = null
     ): Result<Unit>
+
+    suspend fun resendOtp(email: String): Result<Unit>
 }
