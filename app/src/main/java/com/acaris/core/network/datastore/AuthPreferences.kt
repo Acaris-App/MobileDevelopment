@@ -1,4 +1,4 @@
-package com.acaris.core.datastore
+package com.acaris.core.network.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore

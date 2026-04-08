@@ -1,6 +1,6 @@
 package com.acaris.features.auth.di
 
-import com.acaris.core.datastore.AuthPreferences
+import com.acaris.core.network.datastore.AuthPreferences
 import com.acaris.features.auth.data.remote.datasource.AuthApiService
 import com.acaris.features.auth.data.repository.AuthRepositoryImpl
 import com.acaris.features.auth.domain.repository.AuthRepository

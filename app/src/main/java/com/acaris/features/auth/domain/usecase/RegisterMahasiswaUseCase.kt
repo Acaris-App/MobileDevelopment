@@ -9,7 +9,7 @@ class RegisterMahasiswaUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         npm: String, name: String, email: String, password: String,
-        angkatan: Int, currentSemester: Int, kodeKelas: String,
+        angkatan: Int, currentSemester: Int, ipk: Double, kodeKelas: String,
         profilePicture: File? = null
     ): Result<Unit> {
 
@@ -29,8 +29,12 @@ class RegisterMahasiswaUseCase @Inject constructor(
             return Result.failure(Exception("Data semester atau angkatan tidak valid."))
         }
 
+        if (ipk < 0.0 || ipk > 4.0) {
+            return Result.failure(Exception("IPK tidak valid. Harap masukkan nilai antara 0.00 hingga 4.00."))
+        }
+
         return repository.registerMahasiswa(
-            npm, name, email, password, angkatan, currentSemester, kodeKelas, profilePicture
+            npm, name, email, password, angkatan, currentSemester, ipk, kodeKelas, profilePicture
         )
     }
 }

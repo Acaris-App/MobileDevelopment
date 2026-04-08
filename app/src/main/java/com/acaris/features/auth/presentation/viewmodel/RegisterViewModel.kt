@@ -22,7 +22,10 @@ class RegisterViewModel @Inject constructor(
     private val registerDosenUseCase: RegisterDosenUseCase,
     private val verifyOtpUseCase: VerifyOtpUseCase,
     private val uploadDokumenUseCase: UploadDokumenUseCase,
-    private val resendOtpUseCase: ResendOtpUseCase
+    private val resendOtpUseCase: ResendOtpUseCase,
+    // 🌟 INJEKSI 2 USECASE BARU KITA
+    private val updateDokumenUseCase: UpdateDokumenUseCase,
+    private val deleteDokumenUseCase: DeleteDokumenUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterState())
@@ -57,15 +60,14 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    fun submitDataDiriMahasiswa(npm: String, name: String, email: String, password: String, angkatan: Int, semester: Int) {
+    fun submitDataDiriMahasiswa(npm: String, name: String, email: String, password: String, angkatan: Int, semester: Int, ipk: Double) {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         currentSemester = semester
         tempEmail = email
 
         viewModelScope.launch {
-            // 🌟 TAMBAHAN: Kirim selectedProfilePictureFile ke UseCase
             val result = registerMahasiswaUseCase(
-                npm, name, email, password, angkatan, semester, tempKodeKelas, selectedProfilePictureFile
+                npm, name, email, password, angkatan, semester, ipk, tempKodeKelas, selectedProfilePictureFile
             )
             result.fold(
                 onSuccess = {
@@ -83,7 +85,6 @@ class RegisterViewModel @Inject constructor(
         tempEmail = email
 
         viewModelScope.launch {
-            // 🌟 TAMBAHAN: Kirim selectedProfilePictureFile ke UseCase
             val result = registerDosenUseCase(
                 nip, name, email, password, selectedProfilePictureFile
             )
@@ -119,11 +120,50 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    fun uploadDokumen(documentType: String, file: File, documentSemester: Int?, onSuccess: () -> Unit) {
+    // 🌟 FUNGSI UPLOAD ATAU UPDATE (DIPANGGIL DARI UI KETIKA PILIH FILE)
+    fun uploadOrUpdateDokumen(
+        documentType: String,
+        file: File,
+        documentSemester: Int?,
+        existingDocId: Int?, // Jika null = Upload Baru. Jika ada angka = Update.
+        onSuccess: (Int) -> Unit
+    ) {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
-            val result = uploadDokumenUseCase(documentType, documentSemester, file)
+            if (existingDocId == null) {
+                // MURNI LEWAT USECASE UPLOAD
+                val result = uploadDokumenUseCase(documentType, documentSemester, file)
+                result.fold(
+                    onSuccess = { newId ->
+                        _uiState.update { it.copy(isLoading = false) }
+                        onSuccess(newId)
+                    },
+                    onFailure = { e ->
+                        _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+                    }
+                )
+            } else {
+                // MURNI LEWAT USECASE UPDATE
+                val result = updateDokumenUseCase(existingDocId, documentType, documentSemester, file)
+                result.fold(
+                    onSuccess = {
+                        _uiState.update { it.copy(isLoading = false) }
+                        onSuccess(existingDocId) // Kembalikan ID yang sama karena tidak berubah
+                    },
+                    onFailure = { e ->
+                        _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+                    }
+                )
+            }
+        }
+    }
 
+    // 🌟 FUNGSI DELETE (DIPANGGIL DARI UI KETIKA KLIK TOMBOL X)
+    fun deleteDokumen(documentId: Int, onSuccess: () -> Unit) {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        viewModelScope.launch {
+            // MURNI LEWAT USECASE DELETE
+            val result = deleteDokumenUseCase(documentId)
             result.fold(
                 onSuccess = {
                     _uiState.update { it.copy(isLoading = false) }

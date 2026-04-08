@@ -39,7 +39,7 @@ fun StepDataDiri(
     role: String,
     isLoading: Boolean,
     onPhotoSelected: (File) -> Unit,
-    onSubmitMahasiswa: (String, String, String, String, Int, Int) -> Unit,
+    onSubmitMahasiswa: (String, String, String, String, Int, Int, Double) -> Unit,
     onSubmitDosen: (String, String, String, String) -> Unit,
     onLoginClick: () -> Unit
 ) {
@@ -66,6 +66,7 @@ fun StepDataDiri(
     var angkatan by rememberSaveable { mutableStateOf("") }
     var semester by rememberSaveable { mutableStateOf("") }
     var nip by rememberSaveable { mutableStateOf("") }
+    var ipk by rememberSaveable { mutableStateOf("") }
 
     var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -76,6 +77,8 @@ fun StepDataDiri(
     val isNipError = nip.isNotEmpty() && !nip.all { it.isDigit() }
     val isAngkatanError = angkatan.isNotEmpty() && !angkatan.all { it.isDigit() }
     val isSemesterError = semester.isNotEmpty() && !semester.all { it.isDigit() }
+    val ipkValue = ipk.toDoubleOrNull()
+    val isIpkError = ipk.isNotEmpty() && (ipkValue == null || ipkValue < 0.0 || ipkValue > 4.0)
 
     val isFormReady = name.isNotBlank() &&
             ValidationUtils.isValidEmail(email) &&
@@ -84,7 +87,8 @@ fun StepDataDiri(
             if (role == "mahasiswa") {
                 npm.isNotBlank() && !isNpmError &&
                         angkatan.isNotBlank() && !isAngkatanError &&
-                        semester.isNotBlank() && !isSemesterError
+                        semester.isNotBlank() && !isSemesterError &&
+                        ipk.isNotBlank() && !isIpkError
             } else {
                 nip.isNotBlank() && !isNipError
             }
@@ -97,7 +101,12 @@ fun StepDataDiri(
             onConfirm = {
                 showConfirmDialog = false
                 if (role == "mahasiswa") {
-                    onSubmitMahasiswa(npm, name, email, password, angkatan.toIntOrNull() ?: 0, semester.toIntOrNull() ?: 0)
+                    onSubmitMahasiswa(
+                        npm, name, email, password,
+                        angkatan.toIntOrNull() ?: 0,
+                        semester.toIntOrNull() ?: 0,
+                        ipk.toDoubleOrNull() ?: 0.0
+                    )
                 } else {
                     onSubmitDosen(nip, name, email, password)
                 }
@@ -225,6 +234,18 @@ fun StepDataDiri(
                     modifier = Modifier.weight(1f),
                     isError = isSemesterError,
                     errorMessage = "Harus angka"
+                )
+                AuthTextField(
+                    value = ipk,
+                    onValueChange = { newValue ->
+                        if (newValue.all { it.isDigit() || it == '.' } && newValue.count { it == '.' } <= 1) {
+                            ipk = newValue
+                        }
+                    },
+                    label = "IPK",
+                    modifier = Modifier.weight(1f),
+                    isError = isIpkError,
+                    errorMessage = "Maks 4.00"
                 )
             }
         }

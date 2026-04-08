@@ -13,18 +13,24 @@ interface AuthRepository {
         documentType: String,
         semester: Int?,
         file: File
+    ): Result<Int>
+
+    suspend fun updateDokumen(
+        documentId: Int,
+        documentType: String,
+        semester: Int?,
+        file: File
+    ): Result<Unit>
+
+    suspend fun deleteDokumen(
+        documentId: Int
     ): Result<Unit>
 
     suspend fun verifyOtp(email: String, otpCode: String): Result<User>
 
     suspend fun registerMahasiswa(
-        npm: String,
-        name: String,
-        email: String,
-        password: String,
-        angkatan: Int,
-        currentSemester: Int,
-        kodeKelas: String,
+        npm: String, name: String, email: String, password: String,
+        angkatan: Int, currentSemester: Int, ipk: Double, kodeKelas: String,
         profilePicture: File? = null
     ): Result<Unit>
 

@@ -107,6 +107,7 @@ fun RegisterScreen(
             Crossfade(targetState = state.currentStep, label = "Register Steps") { step ->
                 when (step) {
                     RegisterStep.INPUT_KODE_KELAS -> StepKodeKelas(state.isLoading) { viewModel.submitKodeKelas(it) }
+
                     RegisterStep.INPUT_DATA_DIRI -> {
                         StepDataDiri(
                             role = role,
@@ -117,6 +118,7 @@ fun RegisterScreen(
                             onLoginClick = onNavigateToLogin
                         )
                     }
+
                     RegisterStep.INPUT_OTP ->
                         StepOtp(
                             isLoading = state.isLoading,
@@ -128,16 +130,21 @@ fun RegisterScreen(
                                 )
                             }
                         )
+
                     RegisterStep.UPLOAD_DOKUMEN -> {
                         StepUploadDokumen(
                             semester = viewModel.currentSemester,
                             isLoading = state.isLoading,
-                            onUploadFile = { type, file, docSemester, onSuccess ->
-                                viewModel.uploadDokumen(type, file, docSemester, onSuccess)
+                            onUploadFile = { type, file, docSemester, docId, onSuccess ->
+                                viewModel.uploadOrUpdateDokumen(type, file, docSemester, docId, onSuccess)
+                            },
+                            onDeleteFile = { docId, onSuccess ->
+                                viewModel.deleteDokumen(docId, onSuccess)
                             },
                             onFinish = { viewModel.finishDocumentUpload() }
                         )
                     }
+
                     RegisterStep.SUCCESS_REGISTER -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 }
             }

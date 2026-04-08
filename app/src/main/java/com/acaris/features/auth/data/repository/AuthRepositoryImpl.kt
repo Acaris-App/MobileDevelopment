@@ -1,6 +1,6 @@
 package com.acaris.features.auth.data.repository
 
-import com.acaris.core.datastore.AuthPreferences
+import com.acaris.core.network.datastore.AuthPreferences
 import com.acaris.features.auth.data.mapper.toDomain
 import com.acaris.features.auth.data.remote.datasource.AuthApiService
 import com.acaris.features.auth.data.remote.model.LoginRequestModel
@@ -62,7 +62,6 @@ class AuthRepositoryImpl @Inject constructor(
             val response = apiService.validateKodeKelas(ValidateKodeKelasRequest(kodeKelas))
             val body = response.body()
 
-            // 🌟 UBAH: Cek status == "success"
             if (response.isSuccessful && body?.status == "success") {
                 Result.success(Unit)
             } else {
@@ -79,7 +78,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun registerMahasiswa(
         npm: String, name: String, email: String, password: String,
-        angkatan: Int, currentSemester: Int, kodeKelas: String, profilePicture: File?
+        angkatan: Int, currentSemester: Int, ipk: Double, kodeKelas: String, profilePicture: File? // 🌟 TAMBAH IPK
     ): Result<Unit> {
         return try {
             val npmPart = npm.toRequestBody("text/plain".toMediaTypeOrNull())
@@ -87,9 +86,10 @@ class AuthRepositoryImpl @Inject constructor(
             val emailPart = email.toRequestBody("text/plain".toMediaTypeOrNull())
             val passwordPart = password.toRequestBody("text/plain".toMediaTypeOrNull())
             val angkatanPart = angkatan.toString().toRequestBody("text/plain".toMediaTypeOrNull())
-            val semesterPart = currentSemester.toString().toRequestBody("text/plain".toMediaTypeOrNull())
-            val kodeKelasPart = kodeKelas.toRequestBody("text/plain".toMediaTypeOrNull())
+            val currentSemesterPart = currentSemester.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+            val ipkPart = ipk.toString().toRequestBody("text/plain".toMediaTypeOrNull())
 
+            val kodeKelasPart = kodeKelas.toRequestBody("text/plain".toMediaTypeOrNull())
             val imagePart = profilePicture?.let { file ->
                 val mimeType = when (file.extension.lowercase()) {
                     "png" -> "image/png"
@@ -106,7 +106,8 @@ class AuthRepositoryImpl @Inject constructor(
                 email = emailPart,
                 password = passwordPart,
                 angkatan = angkatanPart,
-                semester = semesterPart,
+                current_semester = currentSemesterPart,
+                ipk = ipkPart,
                 kodeKelas = kodeKelasPart,
                 profile_picture = imagePart
             )
@@ -178,25 +179,74 @@ class AuthRepositoryImpl @Inject constructor(
         documentType: String,
         semester: Int?,
         file: File
-    ): Result<Unit> {
+    ): Result<Int> {
         return try {
             val requestFile = file.asRequestBody("application/pdf".toMediaTypeOrNull())
-            val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
+            val cleanOriginalName = file.name.replace(" ", "_")
+            val customFileName = if (semester != null) {
+                "${documentType}_semester_${semester}_${cleanOriginalName}"
+            } else {
+                "${documentType}_${cleanOriginalName}"
+            }
 
+            val filePart = MultipartBody.Part.createFormData("file", customFileName, requestFile)
             val typePart = documentType.toRequestBody("text/plain".toMediaTypeOrNull())
             val semesterPart = semester?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
 
             val response = apiService.uploadDokumen(typePart, semesterPart, filePart)
             val body = response.body()
 
-            // 🌟 UBAH: Cek status == "success"
-            if (response.isSuccessful && body?.status == "success") {
-                Result.success(Unit)
+            // 🌟 TANGKAP ID DARI BODY DATA
+            if (response.isSuccessful && body?.status == "success" && body.data != null) {
+                Result.success(body.data.id)
             } else {
                 Result.failure(Exception(body?.message ?: "Gagal mengunggah dokumen."))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Gagal terhubung ke server saat mengunggah file."))
+        }
+    }
+
+    override suspend fun updateDokumen(
+        documentId: Int,
+        documentType: String,
+        semester: Int?,
+        file: File
+    ): Result<Unit> {
+        return try {
+            val requestFile = file.asRequestBody("application/pdf".toMediaTypeOrNull())
+            val cleanOriginalName = file.name.replace(" ", "_")
+            val customFileName = if (semester != null) "${documentType}_semester_${semester}_${cleanOriginalName}" else "${documentType}_${cleanOriginalName}"
+
+            val filePart = MultipartBody.Part.createFormData("file", customFileName, requestFile)
+            val typePart = documentType.toRequestBody("text/plain".toMediaTypeOrNull())
+            val semesterPart = semester?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+
+            val response = apiService.updateDokumen(documentId, typePart, semesterPart, filePart)
+            val body = response.body()
+
+            if (response.isSuccessful && body?.status == "success") {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(body?.message ?: "Gagal memperbarui dokumen."))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Gagal terhubung ke server saat memperbarui file."))
+        }
+    }
+
+    override suspend fun deleteDokumen(documentId: Int): Result<Unit> {
+        return try {
+            val response = apiService.deleteDokumen(documentId)
+            val body = response.body()
+
+            if (response.isSuccessful && body?.status == "success") {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(body?.message ?: "Gagal menghapus dokumen."))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Gagal terhubung ke server saat menghapus file."))
         }
     }
 

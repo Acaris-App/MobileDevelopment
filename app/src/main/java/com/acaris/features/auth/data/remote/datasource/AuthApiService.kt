@@ -6,9 +6,12 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE // 🌟 IMPORT DELETE
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT // 🌟 IMPORT PUT
 import retrofit2.http.Part
+import retrofit2.http.Path // 🌟 IMPORT PATH
 
 interface AuthApiService {
 
@@ -26,7 +29,8 @@ interface AuthApiService {
         @Part("email") email: RequestBody,
         @Part("password") password: RequestBody,
         @Part("angkatan") angkatan: RequestBody,
-        @Part("semester") semester: RequestBody,
+        @Part("current_semester") current_semester: RequestBody,
+        @Part("ipk") ipk: RequestBody,
         @Part("kode_kelas") kodeKelas: RequestBody,
         @Part profile_picture: MultipartBody.Part?
     ): Response<BaseResponse<Any>>
@@ -42,11 +46,25 @@ interface AuthApiService {
     ): Response<BaseResponse<Any>>
 
     @Multipart
-    @POST("auth/register/upload-dokumen")
+    @POST("document/upload")
     suspend fun uploadDokumen(
         @Part("document_type") documentType: RequestBody,
         @Part("semester") semester: RequestBody?,
         @Part file: MultipartBody.Part
+    ): Response<BaseResponse<UploadDocumentResponseModel>> // 🌟 UBAH INI
+
+    @Multipart
+    @PUT("document/update/{document_id}")
+    suspend fun updateDokumen(
+        @Path("document_id") documentId: Int,
+        @Part("document_type") documentType: RequestBody,
+        @Part("semester") semester: RequestBody?,
+        @Part file: MultipartBody.Part
+    ): Response<BaseResponse<Any>>
+
+    @DELETE("document/delete/{document_id}")
+    suspend fun deleteDokumen(
+        @Path("document_id") documentId: Int
     ): Response<BaseResponse<Any>>
 
     @POST("auth/verify-register-otp")
