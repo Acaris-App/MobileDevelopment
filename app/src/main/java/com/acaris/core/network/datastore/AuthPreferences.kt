@@ -29,6 +29,12 @@ class AuthPreferences @Inject constructor(
         }
     }
 
+    fun getRole(): Flow<String?> {
+        return context.dataStore.data.map { preferences ->
+            preferences[ROLE_KEY]
+        }
+    }
+
     suspend fun saveAuthSession(token: String, role: String) {
         context.dataStore.edit { preferences ->
             preferences[TOKEN_KEY] = token
