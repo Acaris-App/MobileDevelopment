@@ -3,10 +3,13 @@ package com.acaris.features.auth.data.repository
 import com.acaris.core.network.datastore.AuthPreferences
 import com.acaris.features.auth.data.mapper.toDomain
 import com.acaris.features.auth.data.remote.datasource.AuthApiService
+import com.acaris.features.auth.data.remote.model.ForgotPasswordRequest
 import com.acaris.features.auth.data.remote.model.LoginRequestModel
 import com.acaris.features.auth.data.remote.model.ResendOtpRequest
+import com.acaris.features.auth.data.remote.model.ResetPasswordRequest
 import com.acaris.features.auth.data.remote.model.ValidateKodeKelasRequest
 import com.acaris.features.auth.data.remote.model.VerifyOtpRequest
+import com.acaris.features.auth.data.remote.model.VerifyResetOtpRequest
 import com.acaris.features.auth.domain.model.User
 import com.acaris.features.auth.domain.repository.AuthRepository
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -71,10 +74,6 @@ class AuthRepositoryImpl @Inject constructor(
             Result.failure(Exception("Gagal terhubung ke server. Periksa koneksi Anda."))
         }
     }
-
-    // ==========================================
-    // IMPLEMENTASI REGISTER (MULTIPART)
-    // ==========================================
 
     override suspend fun registerMahasiswa(
         npm: String, name: String, email: String, password: String,
@@ -284,6 +283,82 @@ class AuthRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    override suspend fun requestForgotPasswordOtp(email: String): Result<Unit> {
+        return try {
+            val response = apiService.requestForgotPasswordOtp(ForgotPasswordRequest(email))
+            val body = response.body()
+
+            if (response.isSuccessful && body?.status == "success") {
+                Result.success(Unit)
+            } else {
+                val errorString = response.errorBody()?.string()
+                val errorMessage = try {
+                    org.json.JSONObject(errorString ?: "").getString("message")
+                } catch (e: Exception) {
+                    body?.message ?: "Gagal mengirim permintaan OTP reset password."
+                }
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Gagal terhubung ke server. Periksa koneksi internet Anda."))
+        }
+    }
+
+    override suspend fun verifyResetPasswordOtp(email: String, otpCode: String): Result<Unit> {
+        return try {
+            val response = apiService.verifyResetPasswordOtp(VerifyResetOtpRequest(email, otpCode))
+            val body = response.body()
+
+            if (response.isSuccessful && body?.status == "success") {
+                Result.success(Unit)
+            } else {
+                val errorString = response.errorBody()?.string()
+                val errorMessage = try {
+                    org.json.JSONObject(errorString ?: "").getString("message")
+                } catch (e: Exception) {
+                    body?.message ?: "Kode OTP salah atau sudah kedaluwarsa."
+                }
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Gagal terhubung ke server. Periksa koneksi internet Anda."))
+        }
+    }
+
+    override suspend fun resetPassword(email: String, otpCode: String, newPassword: String): Result<Unit> {
+        return try {
+            val response = apiService.resetPassword(ResetPasswordRequest(email, otpCode, newPassword))
+            val body = response.body()
+
+            if (response.isSuccessful && body?.status == "success") {
+                Result.success(Unit)
+            } else {
+                val errorString = response.errorBody()?.string()
+                val errorMessage = try {
+                    org.json.JSONObject(errorString ?: "").getString("message")
+                } catch (e: Exception) {
+                    body?.message ?: "Gagal mereset password. Silakan coba lagi."
+                }
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Gagal terhubung ke server. Periksa koneksi internet Anda."))
+        }
+    }
+
+    override suspend fun logout(): Result<Unit> {
+        return try {
+            apiService.logout()
+
+            authPreferences.clearAuthSession()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            authPreferences.clearAuthSession()
+            Result.success(Unit)
         }
     }
 }

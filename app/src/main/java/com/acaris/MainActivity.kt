@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.acaris.core.navigation.Screen
 import com.acaris.core.ui.theme.AcarisTheme
+import com.acaris.features.auth.ui.screen.ForgotPasswordScreen
 import com.acaris.features.auth.ui.screen.LoginScreen
 import com.acaris.features.auth.ui.screen.RegisterScreen
 import com.acaris.features.onboarding.ui.screen.WelcomeScreen
@@ -154,9 +155,14 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(route = Screen.ForgotPassword.route) {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(text = "Halaman Lupa Password")
-                            }
+                            ForgotPasswordScreen(
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                },
+                                onResetSuccess = {
+                                    navController.popBackStack()
+                                }
+                            )
                         }
                     }
                 }

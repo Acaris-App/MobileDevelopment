@@ -6,12 +6,12 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.DELETE // 🌟 IMPORT DELETE
+import retrofit2.http.DELETE
 import retrofit2.http.Multipart
 import retrofit2.http.POST
-import retrofit2.http.PUT // 🌟 IMPORT PUT
+import retrofit2.http.PUT
 import retrofit2.http.Part
-import retrofit2.http.Path // 🌟 IMPORT PATH
+import retrofit2.http.Path
 
 interface AuthApiService {
 
@@ -51,7 +51,7 @@ interface AuthApiService {
         @Part("document_type") documentType: RequestBody,
         @Part("semester") semester: RequestBody?,
         @Part file: MultipartBody.Part
-    ): Response<BaseResponse<UploadDocumentResponseModel>> // 🌟 UBAH INI
+    ): Response<BaseResponse<UploadDocumentResponseModel>>
 
     @Multipart
     @PUT("document/update/{document_id}")
@@ -72,4 +72,16 @@ interface AuthApiService {
 
     @POST("auth/resend-otp")
     suspend fun resendOtp(@Body request: ResendOtpRequest): Response<BaseResponse<Any>>
+
+    @POST("auth/forgot-password")
+    suspend fun requestForgotPasswordOtp(@Body request: ForgotPasswordRequest): Response<BaseResponse<Any>>
+
+    @POST("auth/verify-reset-otp")
+    suspend fun verifyResetPasswordOtp(@Body request: VerifyResetOtpRequest): Response<BaseResponse<Any>>
+
+    @POST("auth/reset-password")
+    suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<BaseResponse<Any>>
+
+    @POST("auth/logout")
+    suspend fun logout(): Response<BaseResponse<Any>>
 }

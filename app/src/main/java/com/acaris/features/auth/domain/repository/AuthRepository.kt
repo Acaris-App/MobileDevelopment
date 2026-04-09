@@ -43,4 +43,12 @@ interface AuthRepository {
     ): Result<Unit>
 
     suspend fun resendOtp(email: String): Result<Unit>
+
+    suspend fun requestForgotPasswordOtp(email: String): Result<Unit>
+
+    suspend fun verifyResetPasswordOtp(email: String, otpCode: String): Result<Unit>
+
+    suspend fun resetPassword(email: String, otpCode: String, newPassword: String): Result<Unit>
+
+    suspend fun logout(): Result<Unit>
 }
