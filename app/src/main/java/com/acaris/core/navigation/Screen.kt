@@ -16,10 +16,11 @@ sealed class Screen(val route: String) {
     object Schedule : Screen("schedule_screen")
     object Chatbot : Screen("chatbot_screen")
     object KnowledgeBase : Screen("knowledge_base_screen")
-
     object MahasiswaBimbingan : Screen("mahasiswa_bimbingan_screen")
-
     object UserManagement : Screen("user_management_screen")
+
+    object EditDataDiri : Screen("edit_data_diri_screen")
+    object EditDokumen : Screen("edit_dokumen_screen")
 
     object DetailMahasiswa : Screen("detail_mahasiswa_screen/{mahasiswaId}") {
         fun createRoute(mahasiswaId: String) = "detail_mahasiswa_screen/$mahasiswaId"

@@ -45,28 +45,6 @@ interface AuthApiService {
         @Part profile_picture: MultipartBody.Part?
     ): Response<BaseResponse<Any>>
 
-    @Multipart
-    @POST("document/upload")
-    suspend fun uploadDokumen(
-        @Part("document_type") documentType: RequestBody,
-        @Part("semester") semester: RequestBody?,
-        @Part file: MultipartBody.Part
-    ): Response<BaseResponse<UploadDocumentResponseModel>>
-
-    @Multipart
-    @PUT("document/update/{document_id}")
-    suspend fun updateDokumen(
-        @Path("document_id") documentId: Int,
-        @Part("document_type") documentType: RequestBody,
-        @Part("semester") semester: RequestBody?,
-        @Part file: MultipartBody.Part
-    ): Response<BaseResponse<Any>>
-
-    @DELETE("document/delete/{document_id}")
-    suspend fun deleteDokumen(
-        @Path("document_id") documentId: Int
-    ): Response<BaseResponse<Any>>
-
     @POST("auth/verify-register-otp")
     suspend fun verifyOtp(@Body request: VerifyOtpRequest): Response<BaseResponse<LoginResponseModel>>
 

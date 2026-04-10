@@ -2,7 +2,11 @@ package com.acaris.features.auth.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.acaris.features.auth.domain.usecase.*
+import com.acaris.features.auth.domain.usecase.* // UseCase asli Auth
+// 🌟 IMPORT USE CASE DARI FITUR DOKUMEN
+import com.acaris.features.documents_mahasiswa.domain.usecase.UploadDocumentUseCase
+import com.acaris.features.documents_mahasiswa.domain.usecase.UpdateDocumentUseCase
+import com.acaris.features.documents_mahasiswa.domain.usecase.DeleteDocumentUseCase
 import com.acaris.features.auth.presentation.mapper.toPresentation
 import com.acaris.features.auth.presentation.model.RegisterState
 import com.acaris.features.auth.presentation.model.RegisterStep
@@ -21,11 +25,11 @@ class RegisterViewModel @Inject constructor(
     private val registerMahasiswaUseCase: RegisterMahasiswaUseCase,
     private val registerDosenUseCase: RegisterDosenUseCase,
     private val verifyOtpUseCase: VerifyOtpUseCase,
-    private val uploadDokumenUseCase: UploadDokumenUseCase,
     private val resendOtpUseCase: ResendOtpUseCase,
-    // 🌟 INJEKSI 2 USECASE BARU KITA
-    private val updateDokumenUseCase: UpdateDokumenUseCase,
-    private val deleteDokumenUseCase: DeleteDokumenUseCase
+    // 🌟 Inject UseCase dokumen yang baru
+    private val uploadDocumentUseCase: UploadDocumentUseCase,
+    private val updateDocumentUseCase: UpdateDocumentUseCase,
+    private val deleteDocumentUseCase: DeleteDocumentUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterState())
@@ -120,35 +124,33 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    // 🌟 FUNGSI UPLOAD ATAU UPDATE (DIPANGGIL DARI UI KETIKA PILIH FILE)
+    // 🌟 UPDATE: documentId sekarang String, bukan Int
     fun uploadOrUpdateDokumen(
         documentType: String,
         file: File,
         documentSemester: Int?,
-        existingDocId: Int?, // Jika null = Upload Baru. Jika ada angka = Update.
-        onSuccess: (Int) -> Unit
+        existingDocId: String?, // 🌟 Ubah jadi String?
+        onSuccess: (String) -> Unit // 🌟 Ubah jadi (String)
     ) {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
             if (existingDocId == null) {
-                // MURNI LEWAT USECASE UPLOAD
-                val result = uploadDokumenUseCase(documentType, documentSemester, file)
+                val result = uploadDocumentUseCase(documentType, documentSemester, file) // 🌟 Panggil UseCase baru
                 result.fold(
-                    onSuccess = { newId ->
+                    onSuccess = { document ->
                         _uiState.update { it.copy(isLoading = false) }
-                        onSuccess(newId)
+                        onSuccess(document.id) // 🌟 Ambil ID dari objek Document
                     },
                     onFailure = { e ->
                         _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
                     }
                 )
             } else {
-                // MURNI LEWAT USECASE UPDATE
-                val result = updateDokumenUseCase(existingDocId, documentType, documentSemester, file)
+                val result = updateDocumentUseCase(existingDocId, documentSemester, file) // 🌟 Panggil UseCase baru
                 result.fold(
-                    onSuccess = {
+                    onSuccess = { document ->
                         _uiState.update { it.copy(isLoading = false) }
-                        onSuccess(existingDocId) // Kembalikan ID yang sama karena tidak berubah
+                        onSuccess(document.id)
                     },
                     onFailure = { e ->
                         _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
@@ -158,12 +160,11 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    // 🌟 FUNGSI DELETE (DIPANGGIL DARI UI KETIKA KLIK TOMBOL X)
-    fun deleteDokumen(documentId: Int, onSuccess: () -> Unit) {
+    // 🌟 UPDATE: documentId sekarang String
+    fun deleteDokumen(documentId: String, onSuccess: () -> Unit) {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
-            // MURNI LEWAT USECASE DELETE
-            val result = deleteDokumenUseCase(documentId)
+            val result = deleteDocumentUseCase(documentId) // 🌟 Panggil UseCase baru
             result.fold(
                 onSuccess = {
                     _uiState.update { it.copy(isLoading = false) }

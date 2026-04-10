@@ -32,6 +32,9 @@ import com.acaris.core.navigation.Screen
 import com.acaris.core.network.AuthEvent
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.features.main.presentation.viewmodel.MainViewModel
+import com.acaris.features.profile.ui.screen.EditDataDiriScreen
+import com.acaris.features.profile.ui.screen.EditDocumentScreen
+import com.acaris.features.profile.ui.screen.ProfileScreen
 
 object AcarisIcons {
     val Schedule: ImageVector = Icons.Default.DateRange
@@ -73,13 +76,19 @@ fun MainScreen(
             },
             onDismiss = { showLogoutDialog = false },
             content = {
-                Text(
-                    text = "Apakah Anda yakin ingin keluar dari Acaris?",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Keluar",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Apakah Anda yakin ingin keluar dari Acaris?",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
             }
         )
     }
@@ -113,9 +122,13 @@ fun MainScreen(
         else -> emptyList()
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    val isMainMenu = menus.any { it.first == currentRoute }
 
-        Box(modifier = Modifier.fillMaxSize().padding(bottom = 100.dp, top = 80.dp)) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        val topPadding = if (isMainMenu) 80.dp else 0.dp
+        val bottomPadding = if (isMainMenu) 100.dp else 0.dp
+
+        Box(modifier = Modifier.fillMaxSize().padding(bottom = bottomPadding, top = topPadding)) {
             val startDest = menus.firstOrNull()?.first ?: "home_mahasiswa"
 
             NavHost(
@@ -130,55 +143,80 @@ fun MainScreen(
                 composable(Screen.MahasiswaBimbingan.route) { ScreenPlaceholder("Daftar Mahasiswa") }
                 composable(Screen.KnowledgeBase.route) { ScreenPlaceholder("Knowledge Base") }
                 composable(Screen.UserManagement.route) { ScreenPlaceholder("Manajemen Pengguna") }
-                composable(Screen.Profile.route) { ScreenPlaceholder("Profil Pengguna") }
+
+                composable(Screen.Profile.route) {
+                    ProfileScreen(
+                        onNavigateBack = {
+                            bottomNavController.navigate(startDest) {
+                                popUpTo(startDest) { inclusive = true }
+                            }
+                        },
+                        onNavigateToEditDataDiri = { bottomNavController.navigate(Screen.EditDataDiri.route) },
+                        onNavigateToEditDokumen = { bottomNavController.navigate(Screen.EditDokumen.route) }
+                    )
+                }
+
+                composable(Screen.EditDataDiri.route) {
+                    EditDataDiriScreen(
+                        onNavigateBack = { bottomNavController.popBackStack() }
+                    )
+                }
+
+                composable(Screen.EditDokumen.route) {
+                    EditDocumentScreen(
+                        onNavigateBack = { bottomNavController.popBackStack() }
+                    )
+                }
             }
         }
 
-        TopAppBar(
-            title = {
-                Row(
-                    modifier = Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = {
-                            val homeRoute = menus.firstOrNull()?.first ?: "home_mahasiswa"
-                            bottomNavController.navigate(homeRoute) {
-                                popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
+        if (isMainMenu) {
+            TopAppBar(
+                title = {
+                    Row(
+                        modifier = Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
+                                val homeRoute = menus.firstOrNull()?.first ?: "home_mahasiswa"
+                                bottomNavController.navigate(homeRoute) {
+                                    popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                             }
-                        }
-                    ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.logo),
-                        contentDescription = "Logo Acaris",
+                        ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
+                            contentDescription = "Logo Acaris",
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "ACARIS", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = { showLogoutDialog = true },
                         modifier = Modifier
-                            .size(32.dp)
+                            .padding(end = 16.dp)
+                            .size(40.dp)
                             .clip(CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "ACARIS", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                }
-            },
-            actions = {
-                IconButton(
-                    onClick = { showLogoutDialog = true },
-                    modifier = Modifier
-                        .padding(end = 16.dp)
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE2E8F0))
-                        .border(1.dp, Color.Black, CircleShape)
-                ) {
-                    Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout", tint = Color.Black, modifier = Modifier.size(20.dp))
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-        )
+                            .background(Color(0xFFE2E8F0))
+                            .border(1.dp, Color.Black, CircleShape)
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout", tint = Color.Black, modifier = Modifier.size(20.dp))
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+            )
+        }
 
-        if (menus.isNotEmpty()) {
+        if (isMainMenu && menus.isNotEmpty()) {
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)

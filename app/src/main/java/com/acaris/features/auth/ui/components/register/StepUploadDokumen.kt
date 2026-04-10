@@ -34,14 +34,14 @@ import com.acaris.core.ui.components.DottedUploadBox
 import com.acaris.core.utils.FileUtils
 import java.io.File
 
-data class UploadedDocInfo(val fileName: String, val documentId: Int)
+data class UploadedDocInfo(val fileName: String, val documentId: String)
 
 @Composable
 fun StepUploadDokumen(
     semester: Int,
     isLoading: Boolean,
-    onUploadFile: (String, File, Int?, Int?, (Int) -> Unit) -> Unit,
-    onDeleteFile: (Int, () -> Unit) -> Unit,
+    onUploadFile: (String, File, Int?, String?, (String) -> Unit) -> Unit,
+    onDeleteFile: (String, () -> Unit) -> Unit,
     onFinish: () -> Unit
 ) {
     val context = LocalContext.current

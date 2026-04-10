@@ -26,12 +26,11 @@ fun CustomPrimaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true // 🌟 PARAMETER BARU DITAMBAHKAN
+    enabled: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    // Animasi hanya berjalan jika tombol aktif
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled) 0.92f else 1f,
         animationSpec = spring(
@@ -46,11 +45,10 @@ fun CustomPrimaryButton(
         modifier = modifier.scale(scale).height(60.dp),
         shape = RoundedCornerShape(30.dp),
         interactionSource = interactionSource,
-        enabled = enabled, // 🌟 DISAMBUNGKAN KE KOMPONEN BAWAAN
+        enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.background,
-            // 🌟 Warna saat tombol mati (Disabled)
             disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
             disabledContentColor = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
         )
@@ -68,12 +66,11 @@ fun CustomOutlinedButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true // 🌟 PARAMETER BARU DITAMBAHKAN
+    enabled: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    // Animasi hanya berjalan jika tombol aktif
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled) 0.92f else 1f,
         animationSpec = spring(
@@ -88,13 +85,11 @@ fun CustomOutlinedButton(
         modifier = modifier.scale(scale).height(60.dp),
         shape = RoundedCornerShape(30.dp),
         interactionSource = interactionSource,
-        enabled = enabled, // 🌟 DISAMBUNGKAN KE KOMPONEN BAWAAN
-        // 🌟 Border memudar saat tombol mati
+        enabled = enabled,
         border = BorderStroke(2.dp, if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.primary,
             containerColor = MaterialTheme.colorScheme.background,
-            // 🌟 Teks memudar saat tombol mati
             disabledContentColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         )
     ) {
