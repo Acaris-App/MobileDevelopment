@@ -60,6 +60,9 @@ interface AuthApiService {
     @POST("auth/reset-password")
     suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<BaseResponse<Any>>
 
+    @POST("auth/change-password")
+    suspend fun changePassword(@Body request: ChangePasswordRequest): Response<BaseResponse<Any>>
+
     @POST("auth/logout")
     suspend fun logout(): Response<BaseResponse<Any>>
 }

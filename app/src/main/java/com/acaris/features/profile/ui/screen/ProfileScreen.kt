@@ -32,6 +32,7 @@ fun ProfileScreen(
     onNavigateBack: () -> Unit,
     onNavigateToEditDataDiri: () -> Unit,
     onNavigateToEditDokumen: () -> Unit,
+    onNavigateToChangePassword: () -> Unit, // 🌟 TAMBAHAN BARU
     profileViewModel: ProfileViewModel = hiltViewModel(),
     documentViewModel: DocumentViewModel = hiltViewModel()
 ) {
@@ -102,7 +103,6 @@ fun ProfileScreen(
                                 Text("Dokumen Akademik", fontWeight = FontWeight.Bold, color = Color.Gray)
                                 Spacer(modifier = Modifier.height(16.dp))
 
-                                // 🌟 FIX 2: Menambahkan HorizontalDivider di antara dokumen
                                 documentState.documents.forEachIndexed { index, doc ->
                                     com.acaris.features.documents_mahasiswa.ui.components.DocumentCard(
                                         document = doc,
@@ -113,7 +113,6 @@ fun ProfileScreen(
                                         modifier = Modifier.fillMaxWidth()
                                     )
 
-                                    // Munculkan garis pembatas jika bukan item terakhir
                                     if (index < documentState.documents.size - 1) {
                                         Spacer(modifier = Modifier.height(12.dp))
                                         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
@@ -143,7 +142,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 OutlinedButton(
-                    onClick = { /* TODO */ },
+                    onClick = onNavigateToChangePassword, // 🌟 DIPANGGIL DI SINI
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error)

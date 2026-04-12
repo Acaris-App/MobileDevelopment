@@ -21,6 +21,7 @@ sealed class Screen(val route: String) {
 
     object EditDataDiri : Screen("edit_data_diri_screen")
     object EditDokumen : Screen("edit_dokumen_screen")
+    object ChangePassword : Screen("change_password_screen")
 
     object DetailMahasiswa : Screen("detail_mahasiswa_screen/{mahasiswaId}") {
         fun createRoute(mahasiswaId: String) = "detail_mahasiswa_screen/$mahasiswaId"

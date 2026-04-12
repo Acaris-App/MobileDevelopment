@@ -31,6 +31,7 @@ import com.acaris.R
 import com.acaris.core.navigation.Screen
 import com.acaris.core.network.AuthEvent
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.features.auth.ui.screen.ChangePasswordScreen // 🌟 IMPORT INI
 import com.acaris.features.main.presentation.viewmodel.MainViewModel
 import com.acaris.features.profile.ui.screen.EditDataDiriScreen
 import com.acaris.features.profile.ui.screen.EditDocumentScreen
@@ -63,7 +64,6 @@ fun MainScreen(
         }
     }
 
-    // Dialog Logout
     if (showLogoutDialog) {
         CustomDialog(
             showDialog = true,
@@ -152,7 +152,8 @@ fun MainScreen(
                             }
                         },
                         onNavigateToEditDataDiri = { bottomNavController.navigate(Screen.EditDataDiri.route) },
-                        onNavigateToEditDokumen = { bottomNavController.navigate(Screen.EditDokumen.route) }
+                        onNavigateToEditDokumen = { bottomNavController.navigate(Screen.EditDokumen.route) },
+                        onNavigateToChangePassword = { bottomNavController.navigate(Screen.ChangePassword.route) } // 🌟 TAMBAHAN BARU
                     )
                 }
 
@@ -164,6 +165,13 @@ fun MainScreen(
 
                 composable(Screen.EditDokumen.route) {
                     EditDocumentScreen(
+                        onNavigateBack = { bottomNavController.popBackStack() }
+                    )
+                }
+
+                // 🌟 TAMBAHAN BARU: Rute Ganti Password
+                composable(Screen.ChangePassword.route) {
+                    ChangePasswordScreen(
                         onNavigateBack = { bottomNavController.popBackStack() }
                     )
                 }

@@ -3,6 +3,7 @@ package com.acaris.features.auth.data.repository
 import com.acaris.core.network.datastore.AuthPreferences
 import com.acaris.features.auth.data.mapper.toDomain
 import com.acaris.features.auth.data.remote.datasource.AuthApiService
+import com.acaris.features.auth.data.remote.model.ChangePasswordRequest
 import com.acaris.features.auth.data.remote.model.ForgotPasswordRequest
 import com.acaris.features.auth.data.remote.model.LoginRequestModel
 import com.acaris.features.auth.data.remote.model.ResendOtpRequest
@@ -266,6 +267,31 @@ class AuthRepositoryImpl @Inject constructor(
                     org.json.JSONObject(errorString ?: "").getString("message")
                 } catch (e: Exception) {
                     body?.message ?: "Gagal mereset password. Silakan coba lagi."
+                }
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Gagal terhubung ke server. Periksa koneksi internet Anda."))
+        }
+    }
+
+    // Tambahkan di dalam class AuthRepositoryImpl
+    override suspend fun changePassword(oldPassword: String, newPassword: String): Result<Unit> {
+        return try {
+            val request =
+                ChangePasswordRequest(oldPassword = oldPassword, newPassword = newPassword)
+            val response = apiService.changePassword(request)
+            val body = response.body()
+
+            if (response.isSuccessful && body?.status == "success") {
+                Result.success(Unit)
+            } else {
+                // Tangkap pesan error dari server (misal: "Password lama salah")
+                val errorString = response.errorBody()?.string()
+                val errorMessage = try {
+                    org.json.JSONObject(errorString ?: "").getString("message")
+                } catch (e: Exception) {
+                    body?.message ?: "Gagal mengubah password. Silakan coba lagi."
                 }
                 Result.failure(Exception(errorMessage))
             }
