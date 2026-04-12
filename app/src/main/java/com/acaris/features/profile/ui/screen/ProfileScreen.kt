@@ -23,6 +23,9 @@ import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.documents_mahasiswa.presentation.viewmodel.DocumentViewModel
 import com.acaris.features.profile.presentation.viewmodel.ProfileViewModel
 import com.acaris.features.profile.ui.component.ProfileInfoCard
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
 @Composable
 fun ProfileScreen(
@@ -37,13 +40,26 @@ fun ProfileScreen(
     val scrollState = rememberScrollState()
     val uriHandler = LocalUriHandler.current
 
-    LaunchedEffect(profileState.userProfile?.role) {
-        if (profileState.userProfile?.role == "mahasiswa") {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                profileViewModel.loadProfile()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    val isMahasiswa = profileState.userProfile?.role == "mahasiswa"
+    LaunchedEffect(isMahasiswa) {
+        if (isMahasiswa) {
             documentViewModel.loadDocuments()
         }
     }
 
-    // 🌟 FIX 6: Scaffold tidak pakai topBar lagi
     Scaffold { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -56,7 +72,6 @@ fun ProfileScreen(
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 🌟 FIX 6: Judul Profil sekarang ada di dalam scroll
                 Text(
                     text = "Profil",
                     style = MaterialTheme.typography.headlineMedium,
@@ -87,16 +102,23 @@ fun ProfileScreen(
                                 Text("Dokumen Akademik", fontWeight = FontWeight.Bold, color = Color.Gray)
                                 Spacer(modifier = Modifier.height(16.dp))
 
-                                documentState.documents.forEach { doc ->
-                                    // Panggil komponen DocumentCard yang kita buat di fitur dokumen_mahasiswa
+                                // 🌟 FIX 2: Menambahkan HorizontalDivider di antara dokumen
+                                documentState.documents.forEachIndexed { index, doc ->
                                     com.acaris.features.documents_mahasiswa.ui.components.DocumentCard(
                                         document = doc,
                                         onClick = {
                                             if (doc.fileUrl.isNotEmpty()) uriHandler.openUri(doc.fileUrl)
                                         },
                                         showDelete = false,
-                                        modifier = Modifier.padding(bottom = 8.dp)
+                                        modifier = Modifier.fillMaxWidth()
                                     )
+
+                                    // Munculkan garis pembatas jika bukan item terakhir
+                                    if (index < documentState.documents.size - 1) {
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                    }
                                 }
 
                                 if (documentState.documents.isEmpty()) {

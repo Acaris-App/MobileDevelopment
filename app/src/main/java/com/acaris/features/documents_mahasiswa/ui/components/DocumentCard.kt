@@ -1,6 +1,5 @@
 package com.acaris.features.documents_mahasiswa.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,16 +27,16 @@ val Document.displayTitle: String
 @Composable
 fun DocumentCard(
     document: Document,
-    onClick: () -> Unit, // 🌟 Aksi saat kartu ditekan untuk buka PDF
+    onClick: () -> Unit,
     onDeleteClick: ((String) -> Unit)? = null,
-    showDelete: Boolean = true, // 🌟 Tombol hapus bisa disembunyikan
+    showDelete: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .clickable { onClick() }, // 🌟 Buat kartu bisa diklik
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -75,7 +74,6 @@ fun DocumentCard(
                 )
             }
 
-            // 🌟 Tampilkan tombol hapus hanya jika showDelete = true
             if (showDelete && onDeleteClick != null) {
                 IconButton(onClick = { onDeleteClick(document.id) }) {
                     Icon(

@@ -1,5 +1,6 @@
 package com.acaris.features.profile.ui.screen
 
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -19,11 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.utils.ImageUtils
@@ -37,31 +42,24 @@ fun EditDataDiriScreen(
 ) {
     val state by profileViewModel.uiState.collectAsState()
     val context = LocalContext.current
-
-    // 🌟 FIX 2: State untuk Scroll
     val scrollState = rememberScrollState()
 
-    // State lokal untuk form input
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var identifier by remember { mutableStateOf("") }
-
-    // 🌟 FIX 1: State Baru untuk Mahasiswa
     var angkatan by remember { mutableStateOf("") }
     var ipk by remember { mutableStateOf("") }
     var semester by remember { mutableStateOf("") }
 
-    // LAUNCHER UNTUK UPLOAD FOTO (Memakai ImageUtils)
+    var selectedPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
     val photoPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
-            val file = ImageUtils.uriToFile(context, uri)
-            if (file != null) {
-                profileViewModel.updateProfilePhoto(file)
-            }
+            selectedPhotoUri = uri
         }
     }
 
-    // Isi form otomatis saat data profile tersedia
     LaunchedEffect(state.userProfile) {
         state.userProfile?.let {
             name = it.name
@@ -73,10 +71,85 @@ fun EditDataDiriScreen(
         }
     }
 
+    if (showConfirmDialog) {
+        CustomDialog(
+            showDialog = true,
+            onDismissRequest = { showConfirmDialog = false },
+            content = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Konfirmasi", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Apakah Anda yakin ingin menyimpan perubahan data diri ini?",
+                        textAlign = TextAlign.Center,
+                        color = Color.Gray
+                    )
+                }
+            },
+            confirmText = "Simpan",
+            onConfirm = {
+                showConfirmDialog = false
+
+                val textChanged = state.userProfile?.let {
+                    name != it.name ||
+                            angkatan != (it.angkatan?.toString() ?: "") ||
+                            ipk != (it.ipk?.toString() ?: "") ||
+                            semester != (it.currentSemester?.toString() ?: "")
+                } ?: true
+
+                if (textChanged) {
+                    profileViewModel.updateProfile(
+                        name = name,
+                        email = email,
+                        identifier = identifier,
+                        angkatan = angkatan.toIntOrNull(),
+                        ipk = ipk.toDoubleOrNull(),
+                        semester = semester.toIntOrNull()
+                    )
+                }
+
+                selectedPhotoUri?.let { uri ->
+                    val file = ImageUtils.uriToFile(context, uri)
+                    if (file != null) {
+                        profileViewModel.updateProfilePhoto(file)
+                    }
+                }
+            },
+            dismissText = "Batal",
+            onDismiss = { showConfirmDialog = false }
+        )
+    }
+
+    if (state.successMessage != null) {
+        CustomDialog(
+            showDialog = true,
+            onDismissRequest = {
+                profileViewModel.clearMessages()
+                onNavigateBack()
+            },
+            content = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Berhasil", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = state.successMessage ?: "",
+                        textAlign = TextAlign.Center,
+                        color = Color.DarkGray
+                    )
+                }
+            },
+            confirmText = "OK",
+            onConfirm = {
+                profileViewModel.clearMessages()
+                onNavigateBack()
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {}, // 🌟 FIX 5: Logo dan judul dihapus di sub-screen
+                title = {},
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali") }
                 },
@@ -90,10 +163,9 @@ fun EditDataDiriScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 24.dp)
-                    .verticalScroll(scrollState), // 🌟 FIX 2: Terapkan Scroll
+                    .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Judul & Keterangan
                 Text("Edit Data Diri", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -104,7 +176,6 @@ fun EditDataDiriScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Avatar dengan Icon Edit
                 Box(contentAlignment = Alignment.BottomEnd) {
                     Box(
                         modifier = Modifier
@@ -113,10 +184,18 @@ fun EditDataDiriScreen(
                             .clip(CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        /* * TODO: Jika kamu pakai library Coil nanti, ganti Icon ini dengan:
-                         * AsyncImage(model = state.userProfile?.profilePictureUrl, contentDescription = null)
-                         */
-                        Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.primary)
+                        val imageToLoad = selectedPhotoUri ?: state.userProfile?.profilePictureUrl
+
+                        if (imageToLoad == null || imageToLoad.toString().isEmpty()) {
+                            Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.primary)
+                        } else {
+                            AsyncImage(
+                                model = imageToLoad,
+                                contentDescription = "Foto Profil",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
 
                     IconButton(
@@ -132,7 +211,6 @@ fun EditDataDiriScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Form Input Dasar
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
@@ -147,7 +225,14 @@ fun EditDataDiriScreen(
                     onValueChange = { email = it },
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium
+                    shape = MaterialTheme.shapes.medium,
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = Color.DarkGray,
+                        disabledBorderColor = Color.LightGray,
+                        disabledLabelColor = Color.Gray,
+                        disabledContainerColor = Color(0xFFF3F4F6)
+                    )
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -156,62 +241,35 @@ fun EditDataDiriScreen(
                     onValueChange = { identifier = it },
                     label = { Text(if (state.userProfile?.role == "mahasiswa") "NPM" else "NIP") },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium
+                    shape = MaterialTheme.shapes.medium,
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = Color.DarkGray,
+                        disabledBorderColor = Color.LightGray,
+                        disabledLabelColor = Color.Gray,
+                        disabledContainerColor = Color(0xFFF3F4F6)
+                    )
                 )
 
-                // 🌟 FIX 1: Tampilkan Field Tambahan HANYA untuk Mahasiswa
                 if (state.userProfile?.role == "mahasiswa") {
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        OutlinedTextField(
-                            value = angkatan,
-                            onValueChange = { angkatan = it },
-                            label = { Text("Angkatan") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.weight(1f),
-                            shape = MaterialTheme.shapes.medium
-                        )
-                        OutlinedTextField(
-                            value = semester,
-                            onValueChange = { semester = it },
-                            label = { Text("Semester") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.weight(1f),
-                            shape = MaterialTheme.shapes.medium
-                        )
+                        OutlinedTextField(value = angkatan, onValueChange = { angkatan = it }, label = { Text("Angkatan") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), shape = MaterialTheme.shapes.medium)
+                        OutlinedTextField(value = semester, onValueChange = { semester = it }, label = { Text("Semester") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), shape = MaterialTheme.shapes.medium)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
-                        value = ipk,
-                        onValueChange = { ipk = it },
-                        label = { Text("IPK") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium
-                    )
+                    OutlinedTextField(value = ipk, onValueChange = { ipk = it }, label = { Text("IPK") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium)
                 }
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                // Tombol Kirim di bawah
                 CustomPrimaryButton(
                     text = "Kirim",
-                    onClick = {
-                        // 🌟 MEMANGGIL VIEWMODEL DENGAN DATA BARU
-                        profileViewModel.updateProfile(
-                            name = name,
-                            email = email,
-                            identifier = identifier,
-                            angkatan = angkatan.toIntOrNull(),
-                            ipk = ipk.toDoubleOrNull(),
-                            semester = semester.toIntOrNull()
-                        )
-                    },
+                    onClick = { showConfirmDialog = true },
                     modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
                 )
             }
 
-            // Tampilkan loading saat fetch profil atau upload foto
             if (state.isLoading || state.isUploadingPhoto) { CustomLoadingOverlay(isLoading = true) }
         }
     }

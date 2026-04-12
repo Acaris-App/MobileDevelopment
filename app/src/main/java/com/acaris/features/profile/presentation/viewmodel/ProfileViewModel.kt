@@ -26,7 +26,6 @@ class ProfileViewModel @Inject constructor(
     val uiState: StateFlow<ProfileState> = _uiState.asStateFlow()
 
     init {
-        // Otomatis ambil data saat halaman Profil dibuka
         loadProfile()
     }
 
@@ -57,11 +56,12 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val result = updateProfileUseCase(name, email, identifier, angkatan, ipk, semester)
             result.fold(
-                onSuccess = { updatedProfile ->
+                onSuccess = {
+                    loadProfile()
+
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            userProfile = updatedProfile,
                             successMessage = "Data profil berhasil diperbarui!"
                         )
                     }
@@ -78,15 +78,12 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val result = updatePhotoUseCase(photoFile)
             result.fold(
-                onSuccess = { newPhotoUrl ->
-                    // Salin profil lama, tapi ganti URL fotonya dengan yang baru
-                    val currentProfile = _uiState.value.userProfile
-                    val updatedProfile = currentProfile?.copy(profilePictureUrl = newPhotoUrl)
+                onSuccess = {
+                    loadProfile()
 
                     _uiState.update {
                         it.copy(
                             isUploadingPhoto = false,
-                            userProfile = updatedProfile,
                             successMessage = "Foto profil berhasil diubah!"
                         )
                     }
@@ -98,7 +95,6 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    // Fungsi untuk menghapus pesan error/sukses setelah ditampilkan (misal lewat Toast/Snackbar)
     fun clearMessages() {
         _uiState.update { it.copy(errorMessage = null, successMessage = null) }
     }

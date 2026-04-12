@@ -14,9 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.acaris.features.profile.domain.model.UserProfile
 
 @Composable
@@ -27,7 +29,7 @@ fun ProfileInfoCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp), // Sudut melengkung sesuai wireframe
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -36,24 +38,33 @@ fun ProfileInfoCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Avatar Placeholder (Nanti bisa diganti AsyncImage Coil kalau ada URL foto)
                 Box(
                     modifier = Modifier
                         .size(100.dp)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
+                        .clip(CircleShape), // 🌟 Bulatkan foto
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Avatar",
-                        modifier = Modifier.size(60.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    // 🌟 FIX: Gunakan Coil untuk menampilkan foto di halaman utama
+                    if (userProfile.profilePictureUrl.isNullOrEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Avatar",
+                            modifier = Modifier.size(60.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        AsyncImage(
+                            model = userProfile.profilePictureUrl,
+                            contentDescription = "Foto Profil",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Data Lines
                 ProfileDataLine(label = "Nama", value = userProfile.name)
                 ProfileDataLine(label = "Email", value = userProfile.email)
                 ProfileDataLine(
@@ -70,12 +81,11 @@ fun ProfileInfoCard(
                 }
             }
 
-            // Tombol Edit di pojok kanan bawah
             IconButton(
                 onClick = onEditClick,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .offset(x = 12.dp, y = 12.dp) // Digeser sedikit keluar sesuai wireframe
+                    .offset(x = 12.dp, y = 12.dp)
                     .border(2.dp, Color.Black, CircleShape)
                     .background(Color.White, CircleShape)
             ) {

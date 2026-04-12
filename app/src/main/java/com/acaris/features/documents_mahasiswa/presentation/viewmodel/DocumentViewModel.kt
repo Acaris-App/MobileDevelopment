@@ -41,12 +41,17 @@ class DocumentViewModel @Inject constructor(
     }
 
     fun uploadDocument(type: String, semester: Int?, file: File) {
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, errorMessage = null, successMessage = null) }
         viewModelScope.launch {
             val result = uploadDocumentUseCase(type, semester, file)
             result.fold(
                 onSuccess = {
-                    _uiState.update { it.copy(isLoading = false) }
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = "Dokumen $type berhasil diunggah!"
+                        )
+                    }
                     loadDocuments()
                 },
                 onFailure = { e ->
@@ -57,12 +62,18 @@ class DocumentViewModel @Inject constructor(
     }
 
     fun deleteDocument(documentId: String) {
-        _uiState.update { it.copy(isLoading = true) }
+        _uiState.update { it.copy(isLoading = true, errorMessage = null, successMessage = null) }
         viewModelScope.launch {
             val result = deleteDocumentUseCase(documentId)
             result.fold(
                 onSuccess = {
-                    _uiState.update { it.copy(isLoading = false, isSuccessDelete = true) }
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isSuccessDelete = true,
+                            successMessage = "Dokumen berhasil dihapus!"
+                        )
+                    }
                     loadDocuments()
                 },
                 onFailure = { e ->
@@ -74,5 +85,9 @@ class DocumentViewModel @Inject constructor(
 
     fun resetDeleteState() {
         _uiState.update { it.copy(isSuccessDelete = false) }
+    }
+
+    fun clearMessages() {
+        _uiState.update { it.copy(errorMessage = null, successMessage = null) }
     }
 }
