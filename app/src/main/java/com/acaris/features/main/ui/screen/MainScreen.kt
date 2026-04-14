@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
@@ -31,7 +32,8 @@ import com.acaris.R
 import com.acaris.core.navigation.Screen
 import com.acaris.core.network.AuthEvent
 import com.acaris.core.ui.components.CustomDialog
-import com.acaris.features.auth.ui.screen.ChangePasswordScreen // 🌟 IMPORT INI
+import com.acaris.features.auth.ui.screen.ChangePasswordScreen
+import com.acaris.features.dashboard.ui.screen.DosenDashboardScreen
 import com.acaris.features.main.presentation.viewmodel.MainViewModel
 import com.acaris.features.profile.ui.screen.EditDataDiriScreen
 import com.acaris.features.profile.ui.screen.EditDocumentScreen
@@ -125,8 +127,8 @@ fun MainScreen(
     val isMainMenu = menus.any { it.first == currentRoute }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        val topPadding = if (isMainMenu) 80.dp else 0.dp
-        val bottomPadding = if (isMainMenu) 100.dp else 0.dp
+        val topPadding = if (isMainMenu) 64.dp else 0.dp
+        val bottomPadding = 0.dp
 
         Box(modifier = Modifier.fillMaxSize().padding(bottom = bottomPadding, top = topPadding)) {
             val startDest = menus.firstOrNull()?.first ?: "home_mahasiswa"
@@ -136,7 +138,17 @@ fun MainScreen(
                 startDestination = startDest
             ) {
                 composable(Screen.HomeMahasiswa.route) { ScreenPlaceholder("Home Mahasiswa") }
-                composable(Screen.DashboardDosen.route) { ScreenPlaceholder("Dashboard Dosen") }
+                composable(Screen.DashboardDosen.route) {
+                    val profileViewModel: com.acaris.features.profile.presentation.viewmodel.ProfileViewModel = hiltViewModel()
+                    val profileState by profileViewModel.uiState.collectAsState()
+                    LaunchedEffect(Unit) {
+                        profileViewModel.loadProfile()
+                    }
+                    DosenDashboardScreen(
+                        dosenName = profileState.userProfile?.name ?: "Memuat...",
+                        kodeKelas = profileState.userProfile?.kodeKelas
+                    )
+                }
                 composable(Screen.DashboardAdmin.route) { ScreenPlaceholder("Dashboard Admin") }
                 composable(Screen.Schedule.route) { ScreenPlaceholder("Halaman Jadwal") }
                 composable(Screen.Chatbot.route) { ScreenPlaceholder("Halaman Chatbot") }
@@ -153,27 +165,20 @@ fun MainScreen(
                         },
                         onNavigateToEditDataDiri = { bottomNavController.navigate(Screen.EditDataDiri.route) },
                         onNavigateToEditDokumen = { bottomNavController.navigate(Screen.EditDokumen.route) },
-                        onNavigateToChangePassword = { bottomNavController.navigate(Screen.ChangePassword.route) } // 🌟 TAMBAHAN BARU
+                        onNavigateToChangePassword = { bottomNavController.navigate(Screen.ChangePassword.route) }
                     )
                 }
 
                 composable(Screen.EditDataDiri.route) {
-                    EditDataDiriScreen(
-                        onNavigateBack = { bottomNavController.popBackStack() }
-                    )
+                    EditDataDiriScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
 
                 composable(Screen.EditDokumen.route) {
-                    EditDocumentScreen(
-                        onNavigateBack = { bottomNavController.popBackStack() }
-                    )
+                    EditDocumentScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
 
-                // 🌟 TAMBAHAN BARU: Rute Ganti Password
                 composable(Screen.ChangePassword.route) {
-                    ChangePasswordScreen(
-                        onNavigateBack = { bottomNavController.popBackStack() }
-                    )
+                    ChangePasswordScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
             }
         }
@@ -214,10 +219,10 @@ fun MainScreen(
                             .padding(end = 16.dp)
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFE2E8F0))
-                            .border(1.dp, Color.Black, CircleShape)
+                            .background(MaterialTheme.colorScheme.background)
+                            .border(1.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout", tint = Color.Black, modifier = Modifier.size(20.dp))
+                        Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(20.dp))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -229,11 +234,9 @@ fun MainScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp, start = 24.dp, end = 24.dp)
-                    .shadow(elevation = 16.dp, shape = MaterialTheme.shapes.extraLarge)
-                    .clip(MaterialTheme.shapes.extraLarge)
-                    .background(Color.White)
-                    .padding(vertical = 12.dp, horizontal = 16.dp)
+                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(vertical = 12.dp, horizontal = 24.dp)
             ) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     menus.forEach { item ->

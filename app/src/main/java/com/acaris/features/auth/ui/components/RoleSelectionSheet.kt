@@ -51,6 +51,7 @@ fun RoleSelectionSheet(
                     title = "Mahasiswa",
                     description = "Daftar sebagai mahasiswa untuk bimbingan akademik",
                     icon = Icons.Default.School,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     onClick = {
                         coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
@@ -67,6 +68,8 @@ fun RoleSelectionSheet(
                     title = "Dosen",
                     description = "Daftar sebagai pembimbing akademik mahasiswa",
                     icon = Icons.Default.Person,
+                    // 🌟 FIX: Menambahkan pengaturan warna Surface
+                    containerColor = MaterialTheme.colorScheme.surface,
                     onClick = {
                         coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {

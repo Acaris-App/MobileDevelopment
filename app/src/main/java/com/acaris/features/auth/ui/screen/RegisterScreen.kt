@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.features.auth.presentation.model.RegisterStep
 import com.acaris.features.auth.presentation.viewmodel.RegisterViewModel
@@ -97,7 +98,10 @@ fun RegisterScreen(
             TopAppBar(
                 title = { },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali") }
+                    CustomBackButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
@@ -106,8 +110,11 @@ fun RegisterScreen(
         Box(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 24.dp)) {
             Crossfade(targetState = state.currentStep, label = "Register Steps") { step ->
                 when (step) {
-                    RegisterStep.INPUT_KODE_KELAS -> StepKodeKelas(state.isLoading) { viewModel.submitKodeKelas(it) }
+                    RegisterStep.LOADING_INIT -> {
+                        Box(modifier = Modifier.fillMaxSize())
+                    }
 
+                    RegisterStep.INPUT_KODE_KELAS -> StepKodeKelas(state.isLoading) { viewModel.submitKodeKelas(it) }
                     RegisterStep.INPUT_DATA_DIRI -> {
                         StepDataDiri(
                             role = role,

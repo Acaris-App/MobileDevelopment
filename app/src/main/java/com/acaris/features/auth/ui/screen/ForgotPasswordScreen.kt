@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.features.auth.presentation.model.ForgotPasswordStep
 import com.acaris.features.auth.presentation.viewmodel.ForgotPasswordViewModel
@@ -92,15 +93,16 @@ fun ForgotPasswordScreen(
             TopAppBar(
                 title = { },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        if (state.currentStep == ForgotPasswordStep.INPUT_EMAIL) {
-                            onNavigateBack()
-                        } else {
-                            viewModel.navigateBack()
-                        }
-                    }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
-                    }
+                    CustomBackButton(
+                        onClick = {
+                            if (state.currentStep == ForgotPasswordStep.INPUT_EMAIL) {
+                                onNavigateBack()
+                            } else {
+                                viewModel.navigateBack()
+                            }
+                        },
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )

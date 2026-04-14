@@ -65,7 +65,7 @@ fun AuthTextField(
             },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
                 errorBorderColor = MaterialTheme.colorScheme.error,

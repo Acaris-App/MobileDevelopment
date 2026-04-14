@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.DottedUploadBox
@@ -165,7 +166,10 @@ fun EditDocumentScreen(
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali") }
+                    CustomBackButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
@@ -189,7 +193,7 @@ fun EditDocumentScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -227,7 +231,7 @@ fun EditDocumentScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -240,7 +244,6 @@ fun EditDocumentScreen(
                             krsSemesters.forEachIndexed { index, sem ->
                                 val krsDoc = getDoc("krs", sem)
 
-                                // 🌟 FIX 1: Logika Validasi Urutan
                                 val onClickAction = {
                                     if (sem == 1 || getDoc("krs", sem - 1) != null) {
                                         pendingUploadType = "krs"
@@ -265,13 +268,7 @@ fun EditDocumentScreen(
                                         onClick = onClickAction
                                     )
                                 }
-
-                                // 🌟 FIX 2: Garis Pembatas
-                                if (index < krsSemesters.size - 1) {
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                }
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
                     }
@@ -283,7 +280,7 @@ fun EditDocumentScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -296,7 +293,6 @@ fun EditDocumentScreen(
                             khsSemesters.forEachIndexed { index, sem ->
                                 val khsDoc = getDoc("khs", sem)
 
-                                // 🌟 FIX 1: Logika Validasi Urutan
                                 val onClickAction = {
                                     if (sem == 1 || getDoc("khs", sem - 1) != null) {
                                         pendingUploadType = "khs"
@@ -321,13 +317,7 @@ fun EditDocumentScreen(
                                         onClick = onClickAction
                                     )
                                 }
-
-                                // 🌟 FIX 2: Garis Pembatas
-                                if (index < khsSemesters.size - 1) {
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                }
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
                     }

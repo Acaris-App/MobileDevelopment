@@ -7,7 +7,6 @@ import javax.inject.Inject
 class UpdateProfileUseCase @Inject constructor(
     private val repository: ProfileRepository
 ) {
-    // 🌟 FIX: Terima parameter baru
     suspend operator fun invoke(
         name: String,
         email: String,
@@ -24,7 +23,6 @@ class UpdateProfileUseCase @Inject constructor(
             return Result.failure(Exception("Format email tidak valid."))
         }
 
-        // 🌟 Validasi pintar untuk IPK (Maksimal 4.0)
         if (ipk != null && (ipk < 0.0 || ipk > 4.0)) {
             return Result.failure(Exception("Nilai IPK harus berada di antara 0.0 hingga 4.0"))
         }

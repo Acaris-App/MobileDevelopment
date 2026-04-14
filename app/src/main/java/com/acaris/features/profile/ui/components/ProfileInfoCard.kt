@@ -29,8 +29,8 @@ fun ProfileInfoCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.padding(24.dp)) {
@@ -42,10 +42,9 @@ fun ProfileInfoCard(
                     modifier = Modifier
                         .size(100.dp)
                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
-                        .clip(CircleShape), // 🌟 Bulatkan foto
+                        .clip(CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    // 🌟 FIX: Gunakan Coil untuk menampilkan foto di halaman utama
                     if (userProfile.profilePictureUrl.isNullOrEmpty()) {
                         Icon(
                             imageVector = Icons.Default.Person,
@@ -86,10 +85,10 @@ fun ProfileInfoCard(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .offset(x = 12.dp, y = 12.dp)
-                    .border(2.dp, Color.Black, CircleShape)
-                    .background(Color.White, CircleShape)
+                    .border(1.dp, Color.Transparent, CircleShape)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
             ) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit Profil", tint = Color.Black)
+                Icon(Icons.Default.Edit, contentDescription = "Edit Profil", tint = MaterialTheme.colorScheme.background)
             }
         }
     }
@@ -103,7 +102,7 @@ fun ProfileDataLine(label: String, value: String) {
             .padding(bottom = 12.dp)
     ) {
         Text(text = label, fontSize = 12.sp, color = Color.Gray)
-        Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+        Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
         HorizontalDivider(
             modifier = Modifier.padding(top = 4.dp),
             thickness = 1.dp,

@@ -1,5 +1,6 @@
 package com.acaris.features.auth.ui.components.register
 
+import android.R
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -151,10 +152,10 @@ fun StepDataDiri(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(CircleShape)
-                        .background(Color.Black),
+                        .background(MaterialTheme.colorScheme.onBackground),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.size(65.dp))
+                    Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.background, modifier = Modifier.size(65.dp))
                 }
             }
             Box(
@@ -162,10 +163,10 @@ fun StepDataDiri(
                     .size(32.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary)
-                    .border(2.dp, Color.White, CircleShape),
+                    .border(2.dp, Color.Transparent, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.background, modifier = Modifier.size(20.dp))
             }
         }
 
@@ -262,7 +263,7 @@ fun StepDataDiri(
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Sudah punya akun? ", color = Color.Gray)
+            Text("Sudah punya akun? ", color = MaterialTheme.colorScheme.onBackground)
             Text("Masuk", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onLoginClick() })
         }
         Spacer(modifier = Modifier.height(24.dp))

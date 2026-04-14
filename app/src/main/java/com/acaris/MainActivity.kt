@@ -3,13 +3,12 @@ package com.acaris
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+// 🌟 FIX 1: enableEdgeToEdge dihapus total dari import dan dari dalam onCreate
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +30,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
         setContent {
             AcarisTheme {
                 var startDestination by remember { mutableStateOf<String?>(null) }
@@ -49,13 +48,15 @@ class MainActivity : ComponentActivity() {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 } else {
-                    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
                         val navController = rememberNavController()
 
                         NavHost(
                             navController = navController,
-                            startDestination = startDestination!!,
-                            modifier = Modifier.padding(innerPadding)
+                            startDestination = startDestination!!
                         ) {
                             authNavGraph(navController)
                             mainNavGraph(navController)

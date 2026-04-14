@@ -18,7 +18,7 @@ interface ProfileApiService {
     ): BaseResponse<ProfileResponse>
 
     @Multipart
-    @POST("user/profile/photo") // Bisa diganti PUT tergantung standar Backend-mu
+    @POST("user/profile/photo")
     suspend fun updateProfilePhoto(
         @Part photo: MultipartBody.Part
     ): BaseResponse<PhotoUpdateResponse>

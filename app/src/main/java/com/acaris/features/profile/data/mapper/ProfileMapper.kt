@@ -14,6 +14,7 @@ fun ProfileResponse.toDomain(): UserProfile {
         angkatan = this.angkatan,
         ipk = this.ipk?.toDoubleOrNull(),
         currentSemester = this.currentSemester,
-        dosenPa = this.dosenPa ?: "Belum diatur"
+        dosenPa = this.dosenPa ?: "Belum diatur",
+        kodeKelas = this.kodeKelas
     )
 }

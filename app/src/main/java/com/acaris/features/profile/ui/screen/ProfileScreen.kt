@@ -9,7 +9,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,13 +25,14 @@ import com.acaris.features.profile.ui.component.ProfileInfoCard
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.acaris.core.ui.components.CustomPrimaryButton
 
 @Composable
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
     onNavigateToEditDataDiri: () -> Unit,
     onNavigateToEditDokumen: () -> Unit,
-    onNavigateToChangePassword: () -> Unit, // 🌟 TAMBAHAN BARU
+    onNavigateToChangePassword: () -> Unit,
     profileViewModel: ProfileViewModel = hiltViewModel(),
     documentViewModel: DocumentViewModel = hiltViewModel()
 ) {
@@ -93,14 +93,15 @@ fun ProfileScreen(
 
                 if (profileState.userProfile?.role == "mahasiswa") {
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Box(modifier = Modifier.padding(24.dp)) {
                             Column(modifier = Modifier.fillMaxWidth()) {
-                                Text("Dokumen Akademik", fontWeight = FontWeight.Bold, color = Color.Gray)
+                                Text("Dokumen Akademik", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                                 Spacer(modifier = Modifier.height(16.dp))
 
                                 documentState.documents.forEachIndexed { index, doc ->
@@ -110,14 +111,10 @@ fun ProfileScreen(
                                             if (doc.fileUrl.isNotEmpty()) uriHandler.openUri(doc.fileUrl)
                                         },
                                         showDelete = false,
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier
+                                            .fillMaxWidth()
                                     )
-
-                                    if (index < documentState.documents.size - 1) {
-                                        Spacer(modifier = Modifier.height(12.dp))
-                                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
-                                        Spacer(modifier = Modifier.height(12.dp))
-                                    }
+                                    Spacer(modifier = Modifier.height(16.dp))
                                 }
 
                                 if (documentState.documents.isEmpty()) {
@@ -130,10 +127,10 @@ fun ProfileScreen(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .offset(x = 12.dp, y = 12.dp)
-                                    .border(2.dp, Color.Black, CircleShape)
-                                    .background(Color.White, CircleShape)
+                                    .border(1.dp, Color.Transparent, CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary, CircleShape)
                             ) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit Dokumen", tint = Color.Black)
+                                Icon(Icons.Default.Edit, contentDescription = "Edit Profil", tint = MaterialTheme.colorScheme.background)
                             }
                         }
                     }
@@ -141,16 +138,11 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                OutlinedButton(
-                    onClick = onNavigateToChangePassword, // 🌟 DIPANGGIL DI SINI
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error)
-                ) {
-                    Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ganti Password")
-                }
+                CustomPrimaryButton(
+                    text = "Ganti Password",
+                    onClick = onNavigateToChangePassword,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 Spacer(modifier = Modifier.height(120.dp))
             }

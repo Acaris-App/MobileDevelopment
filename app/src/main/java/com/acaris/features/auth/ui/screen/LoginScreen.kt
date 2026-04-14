@@ -1,14 +1,12 @@
 package com.acaris.features.auth.ui.screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -23,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.acaris.core.ui.components.CustomBackButton // 🌟 IMPORT INI
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
@@ -71,7 +70,6 @@ fun LoginScreenContent(
 
     var showRoleSheet by rememberSaveable { mutableStateOf(false) }
 
-    // 🌟 KITA EKSTRAK STATUS LOADING DARI loginState
     val isLoading = loginState is LoginState.Loading
 
     val isEmailError = email.isNotEmpty() && !ValidationUtils.isValidEmail(email)
@@ -91,19 +89,7 @@ fun LoginScreenContent(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .border(1.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
-                    .clickable { onBackClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Kembali",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
+            CustomBackButton(onClick = onBackClick)
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -155,11 +141,10 @@ fun LoginScreenContent(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 🌟 KITA TAMPILKAN TOMBOL SECARA UTUH (Tanpa CircularProgressIndicator kecil lagi)
             CustomPrimaryButton(
                 text = "Masuk",
                 onClick = { onLoginClick(email, password) },
-                enabled = isFormReady && !isLoading, // Disable saat loading
+                enabled = isFormReady && !isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -174,7 +159,7 @@ fun LoginScreenContent(
             ) {
                 Text(
                     text = "Belum punya akun? ",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 16.sp
                 )
 

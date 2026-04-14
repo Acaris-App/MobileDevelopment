@@ -1,5 +1,6 @@
 package com.acaris.features.dashboard.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,26 +9,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
 
 @Composable
 fun DosenDashboardScreen(
     dosenName: String,
     kodeKelas: String?
 ) {
+    val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
 
         Column(
@@ -40,7 +39,7 @@ fun DosenDashboardScreen(
         ) {
 
             Text(
-                text = "Selamat Datang, Dosen",
+                text = "Selamat Datang",
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp
@@ -54,9 +53,10 @@ fun DosenDashboardScreen(
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 Column(
@@ -85,10 +85,7 @@ fun DosenDashboardScreen(
                         letterSpacing = 4.sp,
                         modifier = Modifier.clickable {
                             clipboardManager.setText(AnnotatedString(kode))
-
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Kode berhasil disalin!")
-                            }
+                            Toast.makeText(context, "Kode berhasil disalin!", Toast.LENGTH_SHORT).show()
                         }
                     )
 
@@ -97,7 +94,7 @@ fun DosenDashboardScreen(
                     Text(
                         text = "Tap untuk menyalin",
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -108,7 +105,7 @@ fun DosenDashboardScreen(
                 text = "Bagikan kode ini kepada mahasiswa bimbingan Anda agar mereka bisa mendaftar di aplikasi ACARIS.",
                 textAlign = TextAlign.Center,
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

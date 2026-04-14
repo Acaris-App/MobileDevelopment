@@ -5,7 +5,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -20,6 +19,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.acaris.core.ui.components.CustomBackButton // 🌟 IMPORT INI
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
@@ -34,34 +34,29 @@ fun ChangePasswordScreen(
     val state by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
 
-    // State untuk input
     var oldPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    // State untuk toggle mata (Visibility)
     var oldPasswordVisible by remember { mutableStateOf(false) }
     var newPasswordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
-    // Logika Validasi UI (Merah jika salah)
     val isNewPasswordError = newPassword.isNotEmpty() && newPassword.length < 8
     val isConfirmPasswordError = confirmPassword.isNotEmpty() && confirmPassword != newPassword
     val isSameAsOldError = newPassword.isNotEmpty() && oldPassword == newPassword
 
-    // Validasi Button (Hanya aktif jika semua syarat terpenuhi)
     val isFormValid = oldPassword.isNotBlank() &&
             newPassword.length >= 8 &&
             newPassword == confirmPassword &&
             oldPassword != newPassword
 
-    // Dialog Sukses
     if (state.successMessage != null) {
         CustomDialog(
             showDialog = true,
             onDismissRequest = {
                 viewModel.clearMessages()
-                onNavigateBack() // Kembali ke Profil setelah sukses
+                onNavigateBack()
             },
             content = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -78,7 +73,6 @@ fun ChangePasswordScreen(
         )
     }
 
-    // Dialog Error (Dari Backend)
     if (state.errorMessage != null) {
         CustomDialog(
             showDialog = true,
@@ -100,9 +94,10 @@ fun ChangePasswordScreen(
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
-                    }
+                    CustomBackButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
@@ -117,7 +112,6 @@ fun ChangePasswordScreen(
                     .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Judul & Keterangan
                 Text(
                     text = "Ganti Password",
                     style = MaterialTheme.typography.headlineMedium,
@@ -134,7 +128,6 @@ fun ChangePasswordScreen(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                // Input 1: Password Lama
                 OutlinedTextField(
                     value = oldPassword,
                     onValueChange = { oldPassword = it },
@@ -156,7 +149,6 @@ fun ChangePasswordScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Input 2: Password Baru
                 OutlinedTextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
@@ -181,9 +173,8 @@ fun ChangePasswordScreen(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(12.dp)) // Spasi lebih kecil karena ada supportingText di atas
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Input 3: Konfirmasi Password Baru
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
@@ -209,7 +200,6 @@ fun ChangePasswordScreen(
 
                 Spacer(modifier = Modifier.height(48.dp))
 
-                // Tombol Kirim
                 CustomPrimaryButton(
                     text = "Kirim",
                     enabled = isFormValid && !state.isLoading,
@@ -220,7 +210,6 @@ fun ChangePasswordScreen(
                 )
             }
 
-            // Indikator Loading
             if (state.isLoading) {
                 CustomLoadingOverlay(isLoading = true)
             }

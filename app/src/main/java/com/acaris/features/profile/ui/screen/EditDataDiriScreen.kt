@@ -11,7 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
@@ -71,6 +72,7 @@ fun EditDataDiriScreen(
         }
     }
 
+    // DIALOG KONFIRMASI SIMPAN
     if (showConfirmDialog) {
         CustomDialog(
             showDialog = true,
@@ -92,6 +94,7 @@ fun EditDataDiriScreen(
 
                 val textChanged = state.userProfile?.let {
                     name != it.name ||
+                            identifier != it.identifier ||
                             angkatan != (it.angkatan?.toString() ?: "") ||
                             ipk != (it.ipk?.toString() ?: "") ||
                             semester != (it.currentSemester?.toString() ?: "")
@@ -117,6 +120,26 @@ fun EditDataDiriScreen(
             },
             dismissText = "Batal",
             onDismiss = { showConfirmDialog = false }
+        )
+    }
+
+    if (state.errorMessage != null) {
+        CustomDialog(
+            showDialog = true,
+            onDismissRequest = { profileViewModel.clearMessages() },
+            confirmText = "Tutup",
+            onConfirm = { profileViewModel.clearMessages() },
+            content = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(modifier = Modifier.size(72.dp).background(MaterialTheme.colorScheme.error, CircleShape), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.onError, modifier = Modifier.size(40.dp))
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Gagal Menyimpan", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(state.errorMessage ?: "", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+                }
+            }
         )
     }
 
@@ -151,7 +174,10 @@ fun EditDataDiriScreen(
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali") }
+                    CustomBackButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
@@ -202,10 +228,10 @@ fun EditDataDiriScreen(
                         onClick = { photoPickerLauncher.launch("image/*") },
                         modifier = Modifier
                             .offset(x = 8.dp, y = 8.dp)
-                            .border(2.dp, Color.Black, CircleShape)
-                            .background(Color.White, CircleShape)
+                            .border(1.dp, Color.Transparent, CircleShape)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
                     ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Ganti Foto", tint = Color.Black)
+                        Icon(Icons.Default.Edit, contentDescription = "Edit Profil", tint = MaterialTheme.colorScheme.background)
                     }
                 }
 
@@ -222,16 +248,16 @@ fun EditDataDiriScreen(
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
+                    onValueChange = {},
+                    label = { Text("Email (Tidak dapat diubah)") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium,
-                    enabled = false,
+                    readOnly = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        disabledTextColor = Color.DarkGray,
-                        disabledBorderColor = Color.LightGray,
-                        disabledLabelColor = Color.Gray,
-                        disabledContainerColor = Color(0xFFF3F4F6)
+                        unfocusedBorderColor = Color(0xFFB71C1C),
+                        focusedBorderColor = Color(0xFFB71C1C),
+                        unfocusedLabelColor = Color(0xFFB71C1C),
+                        focusedLabelColor = Color(0xFFB71C1C)
                     )
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -242,13 +268,7 @@ fun EditDataDiriScreen(
                     label = { Text(if (state.userProfile?.role == "mahasiswa") "NPM" else "NIP") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium,
-                    enabled = false,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        disabledTextColor = Color.DarkGray,
-                        disabledBorderColor = Color.LightGray,
-                        disabledLabelColor = Color.Gray,
-                        disabledContainerColor = Color(0xFFF3F4F6)
-                    )
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
 
                 if (state.userProfile?.role == "mahasiswa") {

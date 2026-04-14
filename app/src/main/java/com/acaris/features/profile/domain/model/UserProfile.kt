@@ -10,5 +10,6 @@ data class UserProfile(
     val angkatan: Int? = null,
     val ipk: Double? = null,
     val currentSemester: Int? = null,
-    val dosenPa: String? = null
+    val dosenPa: String? = null,
+    val kodeKelas: String? = null
 )
