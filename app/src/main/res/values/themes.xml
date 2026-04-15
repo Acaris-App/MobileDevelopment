@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="Theme.Acaris" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/acaris_primary_xml</item>
+
+        <item name="windowSplashScreenAnimatedIcon">@drawable/acaris_logo</item>
+
+        <item name="postSplashScreenTheme">@style/Theme.Acaris</item>
+    </style>
 </resources>
