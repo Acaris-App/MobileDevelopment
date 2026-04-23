@@ -27,7 +27,6 @@ class MainActivity : ComponentActivity() {
     lateinit var authPreferences: AuthPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // 🌟 FIX 2: Pasang Splash Screen SEBELUM super.onCreate
         val splashScreen = installSplashScreen()
 
         super.onCreate(savedInstanceState)
@@ -44,7 +43,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // 🌟 FIX 3: Tahan Splash Screen di layar sampai startDestination tidak null (selesai loading token)
                 splashScreen.setKeepOnScreenCondition {
                     startDestination == null
                 }

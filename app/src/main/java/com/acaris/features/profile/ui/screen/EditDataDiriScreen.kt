@@ -72,7 +72,15 @@ fun EditDataDiriScreen(
         }
     }
 
-    // DIALOG KONFIRMASI SIMPAN
+    val isDataChanged = state.userProfile?.let {
+        name != it.name ||
+                identifier != it.identifier ||
+                angkatan != (it.angkatan?.toString() ?: "") ||
+                ipk != (it.ipk?.toString() ?: "") ||
+                semester != (it.currentSemester?.toString() ?: "") ||
+                selectedPhotoUri != null
+    } ?: false
+
     if (showConfirmDialog) {
         CustomDialog(
             showDialog = true,
@@ -98,7 +106,7 @@ fun EditDataDiriScreen(
                             angkatan != (it.angkatan?.toString() ?: "") ||
                             ipk != (it.ipk?.toString() ?: "") ||
                             semester != (it.currentSemester?.toString() ?: "")
-                } ?: true
+                } ?: false
 
                 if (textChanged) {
                     profileViewModel.updateProfile(
@@ -286,7 +294,8 @@ fun EditDataDiriScreen(
                 CustomPrimaryButton(
                     text = "Kirim",
                     onClick = { showConfirmDialog = true },
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                    enabled = isDataChanged
                 )
             }
 

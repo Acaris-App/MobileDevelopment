@@ -25,3 +25,8 @@ val TextLight = Color(0xFFFFFFFF)
 val TextGray = Color(0xFF757575)
 val TextCaption = Color(0xFF767779)
 val SurfaceWhite = Color(0xFFFFFFFF)
+
+val StatusAvailableBg = Color(0xFF4CAF50).copy(alpha = 0.2f)   // Hijau Pastel (Background)
+val StatusAvailableText = Color(0xFF4CAF50).copy(alpha = 0.2f) // Hijau Tua (Text/Border)
+val StatusFullBg = Color(0xFFF44336).copy(alpha = 0.2f)        // Merah Pastel (Background)
+val StatusFullText = Color(0xFFF44336).copy(alpha = 0.2f)      // Merah Tua (Text/Border)

@@ -1,0 +1,170 @@
+package com.acaris.features.schedule.ui.components
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.acaris.core.ui.components.CustomPrimaryButton
+import java.util.Locale
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddScheduleBottomSheet(
+    selectedDate: String,
+    isEditMode: Boolean = false,
+    initialStartTime: String = "",
+    initialEndTime: String = "",
+    initialQuota: String = "",
+    initialKeterangan: String = "",
+    onDismiss: () -> Unit,
+    onSubmit: (startTime: String, endTime: String, quota: Int, keterangan: String) -> Unit
+) {
+    var startTime by rememberSaveable { mutableStateOf(initialStartTime) }
+    var endTime by rememberSaveable { mutableStateOf(initialEndTime) }
+    var quota by rememberSaveable { mutableStateOf(initialQuota) }
+    var keterangan by rememberSaveable { mutableStateOf(initialKeterangan) }
+
+    var showStartTimePicker by remember { mutableStateOf(false) }
+    var showEndTimePicker by remember { mutableStateOf(false) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .imePadding()
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Text(
+                text = if (isEditMode) "Perbarui Jadwal Bimbingan" else "Tambah Jadwal Bimbingan",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Tanggal: $selectedDate",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp)
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    OutlinedTextField(
+                        value = startTime,
+                        onValueChange = {},
+                        label = { Text("Mulai") },
+                        readOnly = true,
+                        trailingIcon = { Icon(Icons.Default.Schedule, contentDescription = null) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { showStartTimePicker = true }
+                    )
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    OutlinedTextField(
+                        value = endTime,
+                        onValueChange = {},
+                        label = { Text("Selesai") },
+                        readOnly = true,
+                        trailingIcon = { Icon(Icons.Default.Schedule, contentDescription = null) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { showEndTimePicker = true }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = quota,
+                onValueChange = { quota = it },
+                label = { Text("Kuota Mahasiswa") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = keterangan,
+                onValueChange = { keterangan = it },
+                label = { Text("Keterangan (Opsional)") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            CustomPrimaryButton(
+                text = if (isEditMode) "Simpan Perubahan" else "Simpan Jadwal",
+                onClick = {
+                    val quotaInt = quota.toIntOrNull() ?: 0
+                    onSubmit(startTime, endTime, quotaInt, keterangan)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = startTime.isNotBlank() && endTime.isNotBlank() && quota.isNotBlank()
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+
+    if (showStartTimePicker) {
+        CustomTimePickerDialog(
+            onDismiss = { showStartTimePicker = false },
+            onConfirm = { hour, minute ->
+                startTime = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
+                showStartTimePicker = false
+            }
+        )
+    }
+
+    if (showEndTimePicker) {
+        CustomTimePickerDialog(
+            onDismiss = { showEndTimePicker = false },
+            onConfirm = { hour, minute ->
+                endTime = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
+                showEndTimePicker = false
+            }
+        )
+    }
+}

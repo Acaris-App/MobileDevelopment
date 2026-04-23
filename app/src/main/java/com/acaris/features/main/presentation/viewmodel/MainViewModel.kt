@@ -28,8 +28,13 @@ class MainViewModel @Inject constructor(
 
     fun logout(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            logoutUseCase()
-            onSuccess()
+            val result = logoutUseCase()
+            result.fold(
+                onSuccess = { onSuccess() },
+                onFailure = {
+                    onSuccess()
+                }
+            )
         }
     }
 }

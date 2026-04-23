@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -141,16 +142,40 @@ fun MainScreen(
                 composable(Screen.DashboardDosen.route) {
                     val profileViewModel: com.acaris.features.profile.presentation.viewmodel.ProfileViewModel = hiltViewModel()
                     val profileState by profileViewModel.uiState.collectAsState()
+
                     LaunchedEffect(Unit) {
                         profileViewModel.loadProfile()
                     }
+
+                    if (profileState.errorMessage != null) {
+                        CustomDialog(
+                            showDialog = true,
+                            onDismissRequest = { profileViewModel.clearMessages() },
+                            confirmText = "Tutup",
+                            onConfirm = { profileViewModel.clearMessages() },
+                            content = {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("Gagal Memuat Data", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(profileState.errorMessage ?: "", textAlign = TextAlign.Center, color = Color.Gray)
+                                }
+                            }
+                        )
+                    }
+
                     DosenDashboardScreen(
                         dosenName = profileState.userProfile?.name ?: "Memuat...",
                         kodeKelas = profileState.userProfile?.kodeKelas
                     )
                 }
                 composable(Screen.DashboardAdmin.route) { ScreenPlaceholder("Dashboard Admin") }
-                composable(Screen.Schedule.route) { ScreenPlaceholder("Halaman Jadwal") }
+                composable(Screen.Schedule.route) {
+                    if (userRole?.lowercase() == "dosen") {
+                        com.acaris.features.schedule.ui.screen.DosenScheduleScreen()
+                    } else {
+                        ScreenPlaceholder("Halaman Jadwal Mahasiswa (Segera Hadir)")
+                    }
+                }
                 composable(Screen.Chatbot.route) { ScreenPlaceholder("Halaman Chatbot") }
                 composable(Screen.MahasiswaBimbingan.route) { ScreenPlaceholder("Daftar Mahasiswa") }
                 composable(Screen.KnowledgeBase.route) { ScreenPlaceholder("Knowledge Base") }

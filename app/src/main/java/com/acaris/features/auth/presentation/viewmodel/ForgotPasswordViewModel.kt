@@ -62,15 +62,10 @@ class ForgotPasswordViewModel @Inject constructor(
     }
 
     fun resetPassword(newPassword: String, confirmPassword: String) {
-        if (newPassword != confirmPassword) {
-            _uiState.update { it.copy(errorMessage = "Konfirmasi password tidak cocok.") }
-            return
-        }
-
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
             val state = _uiState.value
-            val result = resetPasswordUseCase(state.email, state.otpCode, newPassword)
+            val result = resetPasswordUseCase(state.email, state.otpCode, newPassword, confirmPassword)
 
             result.fold(
                 onSuccess = {

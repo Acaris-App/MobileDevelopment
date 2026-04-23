@@ -35,24 +35,19 @@ fun ForgotPasswordScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    var errorDialogMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var showSuccessDialog by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(state.errorMessage) {
-        if (state.errorMessage != null) { errorDialogMessage = state.errorMessage }
-    }
 
     LaunchedEffect(state.currentStep) {
         if (state.currentStep == ForgotPasswordStep.SUCCESS) { showSuccessDialog = true }
     }
 
     // Dialog Error
-    if (errorDialogMessage != null) {
+    if (state.errorMessage != null) {
         CustomDialog(
             showDialog = true,
-            onDismissRequest = { errorDialogMessage = null; viewModel.clearError() },
+            onDismissRequest = { viewModel.clearError() },
             confirmText = "Tutup",
-            onConfirm = { errorDialogMessage = null; viewModel.clearError() },
+            onConfirm = { viewModel.clearError() },
             content = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(modifier = Modifier.size(72.dp).background(MaterialTheme.colorScheme.error, CircleShape), contentAlignment = Alignment.Center) {
@@ -61,7 +56,7 @@ fun ForgotPasswordScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Terjadi Kesalahan", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(errorDialogMessage ?: "", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+                    Text(state.errorMessage ?: "", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
                 }
             }
         )

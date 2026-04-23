@@ -10,17 +10,26 @@ class UploadDocumentUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(documentType: String, semester: Int?, file: File): Result<Document> {
 
-        // Validasi Logika Bisnis Murni
         if (documentType !in listOf("krs", "khs", "transkrip")) {
             return Result.failure(Exception("Jenis dokumen tidak valid."))
         }
 
-        if (documentType != "transkrip" && semester == null) {
-            return Result.failure(Exception("Semester wajib diisi untuk KRS dan KHS."))
+        if (documentType != "transkrip") {
+            if (semester == null || semester < 1 || semester > 14) {
+                return Result.failure(Exception("Semester tidak valid. Harap masukkan semester 1 - 14 untuk KRS dan KHS."))
+            }
+        } else {
+            if (semester != null && semester != 0) {
+                return Result.failure(Exception("Semester transkrip harus bernilai 0."))
+            }
         }
 
         if (!file.exists() || file.length() == 0L) {
-            return Result.failure(Exception("File PDF tidak ditemukan atau kosong."))
+            return Result.failure(Exception("File dokumen tidak ditemukan atau kosong."))
+        }
+
+        if (file.extension.lowercase() != "pdf") {
+            return Result.failure(Exception("Format file harus berupa PDF."))
         }
 
         if (file.length() > 1048576) { // 1 MB

@@ -44,6 +44,25 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    // 🌟 FUNGSI BARU: Mendeteksi apakah ada data yang berubah
+    fun isProfileDataChanged(
+        currentName: String,
+        currentEmail: String,
+        currentIdentifier: String,
+        currentAngkatan: Int?,
+        currentIpk: Double?,
+        currentSemester: Int?
+    ): Boolean {
+        val originalProfile = _uiState.value.userProfile ?: return true
+
+        return currentName != originalProfile.name ||
+                currentEmail != originalProfile.email ||
+                currentIdentifier != originalProfile.identifier ||
+                currentAngkatan != originalProfile.angkatan ||
+                currentIpk != originalProfile.ipk ||
+                currentSemester != originalProfile.currentSemester
+    }
+
     fun updateProfile(
         name: String,
         email: String,

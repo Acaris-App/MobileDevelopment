@@ -16,7 +16,8 @@ class RegisterDosenUseCase @Inject constructor(
             return Result.failure(Exception("Semua kolom data diri wajib diisi."))
         }
 
-        if (!email.contains("@")) {
+        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$".toRegex()
+        if (!email.matches(emailRegex)) {
             return Result.failure(Exception("Format email tidak valid."))
         }
 

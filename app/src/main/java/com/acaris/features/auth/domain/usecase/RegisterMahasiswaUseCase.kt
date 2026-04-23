@@ -17,7 +17,8 @@ class RegisterMahasiswaUseCase @Inject constructor(
             return Result.failure(Exception("Semua kolom data diri wajib diisi."))
         }
 
-        if (!email.contains("@")) {
+        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$".toRegex()
+        if (!email.matches(emailRegex)) {
             return Result.failure(Exception("Format email tidak valid."))
         }
 
@@ -25,7 +26,7 @@ class RegisterMahasiswaUseCase @Inject constructor(
             return Result.failure(Exception("Password minimal harus 8 karakter."))
         }
 
-        if (currentSemester < 1 || angkatan < 2000) {
+        if (currentSemester < 1 || angkatan < 1990) {
             return Result.failure(Exception("Data semester atau angkatan tidak valid."))
         }
 
