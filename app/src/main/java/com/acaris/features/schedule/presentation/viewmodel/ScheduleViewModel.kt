@@ -62,14 +62,18 @@ class ScheduleViewModel @Inject constructor(
 
                 schedules.forEach { schedule ->
                     try {
-                        val cleanDateString = schedule.date.substringBefore("T")
-                        val date = LocalDate.parse(cleanDateString)
+                        val date = LocalDate.parse(schedule.date) // 🌟 Data sudah bersih dari Data Layer
 
+                        val isPast = schedule.isExpired()
                         val isAvailable = schedule.remainingQuota > 0
                         val currentMapStatus = statusMap[date]
 
-                        if (currentMapStatus == null || (currentMapStatus == ScheduleStatus.FULL && isAvailable)) {
-                            statusMap[date] = if (isAvailable) ScheduleStatus.AVAILABLE else ScheduleStatus.FULL
+                        if (currentMapStatus == null || currentMapStatus == ScheduleStatus.FULL || currentMapStatus == ScheduleStatus.SELESAI) {
+                            statusMap[date] = when {
+                                isPast -> ScheduleStatus.SELESAI
+                                isAvailable -> ScheduleStatus.AVAILABLE
+                                else -> ScheduleStatus.FULL
+                            }
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()

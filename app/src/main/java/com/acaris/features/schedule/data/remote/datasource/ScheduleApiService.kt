@@ -1,6 +1,7 @@
 package com.acaris.features.schedule.data.remote.datasource
 
 import com.acaris.core.network.model.BaseResponse
+import com.acaris.features.schedule.data.remote.model.BookScheduleRequest
 import com.acaris.features.schedule.data.remote.model.CreateScheduleRequest
 import com.acaris.features.schedule.data.remote.model.ScheduleResponse
 import retrofit2.http.Body
@@ -36,4 +37,23 @@ interface ScheduleApiService {
         @retrofit2.http.Path("id") id: String,
         @retrofit2.http.Body request: CreateScheduleRequest
     ): BaseResponse<ScheduleResponse>
+
+    @GET("schedule/mahasiswa/monthly")
+    suspend fun getMahasiswaMonthlySchedules(
+        @Query("year") year: Int,
+        @Query("month") month: Int
+    ): BaseResponse<List<ScheduleResponse>>
+
+    @GET("schedule/mahasiswa/daily")
+    suspend fun getMahasiswaDailySchedules(
+        @Query("date") date: String
+    ): BaseResponse<List<ScheduleResponse>>
+
+    @POST("schedule/mahasiswa/book")
+    suspend fun bookSchedule(
+        @Body request: BookScheduleRequest
+    ): BaseResponse<Any>
+
+    @GET("schedule/mahasiswa/bookings/history")
+    suspend fun getMahasiswaBookingHistory(): BaseResponse<List<ScheduleResponse>>
 }

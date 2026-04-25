@@ -21,6 +21,8 @@ import com.acaris.core.ui.theme.StatusAvailableBg
 import com.acaris.core.ui.theme.StatusAvailableText
 import com.acaris.core.ui.theme.StatusFullBg
 import com.acaris.core.ui.theme.StatusFullText
+import com.acaris.core.ui.theme.StatusSelesaiBg // 🌟 IMPORT BARU
+import com.acaris.core.ui.theme.StatusSelesaiText // 🌟 IMPORT BARU
 import com.acaris.features.schedule.presentation.model.StudentBookingUiModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,6 +33,7 @@ fun ScheduleDetailCard(
     quotaInfo: String,
     keteranganDosen: String,
     isFull: Boolean,
+    isSelesai: Boolean, // 🌟 PARAMETER BARU
     bookedStudents: List<StudentBookingUiModel>,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
@@ -48,8 +51,17 @@ fun ScheduleDetailCard(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(text = timeSpan, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurface)
 
-                val badgeContainerColor = if (isFull) StatusFullBg else StatusAvailableBg
-                val badgeContentColor = if (isFull) StatusFullText else StatusAvailableText
+                // 🌟 LOGIKA WARNA BARU
+                val badgeContainerColor = when {
+                    isSelesai -> StatusSelesaiBg
+                    isFull -> StatusFullBg
+                    else -> StatusAvailableBg
+                }
+                val badgeContentColor = when {
+                    isSelesai -> StatusSelesaiText
+                    isFull -> StatusFullText
+                    else -> StatusAvailableText
+                }
 
                 Badge(
                     containerColor = badgeContainerColor,
@@ -72,20 +84,23 @@ fun ScheduleDetailCard(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                OutlinedButton(onClick = onEditClick, modifier = Modifier.padding(end = 8.dp), shape = RoundedCornerShape(8.dp)) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Edit")
+            // 🌟 SEMBUNYIKAN TOMBOL JIKA SUDAH SELESAI
+            if (!isSelesai) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    OutlinedButton(onClick = onEditClick, modifier = Modifier.padding(end = 8.dp), shape = RoundedCornerShape(8.dp)) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Edit")
+                    }
+                    Button(onClick = onDeleteClick, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error), shape = RoundedCornerShape(8.dp)) {
+                        Icon(Icons.Default.Delete, contentDescription = "Hapus", modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Hapus")
+                    }
                 }
-                Button(onClick = onDeleteClick, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error), shape = RoundedCornerShape(8.dp)) {
-                    Icon(Icons.Default.Delete, contentDescription = "Hapus", modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Hapus")
-                }
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(16.dp))
 

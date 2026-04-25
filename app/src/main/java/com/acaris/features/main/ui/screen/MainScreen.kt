@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -169,13 +168,27 @@ fun MainScreen(
                     )
                 }
                 composable(Screen.DashboardAdmin.route) { ScreenPlaceholder("Dashboard Admin") }
+
+                // 🌟 FIX: Rute Jadwal sudah memanggil Screen Mahasiswa
                 composable(Screen.Schedule.route) {
                     if (userRole?.lowercase() == "dosen") {
                         com.acaris.features.schedule.ui.screen.DosenScheduleScreen()
                     } else {
-                        ScreenPlaceholder("Halaman Jadwal Mahasiswa (Segera Hadir)")
+                        com.acaris.features.schedule.ui.screen.MahasiswaScheduleScreen(
+                            onNavigateToHistory = {
+                                bottomNavController.navigate(Screen.BookingHistory.route)
+                            }
+                        )
                     }
                 }
+
+                // 🌟 TAMBAHAN: Rute Riwayat Booking (Akan kita isi nanti)
+                composable(Screen.BookingHistory.route) {
+                    com.acaris.features.schedule.ui.screen.BookingHistoryScreen(
+                        onNavigateBack = { bottomNavController.popBackStack() }
+                    )
+                }
+
                 composable(Screen.Chatbot.route) { ScreenPlaceholder("Halaman Chatbot") }
                 composable(Screen.MahasiswaBimbingan.route) { ScreenPlaceholder("Daftar Mahasiswa") }
                 composable(Screen.KnowledgeBase.route) { ScreenPlaceholder("Knowledge Base") }

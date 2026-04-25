@@ -18,7 +18,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.acaris.core.ui.theme.StatusAvailableBg
+import com.acaris.core.ui.theme.StatusBookedBg
+import com.acaris.core.ui.theme.StatusBookedText
 import com.acaris.core.ui.theme.StatusFullBg
+import com.acaris.core.ui.theme.StatusSelesaiBg
+import com.acaris.core.ui.theme.StatusSelesaiText
 import com.acaris.features.schedule.presentation.model.ScheduleStatus
 import java.time.LocalDate
 import java.time.YearMonth
@@ -162,8 +166,10 @@ private fun CalendarCell(
     val cellShape = RoundedCornerShape(12.dp)
 
     val backgroundColor = when (status) {
-        ScheduleStatus.AVAILABLE -> StatusAvailableBg
-        ScheduleStatus.FULL -> StatusFullBg
+        ScheduleStatus.AVAILABLE -> StatusAvailableBg // Hijau
+        ScheduleStatus.FULL -> StatusFullBg // Merah
+        ScheduleStatus.BOOKED_BY_ME -> StatusBookedBg // Biru
+        ScheduleStatus.SELESAI -> StatusSelesaiBg // Kuning
         ScheduleStatus.NONE -> Color.Transparent
     }
 
@@ -191,10 +197,12 @@ private fun CalendarCell(
         Text(
             text = date.dayOfMonth.toString(),
             color = when {
+                status == ScheduleStatus.BOOKED_BY_ME -> StatusBookedText
+                status == ScheduleStatus.SELESAI -> StatusSelesaiText
                 isToday -> MaterialTheme.colorScheme.primary
                 else -> MaterialTheme.colorScheme.onSurface
             },
-            fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.Normal
+            fontWeight = if (isToday || isSelected || status == ScheduleStatus.BOOKED_BY_ME || status == ScheduleStatus.SELESAI) FontWeight.Bold else FontWeight.Normal
         )
     }
 }

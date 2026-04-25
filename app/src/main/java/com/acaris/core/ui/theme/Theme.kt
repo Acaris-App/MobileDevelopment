@@ -57,7 +57,6 @@ fun AcarisTheme(
         else -> LightColorScheme
     }
 
-    // 🌟 MENGUBAH WARNA BAR SISTEM ANDROID (STATUS BAR & NAV BAR)
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {

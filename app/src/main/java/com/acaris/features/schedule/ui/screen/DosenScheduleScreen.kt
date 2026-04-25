@@ -105,6 +105,7 @@ fun DosenScheduleScreen(
                             quotaInfo = schedule.quotaInfo,
                             keteranganDosen = schedule.keterangan,
                             isFull = schedule.isFull,
+                            isSelesai = schedule.isSelesai, // 🌟 PENYESUAIAN PARAMETER BARU
                             bookedStudents = schedule.bookedStudents,
                             onEditClick = {
                                 activeSchedule = schedule

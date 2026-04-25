@@ -27,6 +27,13 @@ val TextCaption = Color(0xFF767779)
 val SurfaceWhite = Color(0xFFFFFFFF)
 
 val StatusAvailableBg = Color(0xFF4CAF50).copy(alpha = 0.2f)   // Hijau Pastel (Background)
-val StatusAvailableText = Color(0xFF4CAF50).copy(alpha = 0.2f) // Hijau Tua (Text/Border)
+val StatusAvailableText = Color(0xFF4CAF50)                    // Hijau Tua (Text/Border)
+
+val StatusBookedBg = Color(0xFFE3F2FD)                         // Biru Pastel (Background)
+val StatusBookedText = Color(0xFF2196F3)                       // Biru Tua (Text/Border)
+
 val StatusFullBg = Color(0xFFF44336).copy(alpha = 0.2f)        // Merah Pastel (Background)
-val StatusFullText = Color(0xFFF44336).copy(alpha = 0.2f)      // Merah Tua (Text/Border)
+val StatusFullText = Color(0xFFF44336)                         // Merah Tua (Text/Border)
+
+val StatusSelesaiBg = Color(0xFFFFF8E1)                        // Kuning Pastel (Background)
+val StatusSelesaiText = Color(0xFFFFA000)

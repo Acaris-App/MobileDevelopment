@@ -3,6 +3,7 @@ package com.acaris.features.schedule.presentation.model
 data class ScheduleUiModel(
     val id: String,
     val title: String,
+    val date: String = "",
     val time: String,
     val quotaInfo: String,
     val status: String,
@@ -11,7 +12,12 @@ data class ScheduleUiModel(
     val rawEndTime: String = "",
     val rawQuota: Int = 0,
     val isFull: Boolean = false,
-    val bookedStudents: List<StudentBookingUiModel> = emptyList()
+    val bookedStudents: List<StudentBookingUiModel> = emptyList(),
+    val dosenName: String = "",
+    val isBookedByMe: Boolean = false,
+    val bookingId: String? = null,
+    val myAgenda: String? = null,
+    val isSelesai: Boolean = false
 )
 
 data class StudentBookingUiModel(
