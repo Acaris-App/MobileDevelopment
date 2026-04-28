@@ -120,7 +120,7 @@ fun CustomBackButton(
 ) {
     Box(
         modifier = modifier
-            .size(48.dp)
+            .size(40.dp)
             .clip(CircleShape)
             .border(1.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
             .clickable { onClick() },
@@ -129,7 +129,8 @@ fun CustomBackButton(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = "Kembali",
-            tint = MaterialTheme.colorScheme.onBackground
+            tint = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.size(16.dp)
         )
     }
 }

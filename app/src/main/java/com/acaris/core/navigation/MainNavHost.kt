@@ -92,7 +92,38 @@ fun MainNavHost(
         }
 
         composable(Screen.Chatbot.route) { ScreenPlaceholder("Halaman Chatbot") }
-        composable(Screen.MahasiswaBimbingan.route) { ScreenPlaceholder("Daftar Mahasiswa") }
+        composable(Screen.MahasiswaBimbingan.route) {
+            com.acaris.features.monitoring_mahasiswa.ui.screen.MonitoringListScreen(
+                onNavigateToDetail = { mahasiswaId ->
+                    navController.navigate(Screen.DetailMahasiswa.createRoute(mahasiswaId))
+                }
+            )
+        }
+
+        composable(Screen.DetailMahasiswa.route) { backStackEntry ->
+            val mahasiswaId = backStackEntry.arguments?.getString("mahasiswaId") ?: ""
+
+            com.acaris.features.monitoring_mahasiswa.ui.screen.MonitoringDetailScreen(
+                mahasiswaId = mahasiswaId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHistoryBimbingan = { id ->
+                    navController.navigate(Screen.HistoryBimbinganMahasiswa.createRoute(id))
+                },
+                onNavigateToHistoryChatbot = { id ->
+                    // (Tunggu fiturnya kelar nanti)
+                }
+            )
+        }
+
+        composable(Screen.HistoryBimbinganMahasiswa.route) { backStackEntry ->
+            val mahasiswaId = backStackEntry.arguments?.getString("mahasiswaId") ?: ""
+
+            com.acaris.features.monitoring_mahasiswa.ui.screen.MonitoringHistoryScreen(
+                mahasiswaId = mahasiswaId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
         composable(Screen.KnowledgeBase.route) { ScreenPlaceholder("Knowledge Base") }
         composable(Screen.UserManagement.route) { ScreenPlaceholder("Manajemen Pengguna") }
 
