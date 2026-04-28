@@ -28,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -99,7 +101,7 @@ fun CustomOutlinedButton(
         border = BorderStroke(2.dp, if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.primary,
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = Color.Transparent,
             disabledContentColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         )
     ) {
@@ -128,6 +130,31 @@ fun CustomBackButton(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = "Kembali",
             tint = MaterialTheme.colorScheme.onBackground
+        )
+    }
+}
+
+@Composable
+fun CustomCircularIconButton(
+    icon: ImageVector,
+    contentDescription: String,
+    color: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(32.dp)
+            .clip(CircleShape)
+            .border(1.dp, color, CircleShape)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = color,
+            modifier = Modifier.size(16.dp)
         )
     }
 }

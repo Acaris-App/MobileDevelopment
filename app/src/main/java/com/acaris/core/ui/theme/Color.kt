@@ -1,5 +1,7 @@
 package com.acaris.core.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -26,14 +28,26 @@ val TextGray = Color(0xFF757575)
 val TextCaption = Color(0xFF767779)
 val SurfaceWhite = Color(0xFFFFFFFF)
 
-val StatusAvailableBg = Color(0xFF4CAF50).copy(alpha = 0.2f)   // Hijau Pastel (Background)
-val StatusAvailableText = Color(0xFF4CAF50)                    // Hijau Tua (Text/Border)
+val StatusAvailableBg: Color
+    @Composable get() = if (isSystemInDarkTheme()) Color(0xFF81C784).copy(alpha = 0.15f) else Color(0xFF4CAF50).copy(alpha = 0.2f)
 
-val StatusBookedBg = Color(0xFFE3F2FD)                         // Biru Pastel (Background)
-val StatusBookedText = Color(0xFF2196F3)                       // Biru Tua (Text/Border)
+val StatusAvailableText: Color
+    @Composable get() = if (isSystemInDarkTheme()) Color(0xFF81C784) else Color(0xFF4CAF50)
 
-val StatusFullBg = Color(0xFFF44336).copy(alpha = 0.2f)        // Merah Pastel (Background)
-val StatusFullText = Color(0xFFF44336)                         // Merah Tua (Text/Border)
+val StatusBookedBg: Color
+    @Composable get() = if (isSystemInDarkTheme()) Color(0xFF64B5F6).copy(alpha = 0.15f) else Color(0xFFE3F2FD)
 
-val StatusSelesaiBg = Color(0xFFFFF8E1)                        // Kuning Pastel (Background)
-val StatusSelesaiText = Color(0xFFFFA000)
+val StatusBookedText: Color
+    @Composable get() = if (isSystemInDarkTheme()) Color(0xFF64B5F6) else Color(0xFF2196F3)
+
+val StatusFullBg: Color
+    @Composable get() = if (isSystemInDarkTheme()) Color(0xFFE57373).copy(alpha = 0.15f) else Color(0xFFF44336).copy(alpha = 0.2f)
+
+val StatusFullText: Color
+    @Composable get() = if (isSystemInDarkTheme()) Color(0xFFE57373) else Color(0xFFF44336)
+
+val StatusSelesaiBg: Color
+    @Composable get() = if (isSystemInDarkTheme()) Color(0xFFFFCA28).copy(alpha = 0.15f) else Color(0xFFFFF8E1)
+
+val StatusSelesaiText: Color
+    @Composable get() = if (isSystemInDarkTheme()) Color(0xFFFFCA28) else Color(0xFFFFA000)

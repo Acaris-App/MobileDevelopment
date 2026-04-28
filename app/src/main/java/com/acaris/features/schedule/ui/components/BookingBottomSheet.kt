@@ -1,6 +1,10 @@
 package com.acaris.features.schedule.ui.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -9,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.acaris.core.ui.components.CustomOutlinedButton
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.features.schedule.presentation.model.ScheduleUiModel
 
@@ -42,23 +47,46 @@ fun BookingBottomSheet(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Dosen: ${schedule.dosenName}", fontWeight = FontWeight.SemiBold)
-                    Text("Waktu: ${schedule.time}", color = Color.DarkGray)
-                }
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = schedule.dosenName, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.AccessTime, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = schedule.time, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+                Icon(
+                    Icons.Default.Info,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .size(16.dp)
+                        .padding(top = 2.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = schedule.keterangan,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 20.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = agenda,
                 onValueChange = { agenda = it },
                 label = { Text("Agenda / Keperluan Bimbingan") },
-                placeholder = { Text("Contoh: Revisi Bab 1") },
+                placeholder = { Text("Contoh: validasi krs") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
                 maxLines = 5,
@@ -68,19 +96,23 @@ fun BookingBottomSheet(
             Spacer(modifier = Modifier.height(32.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                OutlinedButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.weight(1f),
-                    shape = MaterialTheme.shapes.medium
-                ) {
-                    Text("Batal")
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    CustomOutlinedButton(
+                        text = "Batal",
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                    )
+                    CustomPrimaryButton(
+                        text = "Booking",
+                        onClick = { onSubmit(agenda) },
+                        enabled = agenda.isNotBlank(),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                    )
                 }
-                CustomPrimaryButton(
-                    text = "Booking",
-                    onClick = { onSubmit(agenda) },
-                    enabled = agenda.isNotBlank(),
-                    modifier = Modifier.weight(1f)
-                )
             }
         }
     }

@@ -62,17 +62,14 @@ fun AcarisTheme(
         SideEffect {
             val window = (view.context as Activity).window
 
-            // 1. Warna Bar Atas (Jam, Sinyal) mengikuti background layar
             window.statusBarColor = colorScheme.background.toArgb()
 
-            // 2. Warna Bar Bawah (Tombol 3 Nav) mengikuti warna Bottom Nav
             window.navigationBarColor = if (darkTheme) {
                 AcarisPrimary.toArgb()
             } else {
                 AcarisTertiary.toArgb()
             }
 
-            // 3. Menyesuaikan warna ikon (Hitam/Putih) agar kontras
             WindowCompat.getInsetsController(window, view).apply {
                 isAppearanceLightStatusBars = !darkTheme
                 isAppearanceLightNavigationBars = !darkTheme

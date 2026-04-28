@@ -1,6 +1,8 @@
 package com.acaris.features.schedule.domain.model
 
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 data class StudentBooking(
     val id: String,
@@ -26,7 +28,18 @@ data class Schedule(
 ) {
     fun isExpired(): Boolean {
         return try {
-            LocalDate.parse(date).isBefore(LocalDate.now())
+            val today = LocalDate.now()
+            val currentTime = LocalTime.now()
+            val scheduleDate = LocalDate.parse(date)
+            when {
+                scheduleDate.isBefore(today) -> true
+                scheduleDate.isEqual(today) -> {
+                    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+                    val endLocalTime = LocalTime.parse(endTime, timeFormatter)
+                    currentTime.isAfter(endLocalTime)
+                }
+                else -> false
+            }
         } catch (e: Exception) {
             false
         }

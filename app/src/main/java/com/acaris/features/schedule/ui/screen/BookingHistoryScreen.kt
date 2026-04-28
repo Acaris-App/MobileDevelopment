@@ -24,7 +24,6 @@ fun BookingHistoryScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    // Otomatis fetch data saat layar dibuka
     LaunchedEffect(Unit) {
         viewModel.fetchBookingHistory()
     }

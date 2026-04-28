@@ -13,12 +13,15 @@ fun Schedule.toPresentation(): ScheduleUiModel {
         isScheduleFull -> "Penuh (${this.quota}/${this.quota})"
         else -> "Sisa Kuota: ${this.remainingQuota}/${this.quota}"
     }
+    val formatTime = { timeStr: String ->
+        timeStr.split(":").take(2).joinToString(":")
+    }
 
     return ScheduleUiModel(
         id = this.id,
         title = "Bimbingan Akademik",
         date = this.date,
-        time = "${this.startTime} - ${this.endTime}",
+        time = "${formatTime(this.startTime)} - ${formatTime(this.endTime)}",
         quotaInfo = quotaInfoText,
         status = if (isPast) "Selesai" else this.status.ifBlank { "Tersedia" },
         keterangan = this.keterangan.ifBlank { "Tidak ada keterangan" },

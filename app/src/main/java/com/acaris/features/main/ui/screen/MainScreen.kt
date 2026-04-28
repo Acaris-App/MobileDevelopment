@@ -24,20 +24,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.acaris.R
+import com.acaris.core.navigation.MainNavHost
 import com.acaris.core.navigation.Screen
 import com.acaris.core.network.AuthEvent
 import com.acaris.core.ui.components.CustomDialog
-import com.acaris.features.auth.ui.screen.ChangePasswordScreen
-import com.acaris.features.dashboard.ui.screen.DosenDashboardScreen
 import com.acaris.features.main.presentation.viewmodel.MainViewModel
-import com.acaris.features.profile.ui.screen.EditDataDiriScreen
-import com.acaris.features.profile.ui.screen.EditDocumentScreen
-import com.acaris.features.profile.ui.screen.ProfileScreen
 
 object AcarisIcons {
     val Schedule: ImageVector = Icons.Default.DateRange
@@ -79,17 +73,9 @@ fun MainScreen(
             onDismiss = { showLogoutDialog = false },
             content = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "Keluar",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("Keluar", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Apakah Anda yakin ingin keluar dari Acaris?",
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
+                    Text("Apakah Anda yakin ingin keluar dari Acaris?", style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
                 }
             }
         )
@@ -128,97 +114,15 @@ fun MainScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         val topPadding = if (isMainMenu) 64.dp else 0.dp
-        val bottomPadding = 0.dp
 
-        Box(modifier = Modifier.fillMaxSize().padding(bottom = bottomPadding, top = topPadding)) {
+        Box(modifier = Modifier.fillMaxSize().padding(top = topPadding)) {
             val startDest = menus.firstOrNull()?.first ?: "home_mahasiswa"
 
-            NavHost(
+            MainNavHost(
                 navController = bottomNavController,
-                startDestination = startDest
-            ) {
-                composable(Screen.HomeMahasiswa.route) { ScreenPlaceholder("Home Mahasiswa") }
-                composable(Screen.DashboardDosen.route) {
-                    val profileViewModel: com.acaris.features.profile.presentation.viewmodel.ProfileViewModel = hiltViewModel()
-                    val profileState by profileViewModel.uiState.collectAsState()
-
-                    LaunchedEffect(Unit) {
-                        profileViewModel.loadProfile()
-                    }
-
-                    if (profileState.errorMessage != null) {
-                        CustomDialog(
-                            showDialog = true,
-                            onDismissRequest = { profileViewModel.clearMessages() },
-                            confirmText = "Tutup",
-                            onConfirm = { profileViewModel.clearMessages() },
-                            content = {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("Gagal Memuat Data", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(profileState.errorMessage ?: "", textAlign = TextAlign.Center, color = Color.Gray)
-                                }
-                            }
-                        )
-                    }
-
-                    DosenDashboardScreen(
-                        dosenName = profileState.userProfile?.name ?: "Memuat...",
-                        kodeKelas = profileState.userProfile?.kodeKelas
-                    )
-                }
-                composable(Screen.DashboardAdmin.route) { ScreenPlaceholder("Dashboard Admin") }
-
-                // 🌟 FIX: Rute Jadwal sudah memanggil Screen Mahasiswa
-                composable(Screen.Schedule.route) {
-                    if (userRole?.lowercase() == "dosen") {
-                        com.acaris.features.schedule.ui.screen.DosenScheduleScreen()
-                    } else {
-                        com.acaris.features.schedule.ui.screen.MahasiswaScheduleScreen(
-                            onNavigateToHistory = {
-                                bottomNavController.navigate(Screen.BookingHistory.route)
-                            }
-                        )
-                    }
-                }
-
-                // 🌟 TAMBAHAN: Rute Riwayat Booking (Akan kita isi nanti)
-                composable(Screen.BookingHistory.route) {
-                    com.acaris.features.schedule.ui.screen.BookingHistoryScreen(
-                        onNavigateBack = { bottomNavController.popBackStack() }
-                    )
-                }
-
-                composable(Screen.Chatbot.route) { ScreenPlaceholder("Halaman Chatbot") }
-                composable(Screen.MahasiswaBimbingan.route) { ScreenPlaceholder("Daftar Mahasiswa") }
-                composable(Screen.KnowledgeBase.route) { ScreenPlaceholder("Knowledge Base") }
-                composable(Screen.UserManagement.route) { ScreenPlaceholder("Manajemen Pengguna") }
-
-                composable(Screen.Profile.route) {
-                    ProfileScreen(
-                        onNavigateBack = {
-                            bottomNavController.navigate(startDest) {
-                                popUpTo(startDest) { inclusive = true }
-                            }
-                        },
-                        onNavigateToEditDataDiri = { bottomNavController.navigate(Screen.EditDataDiri.route) },
-                        onNavigateToEditDokumen = { bottomNavController.navigate(Screen.EditDokumen.route) },
-                        onNavigateToChangePassword = { bottomNavController.navigate(Screen.ChangePassword.route) }
-                    )
-                }
-
-                composable(Screen.EditDataDiri.route) {
-                    EditDataDiriScreen(onNavigateBack = { bottomNavController.popBackStack() })
-                }
-
-                composable(Screen.EditDokumen.route) {
-                    EditDocumentScreen(onNavigateBack = { bottomNavController.popBackStack() })
-                }
-
-                composable(Screen.ChangePassword.route) {
-                    ChangePasswordScreen(onNavigateBack = { bottomNavController.popBackStack() })
-                }
-            }
+                startDestination = startDest,
+                userRole = userRole
+            )
         }
 
         if (isMainMenu) {
@@ -226,8 +130,7 @@ fun MainScreen(
                 title = {
                     Row(
                         modifier = Modifier.clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }, indication = null,
                             onClick = {
                                 val homeRoute = menus.firstOrNull()?.first ?: "home_mahasiswa"
                                 bottomNavController.navigate(homeRoute) {
@@ -239,13 +142,7 @@ fun MainScreen(
                         ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logo),
-                            contentDescription = "Logo Acaris",
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                        )
+                        Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo Acaris", modifier = Modifier.size(32.dp).clip(CircleShape))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = "ACARIS", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                     }
@@ -253,12 +150,7 @@ fun MainScreen(
                 actions = {
                     IconButton(
                         onClick = { showLogoutDialog = true },
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.background)
-                            .border(1.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
+                        modifier = Modifier.padding(end = 16.dp).size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.background).border(1.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
                     ) {
                         Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(20.dp))
                     }
@@ -283,8 +175,7 @@ fun MainScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() }, indication = null,
                                     onClick = {
                                         bottomNavController.navigate(item.first) {
                                             popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
@@ -295,19 +186,9 @@ fun MainScreen(
                                 ),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Icon(
-                                imageVector = item.second.first,
-                                contentDescription = item.second.second,
-                                tint = if (selected) MaterialTheme.colorScheme.primary else Color.Gray,
-                                modifier = Modifier.size(28.dp)
-                            )
+                            Icon(imageVector = item.second.first, contentDescription = item.second.second, tint = if (selected) MaterialTheme.colorScheme.primary else Color.Gray, modifier = Modifier.size(28.dp))
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = item.second.second,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selected) MaterialTheme.colorScheme.primary else Color.Gray
-                            )
+                            Text(text = item.second.second, style = MaterialTheme.typography.labelSmall, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal, color = if (selected) MaterialTheme.colorScheme.primary else Color.Gray)
                         }
                     }
                 }

@@ -1,20 +1,25 @@
 package com.acaris.features.schedule.ui.screen
 
-import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.schedule.presentation.model.ScheduleUiModel
 import com.acaris.features.schedule.presentation.viewmodel.ScheduleViewModel
 import com.acaris.features.schedule.ui.components.ScheduleDetailCard
@@ -28,7 +33,6 @@ import java.time.format.DateTimeFormatter
 fun DosenScheduleScreen(
     viewModel: ScheduleViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val dailySchedules = uiState.dailySchedules
 
@@ -37,8 +41,10 @@ fun DosenScheduleScreen(
     var selectedDateStr by rememberSaveable { mutableStateOf(LocalDate.now().toString()) }
     val selectedDate = LocalDate.parse(selectedDateStr)
     var currentMonth by remember { mutableStateOf(YearMonth.from(selectedDate)) }
+
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var showSuccessDialog by rememberSaveable { mutableStateOf(false) }
+    var showErrorDialog by rememberSaveable { mutableStateOf(false) }
     var activeSchedule by remember { mutableStateOf<ScheduleUiModel?>(null) }
 
     LaunchedEffect(currentMonth) {
@@ -59,8 +65,7 @@ fun DosenScheduleScreen(
             viewModel.resetState()
         }
         if (uiState.errorMessage != null) {
-            Toast.makeText(context, uiState.errorMessage, Toast.LENGTH_LONG).show()
-            viewModel.resetState()
+            showErrorDialog = true
         }
     }
 
@@ -69,43 +74,60 @@ fun DosenScheduleScreen(
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + 24.dp,
+                    bottom = 120.dp,
+                    start = 24.dp,
+                    end = 24.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
 
-                CustomCalendar(
-                    selectedDate = selectedDate,
-                    onDateSelected = { newDate -> selectedDateStr = newDate.toString() },
-                    currentMonth = currentMonth,
-                    onMonthChanged = { newMonth -> currentMonth = newMonth },
-                    scheduleStatusMap = uiState.monthlyScheduleMap
-                )
+                item {
+                    CustomCalendar(
+                        selectedDate = selectedDate,
+                        onDateSelected = { newDate -> selectedDateStr = newDate.toString() },
+                        currentMonth = currentMonth,
+                        onMonthChanged = { newMonth -> currentMonth = newMonth },
+                        scheduleStatusMap = uiState.monthlyScheduleMap
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Jadwal Tanggal ${selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
                 if (uiState.isLoading && dailySchedules.isEmpty()) {
-                    CircularProgressIndicator(modifier = Modifier.padding(32.dp))
+                    item {
+                        Box(modifier = Modifier.fillMaxWidth().height(150.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
                 } else if (dailySchedules.isEmpty()) {
-                    Text(
-                        text = "Tidak ada jadwal bimbingan di tanggal ini.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
+                    item {
+                        Text(
+                            text = "Tidak ada jadwal bimbingan di tanggal ini.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
                 } else {
-                    dailySchedules.forEach { schedule ->
+                    items(dailySchedules) { schedule ->
                         ScheduleDetailCard(
-                            dateStr = selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")),
                             timeSpan = schedule.time,
                             quotaInfo = schedule.quotaInfo,
                             keteranganDosen = schedule.keterangan,
                             isFull = schedule.isFull,
-                            isSelesai = schedule.isSelesai, // 🌟 PENYESUAIAN PARAMETER BARU
+                            isSelesai = schedule.isSelesai,
                             bookedStudents = schedule.bookedStudents,
                             onEditClick = {
                                 activeSchedule = schedule
@@ -114,31 +136,34 @@ fun DosenScheduleScreen(
                             },
                             onDeleteClick = {
                                 if (schedule.bookedStudents.isNotEmpty()) {
-                                    Toast.makeText(context, "Gagal: Jadwal sudah di-booking mahasiswa!", Toast.LENGTH_LONG).show()
+                                    viewModel.resetState()
+                                    showErrorDialog = true
                                 } else {
                                     activeSchedule = schedule
                                     showDeleteDialog = true
                                 }
                             }
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        activeSchedule = null
-                        isEditMode = false
-                        showBottomSheet = true
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("+ Tambah Jadwal Baru")
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            activeSchedule = null
+                            isEditMode = false
+                            showBottomSheet = true
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("+ Tambah Jadwal Baru")
+                    }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(64.dp))
+            if (uiState.isLoading && dailySchedules.isNotEmpty()) {
+                CustomLoadingOverlay(isLoading = true)
             }
 
             if (showBottomSheet) {
@@ -160,11 +185,6 @@ fun DosenScheduleScreen(
                 )
             }
 
-            if (uiState.isLoading && dailySchedules.isNotEmpty()) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-
-            // DIALOG HAPUS
             if (showDeleteDialog && activeSchedule != null) {
                 CustomDialog(
                     showDialog = true,
@@ -186,7 +206,27 @@ fun DosenScheduleScreen(
                 )
             }
 
-            // 🌟 DIALOG SUKSES
+            if (showErrorDialog) {
+                CustomDialog(
+                    showDialog = true,
+                    onDismissRequest = { showErrorDialog = false; viewModel.resetState() },
+                    confirmText = "Tutup",
+                    onConfirm = { showErrorDialog = false; viewModel.resetState() },
+                    content = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(modifier = Modifier.size(72.dp).background(MaterialTheme.colorScheme.error, CircleShape), contentAlignment = Alignment.Center) {
+                                Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.onError, modifier = Modifier.size(40.dp))
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text("Terjadi Kesalahan", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            val msg = uiState.errorMessage ?: "Jadwal ini sudah di-booking mahasiswa. Tidak bisa dihapus!"
+                            Text(msg, textAlign = TextAlign.Center, color = Color.Gray)
+                        }
+                    }
+                )
+            }
+
             if (showSuccessDialog) {
                 CustomDialog(
                     showDialog = true,
@@ -195,7 +235,11 @@ fun DosenScheduleScreen(
                     onConfirm = { showSuccessDialog = false },
                     content = {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = "Berhasil!", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Box(modifier = Modifier.size(72.dp).background(Color(0xFF4CAF50), CircleShape), contentAlignment = Alignment.Center) {
+                                Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text("Berhasil!", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(text = "Jadwal bimbingan telah berhasil diperbarui di sistem.", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }

@@ -1,5 +1,6 @@
 package com.acaris.features.schedule.data.repository
 
+import com.acaris.core.network.parseApiError // 🌟 IMPORT PARSER-NYA DI SINI
 import com.acaris.features.schedule.data.mapper.toDomain
 import com.acaris.features.schedule.data.remote.datasource.ScheduleApiService
 import com.acaris.features.schedule.data.remote.model.CreateScheduleRequest
@@ -29,9 +30,10 @@ class ScheduleRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message))
             }
         } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "Terjadi kesalahan saat menghubungi server"))
+            Result.failure(Exception(e.parseApiError()))
         }
     }
+
     override suspend fun getMonthlySchedules(year: Int, month: Int): Result<List<Schedule>> {
         return try {
             val response = apiService.getMonthlySchedules(year, month)
@@ -42,7 +44,7 @@ class ScheduleRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message))
             }
         } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "Gagal mengambil jadwal bulanan"))
+            Result.failure(Exception(e.parseApiError()))
         }
     }
 
@@ -56,7 +58,7 @@ class ScheduleRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message))
             }
         } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "Gagal mengambil jadwal harian"))
+            Result.failure(Exception(e.parseApiError()))
         }
     }
 
@@ -69,7 +71,7 @@ class ScheduleRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message))
             }
         } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "Gagal menghapus jadwal"))
+            Result.failure(Exception(e.parseApiError()))
         }
     }
 
@@ -87,7 +89,7 @@ class ScheduleRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message))
             }
         } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "Gagal memperbarui jadwal"))
+            Result.failure(Exception(e.parseApiError()))
         }
     }
 
@@ -101,7 +103,7 @@ class ScheduleRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message))
             }
         } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "Gagal mengambil jadwal bulanan mahasiswa"))
+            Result.failure(Exception(e.parseApiError()))
         }
     }
 
@@ -115,7 +117,7 @@ class ScheduleRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message))
             }
         } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "Gagal mengambil jadwal harian mahasiswa"))
+            Result.failure(Exception(e.parseApiError()))
         }
     }
 
@@ -129,7 +131,7 @@ class ScheduleRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message))
             }
         } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "Gagal melakukan booking jadwal"))
+            Result.failure(Exception(e.parseApiError()))
         }
     }
 
@@ -143,7 +145,7 @@ class ScheduleRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message))
             }
         } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "Gagal mengambil riwayat booking"))
+            Result.failure(Exception(e.parseApiError()))
         }
     }
 }

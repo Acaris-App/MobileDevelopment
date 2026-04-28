@@ -37,7 +37,7 @@ class MahasiswaScheduleViewModel @Inject constructor(
 
                 schedules.forEach { schedule ->
                     try {
-                        val date = LocalDate.parse(schedule.date) // 🌟 Langsung parse, sudah bersih!
+                        val date = LocalDate.parse(schedule.date)
 
                         val isPast = schedule.isExpired()
                         val isBookedByMe = schedule.bookingId != null
@@ -46,7 +46,7 @@ class MahasiswaScheduleViewModel @Inject constructor(
 
                         if (currentMapStatus != ScheduleStatus.BOOKED_BY_ME) {
                             statusMap[date] = when {
-                                isPast -> ScheduleStatus.SELESAI // 🌟 Kalender bulan lalu otomatis Kuning
+                                isPast -> ScheduleStatus.SELESAI
                                 isBookedByMe -> ScheduleStatus.BOOKED_BY_ME
                                 isAvailable -> ScheduleStatus.AVAILABLE
                                 else -> ScheduleStatus.FULL

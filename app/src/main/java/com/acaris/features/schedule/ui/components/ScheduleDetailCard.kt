@@ -1,115 +1,144 @@
 package com.acaris.features.schedule.ui.components
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.acaris.core.ui.theme.StatusAvailableBg
+import androidx.compose.ui.unit.sp
+// 🌟 FIX: Import CustomCircularIconButton
+import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.theme.StatusAvailableText
-import com.acaris.core.ui.theme.StatusFullBg
 import com.acaris.core.ui.theme.StatusFullText
-import com.acaris.core.ui.theme.StatusSelesaiBg // 🌟 IMPORT BARU
-import com.acaris.core.ui.theme.StatusSelesaiText // 🌟 IMPORT BARU
+import com.acaris.core.ui.theme.StatusSelesaiText
 import com.acaris.features.schedule.presentation.model.StudentBookingUiModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleDetailCard(
-    dateStr: String,
     timeSpan: String,
     quotaInfo: String,
     keteranganDosen: String,
     isFull: Boolean,
-    isSelesai: Boolean, // 🌟 PARAMETER BARU
+    isSelesai: Boolean,
     bookedStudents: List<StudentBookingUiModel>,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
+    val statusColor = when {
+        isSelesai -> StatusSelesaiText
+        isFull -> StatusFullText
+        else -> StatusAvailableText
+    }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(2.dp, RoundedCornerShape(16.dp), clip = false)
+            .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, statusColor.copy(alpha = 0.8f))
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
 
-            Text(text = dateStr, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = timeSpan,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = timeSpan, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurface)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = statusColor.copy(alpha = 0.1f),
+                        modifier = Modifier.border(1.dp, statusColor.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                    ) {
+                        Text(
+                            text = quotaInfo,
+                            color = statusColor,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
 
-                // 🌟 LOGIKA WARNA BARU
-                val badgeContainerColor = when {
-                    isSelesai -> StatusSelesaiBg
-                    isFull -> StatusFullBg
-                    else -> StatusAvailableBg
+                    if (!isSelesai) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        // 🌟 FIX: Memakai CustomCircularIconButton dengan icon Outlined
+                        CustomCircularIconButton(
+                            icon = Icons.Outlined.Edit,
+                            contentDescription = "Edit",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            onClick = onEditClick
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        CustomCircularIconButton(
+                            icon = Icons.Outlined.Delete,
+                            contentDescription = "Hapus",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            onClick = onDeleteClick
+                        )
+                    }
                 }
-                val badgeContentColor = when {
-                    isSelesai -> StatusSelesaiText
-                    isFull -> StatusFullText
-                    else -> StatusAvailableText
-                }
+            }
 
-                Badge(
-                    containerColor = badgeContainerColor,
-                    contentColor = badgeContentColor,
-                    modifier = Modifier.padding(0.dp)
-                ) {
+            if (keteranganDosen.isNotBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.Top) {
+                    Icon(
+                        Icons.Outlined.Info, // 🌟 FIX: Ikon garis
+                        contentDescription = null,
+                        tint = statusColor,
+                        modifier = Modifier.size(16.dp).padding(top = 2.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = quotaInfo,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold
+                        text = keteranganDosen,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 20.sp
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            if (keteranganDosen.isNotBlank()) {
-                Text(text = "Catatan: $keteranganDosen", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // 🌟 SEMBUNYIKAN TOMBOL JIKA SUDAH SELESAI
-            if (!isSelesai) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    OutlinedButton(onClick = onEditClick, modifier = Modifier.padding(end = 8.dp), shape = RoundedCornerShape(8.dp)) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Edit")
-                    }
-                    Button(onClick = onDeleteClick, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error), shape = RoundedCornerShape(8.dp)) {
-                        Icon(Icons.Default.Delete, contentDescription = "Hapus", modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Hapus")
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(16.dp))
-
-            Text(text = "Daftar Mahasiswa (${bookedStudents.size})", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Daftar Mahasiswa (${bookedStudents.size})",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
             if (bookedStudents.isEmpty()) {
-                Box(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), contentAlignment = Alignment.Center) {
-                    Text(text = "Belum ada mahasiswa yang mem-booking.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Box(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Belum ada mahasiswa yang mem-booking.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             } else {
                 bookedStudents.forEach { student -> StudentListItem(student) }
@@ -120,16 +149,53 @@ fun ScheduleDetailCard(
 
 @Composable
 private fun StudentListItem(student: StudentBookingUiModel) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer), contentAlignment = Alignment.Center) {
-            Icon(imageVector = Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = student.nama, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(text = student.npm, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            if (student.keterangan.isNotBlank()) {
-                Text(text = "\"${student.keterangan}\"", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 4.dp))
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = student.nama,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = student.npm,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                if (student.keterangan.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    ) {
+                        Text(
+                            text = "Agenda: ${student.keterangan}",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            fontStyle = FontStyle.Italic
+                        )
+                    }
+                }
             }
         }
     }

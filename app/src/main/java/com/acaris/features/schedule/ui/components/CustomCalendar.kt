@@ -197,12 +197,12 @@ private fun CalendarCell(
         Text(
             text = date.dayOfMonth.toString(),
             color = when {
-                status == ScheduleStatus.BOOKED_BY_ME -> StatusBookedText
-                status == ScheduleStatus.SELESAI -> StatusSelesaiText
+                status == ScheduleStatus.BOOKED_BY_ME -> MaterialTheme.colorScheme.onSurface
+                status == ScheduleStatus.SELESAI -> MaterialTheme.colorScheme.onSurface
                 isToday -> MaterialTheme.colorScheme.primary
                 else -> MaterialTheme.colorScheme.onSurface
             },
-            fontWeight = if (isToday || isSelected || status == ScheduleStatus.BOOKED_BY_ME || status == ScheduleStatus.SELESAI) FontWeight.Bold else FontWeight.Normal
+            fontWeight = if (isToday || isSelected || status == ScheduleStatus.BOOKED_BY_ME || status == ScheduleStatus.SELESAI || status == ScheduleStatus.AVAILABLE || status == ScheduleStatus.FULL) FontWeight.Bold else FontWeight.Normal
         )
     }
 }
