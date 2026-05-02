@@ -124,7 +124,9 @@ fun MainNavHost(
             )
         }
 
-        composable(Screen.KnowledgeBase.route) { ScreenPlaceholder("Knowledge Base") }
+        composable(Screen.KnowledgeBase.route) {
+            com.acaris.features.knowledge_base.ui.screen.KnowledgeBaseScreen()
+        }
         composable(Screen.UserManagement.route) { ScreenPlaceholder("Manajemen Pengguna") }
 
         composable(Screen.Profile.route) {
