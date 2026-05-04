@@ -92,6 +92,7 @@ fun MainNavHost(
         }
 
         composable(Screen.Chatbot.route) { ScreenPlaceholder("Halaman Chatbot") }
+
         composable(Screen.MahasiswaBimbingan.route) {
             com.acaris.features.monitoring_mahasiswa.ui.screen.MonitoringListScreen(
                 onNavigateToDetail = { mahasiswaId ->
@@ -127,7 +128,29 @@ fun MainNavHost(
         composable(Screen.KnowledgeBase.route) {
             com.acaris.features.knowledge_base.ui.screen.KnowledgeBaseScreen()
         }
-        composable(Screen.UserManagement.route) { ScreenPlaceholder("Manajemen Pengguna") }
+
+        // 🌟 UPDATE: User Management Screen tanpa parameter onNavigateBack
+        composable(Screen.UserManagement.route) {
+            com.acaris.features.user_management.ui.screen.UserManagementScreen(
+                onNavigateToEdit = { userId ->
+                    navController.navigate(Screen.EditUser.createRoute(userId))
+                },
+                onNavigateToAddAdmin = {
+                    navController.navigate(Screen.AddAdmin.route)
+                }
+            )
+        }
+
+        // Rute untuk Tambah Admin (Placeholder)
+        composable(Screen.AddAdmin.route) {
+            ScreenPlaceholder("Formulir Tambah Admin Baru")
+        }
+
+        // Rute untuk Edit User (Placeholder)
+        composable(Screen.EditUser.route) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            ScreenPlaceholder("Formulir Edit Pengguna ID: $userId")
+        }
 
         composable(Screen.Profile.route) {
             ProfileScreen(

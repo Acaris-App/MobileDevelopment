@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.acaris.features.documents_mahasiswa.domain.usecase.DeleteDocumentUseCase
 import com.acaris.features.documents_mahasiswa.domain.usecase.GetDocumentsUseCase
 import com.acaris.features.documents_mahasiswa.domain.usecase.UploadDocumentUseCase
+import com.acaris.features.documents_mahasiswa.domain.usecase.UpdateDocumentUseCase
 import com.acaris.features.documents_mahasiswa.presentation.model.DocumentState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +20,8 @@ import javax.inject.Inject
 class DocumentViewModel @Inject constructor(
     private val getDocumentsUseCase: GetDocumentsUseCase,
     private val deleteDocumentUseCase: DeleteDocumentUseCase,
-    private val uploadDocumentUseCase: UploadDocumentUseCase
+    private val uploadDocumentUseCase: UploadDocumentUseCase,
+    private val updateDocumentUseCase: UpdateDocumentUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DocumentState())
@@ -53,6 +55,27 @@ class DocumentViewModel @Inject constructor(
                         )
                     }
                     loadDocuments()
+                },
+                onFailure = { e ->
+                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+                }
+            )
+        }
+    }
+
+    fun updateDocument(documentId: String, semester: Int?, file: File) {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null, successMessage = null) }
+        viewModelScope.launch {
+            val result = updateDocumentUseCase(documentId, semester, file)
+            result.fold(
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = "Dokumen berhasil diperbarui!"
+                        )
+                    }
+                    loadDocuments() // Refresh data setelah sukses
                 },
                 onFailure = { e ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }

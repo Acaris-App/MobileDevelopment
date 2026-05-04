@@ -47,33 +47,53 @@ fun EditDocumentScreen(
         documentViewModel.loadDocuments()
     }
 
+    // State untuk upload dokumen baru
     var pendingUploadType by remember { mutableStateOf("") }
     var pendingUploadSemester by remember { mutableStateOf<Int?>(null) }
+
+    // 🌟 FIX: State baru untuk menyimpan ID dokumen yang mau di-update
+    var documentIdToUpdate by remember { mutableStateOf<String?>(null) }
 
     var showReplaceDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
-    // 🌟 FIX 1: State untuk Dialog Error Urutan
     var showOrderErrorDialog by remember { mutableStateOf(false) }
     var orderErrorMessage by remember { mutableStateOf("") }
 
+    // 🌟 FIX: Logika Launcher dipisah jadi dua (Update vs Upload)
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             val file = FileUtils.uriToFile(context, uri)
-            if (file != null && pendingUploadType.isNotEmpty()) {
-                documentViewModel.uploadDocument(
-                    type = pendingUploadType,
-                    semester = pendingUploadSemester,
-                    file = file
-                )
+            if (file != null) {
+                if (documentIdToUpdate != null) {
+                    // Jalur PUT: Ganti dokumen yang sudah ada
+                    documentViewModel.updateDocument(
+                        documentId = documentIdToUpdate!!,
+                        semester = pendingUploadSemester,
+                        file = file
+                    )
+                } else if (pendingUploadType.isNotEmpty()) {
+                    // Jalur POST: Tambah dokumen baru
+                    documentViewModel.uploadDocument(
+                        type = pendingUploadType,
+                        semester = pendingUploadSemester,
+                        file = file
+                    )
+                }
             }
         }
+        // Reset state setelah file dipilih atau dibatalkan
+        documentIdToUpdate = null
+        pendingUploadType = ""
     }
 
     if (showReplaceDialog) {
         CustomDialog(
             showDialog = true,
-            onDismissRequest = { showReplaceDialog = false },
+            onDismissRequest = {
+                showReplaceDialog = false
+                documentIdToUpdate = null // Reset jika batal
+            },
             content = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Ganti Dokumen", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -87,11 +107,13 @@ fun EditDocumentScreen(
                 launcher.launch("application/pdf")
             },
             dismissText = "Batal",
-            onDismiss = { showReplaceDialog = false }
+            onDismiss = {
+                showReplaceDialog = false
+                documentIdToUpdate = null // Reset jika batal
+            }
         )
     }
 
-    // 🌟 FIX 1: Dialog Ditolak karena Urutan
     if (showOrderErrorDialog) {
         CustomDialog(
             showDialog = true,
@@ -134,7 +156,6 @@ fun EditDocumentScreen(
             showDialog = true,
             onDismissRequest = {
                 documentViewModel.clearMessages()
-                documentViewModel.loadDocuments()
             },
             content = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -146,7 +167,6 @@ fun EditDocumentScreen(
             confirmText = "OK",
             onConfirm = {
                 documentViewModel.clearMessages()
-                documentViewModel.loadDocuments()
             }
         )
     }
@@ -170,7 +190,7 @@ fun EditDocumentScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Gagal Mengunggah", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text("Gagal", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = state.errorMessage ?: "",
@@ -242,8 +262,8 @@ fun EditDocumentScreen(
                             DocumentCard(
                                 document = transkripDoc,
                                 onClick = {
-                                    pendingUploadType = "transkrip"
-                                    pendingUploadSemester = 0
+                                    documentIdToUpdate = transkripDoc.id // 🌟 Set ID untuk update
+                                    pendingUploadSemester = null
                                     showReplaceDialog = true
                                 },
                                 onDeleteClick = { documentIdToDelete = it },
@@ -254,7 +274,7 @@ fun EditDocumentScreen(
                                 text = "Unggah Transkrip PDF (Maks 1MB)",
                                 onClick = {
                                     pendingUploadType = "transkrip"
-                                    pendingUploadSemester = 0
+                                    pendingUploadSemester = null
                                     launcher.launch("application/pdf")
                                 }
                             )
@@ -283,9 +303,14 @@ fun EditDocumentScreen(
 
                                 val onClickAction = {
                                     if (sem == 1 || getDoc("krs", sem - 1) != null) {
-                                        pendingUploadType = "krs"
                                         pendingUploadSemester = sem
-                                        if (krsDoc != null) showReplaceDialog = true else launcher.launch("application/pdf")
+                                        if (krsDoc != null) {
+                                            documentIdToUpdate = krsDoc.id // 🌟 Set ID untuk update
+                                            showReplaceDialog = true
+                                        } else {
+                                            pendingUploadType = "krs" // 🌟 Set Type untuk upload baru
+                                            launcher.launch("application/pdf")
+                                        }
                                     } else {
                                         orderErrorMessage = "Upload dokumen KRS harus berurutan. Silakan unggah KRS Semester ${sem - 1} terlebih dahulu."
                                         showOrderErrorDialog = true
@@ -332,9 +357,14 @@ fun EditDocumentScreen(
 
                                 val onClickAction = {
                                     if (sem == 1 || getDoc("khs", sem - 1) != null) {
-                                        pendingUploadType = "khs"
                                         pendingUploadSemester = sem
-                                        if (khsDoc != null) showReplaceDialog = true else launcher.launch("application/pdf")
+                                        if (khsDoc != null) {
+                                            documentIdToUpdate = khsDoc.id // 🌟 Set ID untuk update
+                                            showReplaceDialog = true
+                                        } else {
+                                            pendingUploadType = "khs" // 🌟 Set Type untuk upload baru
+                                            launcher.launch("application/pdf")
+                                        }
                                     } else {
                                         orderErrorMessage = "Upload dokumen KHS harus berurutan. Silakan unggah KHS Semester ${sem - 1} terlebih dahulu."
                                         showOrderErrorDialog = true
