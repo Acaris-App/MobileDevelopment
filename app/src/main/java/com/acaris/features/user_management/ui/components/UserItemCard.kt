@@ -1,5 +1,7 @@
+// File: ui/components/UserItemCard.kt
 package com.acaris.features.user_management.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,23 +29,27 @@ import com.acaris.features.user_management.presentation.model.UserUiModel
 @Composable
 fun UserItemCard(
     user: UserUiModel,
+    onCardClick: (String) -> Unit,
     onEditClick: (UserUiModel) -> Unit,
     onDeleteClick: (UserUiModel) -> Unit,
     onStatusToggle: (UserUiModel, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isMahasiswa = user.role.lowercase() == "mahasiswa"
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .shadow(2.dp, RoundedCornerShape(16.dp), clip = false)
-            .clip(RoundedCornerShape(16.dp)),
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(
+                enabled = isMahasiswa,
+                onClick = { onCardClick(user.id) }
+            ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            // ==========================================
-            // 1. HEADER KARTU (Foto, Nama, NPM, Email)
-            // ==========================================
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(
                     shape = CircleShape,
@@ -94,11 +100,8 @@ fun UserItemCard(
             HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(12.dp))
 
-            // ==========================================
-            // 2. KONTEN DETAIL (Angkatan, Semester, dll)
-            // ==========================================
             Column(modifier = Modifier.fillMaxWidth()) {
-                if (user.role.lowercase() == "mahasiswa") {
+                if (isMahasiswa) {
                     UserDetailRow("Angkatan", user.angkatan?.toString() ?: "-")
                     Spacer(modifier = Modifier.height(6.dp))
 
@@ -117,7 +120,6 @@ fun UserItemCard(
                     UserDetailRow("Total Bimbingan", "${user.totalBimbingan ?: 0} Kali")
                 }
                 else if (user.role.lowercase() == "dosen") {
-                    // 🌟 KODE KELAS DOSEN TAMPIL DI SINI
                     UserDetailRow("Kelas Bimbingan", user.kodeKelas ?: "-")
                     Spacer(modifier = Modifier.height(6.dp))
 
@@ -135,9 +137,6 @@ fun UserItemCard(
             HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(12.dp))
 
-            // ==========================================
-            // 3. TOMBOL AKSI BAWAH
-            // ==========================================
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,

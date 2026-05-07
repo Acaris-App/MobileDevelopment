@@ -36,8 +36,8 @@ fun DocumentCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(2.dp, RoundedCornerShape(16.dp), clip = false) // 🔥 Trik yang sama
-            .clip(RoundedCornerShape(16.dp)) // Letakkan clip setelah shadow
+            .shadow(2.dp, RoundedCornerShape(16.dp), clip = false)
+            .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)

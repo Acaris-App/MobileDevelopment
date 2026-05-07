@@ -1,3 +1,4 @@
+// File: core/navigation/Screen.kt
 package com.acaris.core.navigation
 
 sealed class Screen(val route: String) {
@@ -38,5 +39,9 @@ sealed class Screen(val route: String) {
 
     object EditUser : Screen("edit_user_screen/{userId}") {
         fun createRoute(userId: String) = "edit_user_screen/$userId"
+    }
+
+    object UserDetail : Screen("user_detail_screen/{userId}") {
+        fun createRoute(userId: String) = "user_detail_screen/$userId"
     }
 }

@@ -35,6 +35,7 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun UserManagementScreen(
+    onNavigateToDetail: (String) -> Unit,
     onNavigateToEdit: (String) -> Unit,
     onNavigateToAddAdmin: () -> Unit,
     viewModel: UserManagementViewModel = hiltViewModel()
@@ -53,21 +54,19 @@ fun UserManagementScreen(
         }
     }
 
-    // State untuk konfirmasi dialog
     var userToDelete by remember { mutableStateOf<UserUiModel?>(null) }
     var userToToggleStatus by remember { mutableStateOf<Pair<UserUiModel, Boolean>?>(null) }
     val listState = rememberLazyListState()
     var isScrollingUp by remember { mutableStateOf(true) }
 
-    // Deteksi arah gerakan jari (Scroll)
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val delta = available.y
                 if (delta < -10f) {
-                    isScrollingUp = false // Scroll bawah -> sembunyikan Tab
+                    isScrollingUp = false
                 } else if (delta > 10f) {
-                    isScrollingUp = true  // Scroll atas -> munculkan Tab
+                    isScrollingUp = true
                 }
                 return Offset.Zero
             }
@@ -80,11 +79,6 @@ fun UserManagementScreen(
 
     val showTabRow = isScrollingUp || isAtTop
 
-    // ==========================================
-    // DIALOGS AREA
-    // ==========================================
-
-    // 1. Dialog Konfirmasi Hapus
     if (userToDelete != null) {
         CustomDialog(
             showDialog = true,
@@ -208,7 +202,6 @@ fun UserManagementScreen(
                     }
                 }
 
-                // 2. STICKY HEADER (TabRole + Search Bar Terpisah)
                 stickyHeader {
                     Surface(
                         color = MaterialTheme.colorScheme.background,
@@ -244,7 +237,6 @@ fun UserManagementScreen(
                     }
                 }
 
-                // 3. DAFTAR PENGGUNA
                 if (!state.isLoading && state.users.isEmpty()) {
                     item {
                         Box(modifier = Modifier.fillMaxWidth().padding(top = 40.dp), contentAlignment = Alignment.Center) {
@@ -255,6 +247,7 @@ fun UserManagementScreen(
                     items(state.users) { user ->
                         UserItemCard(
                             user = user,
+                            onCardClick = { onNavigateToDetail(user.id) },
                             onEditClick = { onNavigateToEdit(it.id) },
                             onDeleteClick = { userToDelete = it },
                             onStatusToggle = { uiModel, isActive ->

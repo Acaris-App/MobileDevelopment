@@ -1,4 +1,3 @@
-// File: domain/model/User.kt
 package com.acaris.features.user_management.domain.model
 
 data class User(

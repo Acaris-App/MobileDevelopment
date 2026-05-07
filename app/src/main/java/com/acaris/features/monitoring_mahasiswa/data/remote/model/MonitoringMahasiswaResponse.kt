@@ -38,5 +38,5 @@ data class RiwayatBimbinganResponse(
     @SerializedName("time") val time: String?,
     @SerializedName("agenda") val agenda: String?,
     @SerializedName("status") val status: String?,
-    @SerializedName("keterangan_dosen") val keteranganDosen: String?
+    @SerializedName("keterangan") val keteranganDosen: String?
 )

@@ -15,7 +15,7 @@ fun User.toUiModel(): UserUiModel {
         angkatan = this.angkatan,
         currentSemester = this.currentSemester,
         dosenPa = this.dosenPa,
-        kodeKelas = this.kodeKelas, // 🌟 INI TAMBAHANNYA
+        kodeKelas = this.kodeKelas,
         totalBimbingan = this.totalBimbingan,
         totalMahasiswa = this.totalMahasiswa,
         ipk = this.ipk

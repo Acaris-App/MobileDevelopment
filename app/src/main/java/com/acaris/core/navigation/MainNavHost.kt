@@ -129,7 +129,6 @@ fun MainNavHost(
             com.acaris.features.knowledge_base.ui.screen.KnowledgeBaseScreen()
         }
 
-        // 🌟 UPDATE: User Management Screen tanpa parameter onNavigateBack
         composable(Screen.UserManagement.route) {
             com.acaris.features.user_management.ui.screen.UserManagementScreen(
                 onNavigateToEdit = { userId ->
@@ -137,7 +136,19 @@ fun MainNavHost(
                 },
                 onNavigateToAddAdmin = {
                     navController.navigate(Screen.AddAdmin.route)
+                },
+                onNavigateToDetail = { userId -> // 🌟 Sinyal dari Card dialirkan ke sini
+                    navController.navigate(Screen.UserDetail.createRoute(userId))
                 }
+            )
+        }
+
+        // 🌟 BARU: Pendaftaran Layar User Detail
+        composable(Screen.UserDetail.route) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            com.acaris.features.user_management.ui.screen.UserDetailScreen(
+                userId = userId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

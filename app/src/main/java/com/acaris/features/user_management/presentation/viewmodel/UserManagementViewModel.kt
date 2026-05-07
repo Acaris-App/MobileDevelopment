@@ -55,9 +55,6 @@ class UserManagementViewModel @Inject constructor(
 
     fun setSearchQuery(query: String) {
         _uiState.update { it.copy(currentSearch = query) }
-        // Note: Untuk search, Kapten mungkin butuh mekanisme 'debounce' (jeda ngetik)
-        // di UI agar tidak nge-hit API setiap 1 huruf diketik.
-        // Panggil loadUsers() setelah user selesai ngetik.
     }
 
     fun setSortByAndLoad(sortBy: String) {
@@ -74,7 +71,7 @@ class UserManagementViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(isActionLoading = false, successMessage = "Status pengguna berhasil diperbarui.")
                     }
-                    loadUsers() // Refresh data
+                    loadUsers()
                 },
                 onFailure = { error ->
                     _uiState.update { it.copy(isActionLoading = false, errorMessage = error.message) }
