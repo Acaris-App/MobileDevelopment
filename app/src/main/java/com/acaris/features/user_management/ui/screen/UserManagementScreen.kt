@@ -50,14 +50,28 @@ fun UserManagementScreen(
         delay(500L)
         if (searchQuery != state.currentSearch) {
             viewModel.setSearchQuery(searchQuery)
-            viewModel.loadUsers()
+            viewModel.loadUsers(isRefresh = true)
         }
     }
 
     var userToDelete by remember { mutableStateOf<UserUiModel?>(null) }
     var userToToggleStatus by remember { mutableStateOf<Pair<UserUiModel, Boolean>?>(null) }
+
     val listState = rememberLazyListState()
     var isScrollingUp by remember { mutableStateOf(true) }
+
+    val shouldLoadMore = remember {
+        derivedStateOf {
+            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
+            lastVisibleItem.index >= listState.layoutInfo.totalItemsCount - 2
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore.value) {
+        if (shouldLoadMore.value && !state.isLastPage && !state.isLoading && !state.isAppending) {
+            viewModel.loadNextPage()
+        }
+    }
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
@@ -255,6 +269,19 @@ fun UserManagementScreen(
                             },
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                         )
+                    }
+
+                    if (state.isAppending) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                            }
+                        }
                     }
                 }
             }

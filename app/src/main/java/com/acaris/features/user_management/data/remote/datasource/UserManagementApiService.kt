@@ -14,7 +14,8 @@ interface UserManagementApiService {
     suspend fun getUsers(
         @Query("role") role: String,
         @Query("search") search: String?,
-        @Query("sort_by") sortBy: String?
+        @Query("sort_by") sortBy: String?,
+        @Query("page") page: Int
     ): BaseResponse<List<UserResponse>>
 
     @FormUrlEncoded

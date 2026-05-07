@@ -1,4 +1,3 @@
-// File: domain/repository/UserManagementRepository.kt
 package com.acaris.features.user_management.domain.repository
 
 import com.acaris.features.user_management.domain.model.User
@@ -7,11 +6,7 @@ import com.acaris.features.user_management.domain.model.MahasiswaDocument
 import java.io.File
 
 interface UserManagementRepository {
-    suspend fun getUsers(
-        role: String,
-        search: String? = null,
-        sortBy: String? = null
-    ): Result<List<User>>
+    suspend fun getUsers(role: String, search: String? = null, sortBy: String? = null, page: Int = 1): Result<List<User>>
 
     suspend fun getUserDetail(id: String): Result<User>
 

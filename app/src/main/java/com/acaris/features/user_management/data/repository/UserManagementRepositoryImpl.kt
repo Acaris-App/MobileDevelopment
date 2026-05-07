@@ -19,13 +19,21 @@ class UserManagementRepositoryImpl @Inject constructor(
     private val localDataSource: UserLocalDataSource
 ) : UserManagementRepository {
 
-    override suspend fun getUsers(role: String, search: String?, sortBy: String?): Result<List<User>> {
+    private val accumulatedUsers = mutableListOf<User>()
+
+    override suspend fun getUsers(role: String, search: String?, sortBy: String?, page: Int): Result<List<User>> {
         return try {
-            val response = apiService.getUsers(role, search, sortBy)
+            val response = apiService.getUsers(role, search, sortBy, page)
+
             if (response.status == "success" || response.status == "200") {
                 val list = response.data?.map { it.toDomain() } ?: emptyList()
 
-                localDataSource.saveUsersToCache(list)
+                if (page == 1) {
+                    accumulatedUsers.clear()
+                }
+                accumulatedUsers.addAll(list)
+
+                localDataSource.saveUsersToCache(accumulatedUsers)
 
                 Result.success(list)
             } else {

@@ -25,41 +25,69 @@ class UserManagementViewModel @Inject constructor(
         loadUsers()
     }
 
-    fun loadUsers() {
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+    fun loadUsers(isRefresh: Boolean = true) {
         val currentState = _uiState.value
+
+        if (isRefresh) {
+            _uiState.update { it.copy(isLoading = true, isAppending = false, currentPage = 1, isLastPage = false, errorMessage = null) }
+        } else {
+            // Jika sedang muat halaman bawah atau sudah halaman terakhir, batalkan!
+            if (currentState.isLastPage || currentState.isAppending) return
+            _uiState.update { it.copy(isAppending = true, errorMessage = null) }
+        }
+
+        val targetPage = if (isRefresh) 1 else currentState.currentPage + 1
 
         viewModelScope.launch {
             val result = useCases.getUsers(
                 role = currentState.currentRole,
                 search = currentState.currentSearch.takeIf { it.isNotBlank() },
-                sortBy = currentState.currentSortBy
+                sortBy = currentState.currentSortBy,
+                page = targetPage // 🌟 TEMBAK HALAMAN
             )
 
             result.fold(
                 onSuccess = { usersDomain ->
                     val uiModels = usersDomain.map { it.toUiModel() }
-                    _uiState.update { it.copy(isLoading = false, users = uiModels) }
+
+                    _uiState.update { state ->
+                        // Jika refresh, timpa. Jika append, gabungkan list lama & baru!
+                        val newList = if (isRefresh) uiModels else state.users + uiModels
+
+                        state.copy(
+                            isLoading = false,
+                            isAppending = false,
+                            users = newList,
+                            currentPage = targetPage,
+                            // 🌟 TRIK RAHASIA: Jika data yang datang kurang dari 20, berarti ini halaman terakhir!
+                            isLastPage = uiModels.isEmpty() || uiModels.size < 20
+                        )
+                    }
                 },
                 onFailure = { error ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = error.message) }
+                    _uiState.update { it.copy(isLoading = false, isAppending = false, errorMessage = error.message) }
                 }
             )
         }
     }
 
-    fun setFilterAndLoad(role: String) {
-        _uiState.update { it.copy(currentRole = role) }
-        loadUsers()
+    // 🌟 PANGGIL INI SAAT SCROLL MENTOK BAWAH
+    fun loadNextPage() {
+        loadUsers(isRefresh = false)
     }
 
-    fun setSearchQuery(query: String) {
-        _uiState.update { it.copy(currentSearch = query) }
+    fun setFilterAndLoad(role: String) {
+        _uiState.update { it.copy(currentRole = role) }
+        loadUsers(isRefresh = true) // Wajib true agar ulang dari page 1
     }
 
     fun setSortByAndLoad(sortBy: String) {
         _uiState.update { it.copy(currentSortBy = sortBy) }
-        loadUsers()
+        loadUsers(isRefresh = true)
+    }
+
+    fun setSearchQuery(query: String) {
+        _uiState.update { it.copy(currentSearch = query) }
     }
 
     fun changeUserStatus(id: String, newActiveStatus: Boolean) {

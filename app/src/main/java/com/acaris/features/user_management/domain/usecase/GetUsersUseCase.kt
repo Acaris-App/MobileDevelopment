@@ -10,8 +10,9 @@ class GetUsersUseCase @Inject constructor(
     suspend operator fun invoke(
         role: String,
         search: String? = null,
-        sortBy: String? = null
+        sortBy: String? = null,
+        page: Int = 1
     ): Result<List<User>> {
-        return repository.getUsers(role, search, sortBy)
+        return repository.getUsers(role, search, sortBy, page)
     }
 }
