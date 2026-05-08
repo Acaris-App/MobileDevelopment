@@ -53,9 +53,27 @@ class UserManagementRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun addAdmin(name: String, email: String, password: String): Result<User> {
+    override suspend fun addAdmin(
+        name: String,
+        email: String,
+        identifier: String,
+        password: String,
+        profilePicture: File?
+    ): Result<User> {
         return try {
-            val response = apiService.addAdmin(name, email, password)
+            val nameBody = name.toRequestBody("text/plain".toMediaTypeOrNull())
+            val emailBody = email.toRequestBody("text/plain".toMediaTypeOrNull())
+            val identifierBody = identifier.toRequestBody("text/plain".toMediaTypeOrNull())
+            val passwordBody = password.toRequestBody("text/plain".toMediaTypeOrNull())
+
+            var filePart: MultipartBody.Part? = null
+            if (profilePicture != null) {
+                val requestFile = profilePicture.asRequestBody("image/*".toMediaTypeOrNull())
+                filePart = MultipartBody.Part.createFormData("profile_picture", profilePicture.name, requestFile)
+            }
+
+            val response = apiService.addAdmin(nameBody, emailBody, identifierBody, passwordBody, filePart)
+
             if (response.status == "success" || response.status == "200") {
                 val user = response.data?.toDomain() ?: throw Exception("Data kosong")
                 Result.success(user)
@@ -67,12 +85,46 @@ class UserManagementRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateUser(id: String, name: String?, email: String?, identifierNumber: String?): Result<User> {
+    // 🌟 FIX: UBAH IMPLEMENTASI UPDATE USER AGAR MENDUKUNG MULTIPART
+    override suspend fun updateUser(
+        id: String, name: String?, email: String?, identifierNumber: String?,
+        angkatan: Int?, currentSemester: Int?, dosenPa: String?, kodeKelas: String?, ipk: Double?,
+        profilePicture: File?
+    ): Result<User> {
         return try {
-            val response = apiService.updateUser(id, name, email, identifierNumber)
+            val nameBody = name?.toRequestBody("text/plain".toMediaTypeOrNull())
+            val emailBody = email?.toRequestBody("text/plain".toMediaTypeOrNull())
+            val nipBody = identifierNumber?.toRequestBody("text/plain".toMediaTypeOrNull())
+
+            // 🌟 Bungkus data tambahan
+            val angkatanBody = angkatan?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+            val semesterBody = currentSemester?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+            val dosenPaBody = dosenPa?.toRequestBody("text/plain".toMediaTypeOrNull())
+            val kelasBody = kodeKelas?.toRequestBody("text/plain".toMediaTypeOrNull())
+            val ipkBody = ipk?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+
+            var filePart: MultipartBody.Part? = null
+            if (profilePicture != null) {
+                val requestFile = profilePicture.asRequestBody("image/*".toMediaTypeOrNull())
+                filePart = MultipartBody.Part.createFormData("profile_picture", profilePicture.name, requestFile)
+            }
+
+            val response = apiService.updateUser(
+                id, nameBody, emailBody, nipBody,
+                angkatanBody, semesterBody, dosenPaBody, kelasBody, ipkBody,
+                filePart
+            )
+
             if (response.status == "success" || response.status == "200") {
-                val user = response.data?.toDomain() ?: throw Exception("Data kosong")
-                Result.success(user)
+                val updatedUserDomain = response.data?.toDomain() ?: throw Exception("Data kosong")
+
+                val index = accumulatedUsers.indexOfFirst { it.id == id }
+                if (index != -1) {
+                    accumulatedUsers[index] = updatedUserDomain
+                    localDataSource.saveUsersToCache(accumulatedUsers)
+                }
+
+                Result.success(updatedUserDomain)
             } else {
                 Result.failure(Exception(response.message ?: "Gagal memperbarui pengguna"))
             }

@@ -10,13 +10,25 @@ interface UserManagementRepository {
 
     suspend fun getUserDetail(id: String): Result<User>
 
-    suspend fun addAdmin(name: String, email: String, password: String): Result<User>
+    suspend fun addAdmin(
+        name: String,
+        email: String,
+        identifier: String,
+        password: String,
+        profilePicture: File?
+    ): Result<User>
 
     suspend fun updateUser(
         id: String,
         name: String?,
         email: String?,
-        identifierNumber: String?
+        identifierNumber: String?,
+        angkatan: Int?,
+        currentSemester: Int?,
+        dosenPa: String?,
+        kodeKelas: String?,
+        ipk: Double?,
+        profilePicture: File?
     ): Result<User>
 
     suspend fun changeUserStatus(id: String, isActive: Boolean): Result<Unit>

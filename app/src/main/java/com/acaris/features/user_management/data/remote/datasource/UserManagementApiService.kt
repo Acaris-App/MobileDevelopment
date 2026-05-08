@@ -18,21 +18,29 @@ interface UserManagementApiService {
         @Query("page") page: Int
     ): BaseResponse<List<UserResponse>>
 
-    @FormUrlEncoded
+    @Multipart
     @POST("admin/users/admin")
     suspend fun addAdmin(
-        @Field("name") name: String,
-        @Field("email") email: String,
-        @Field("password") password: String
+        @Part("name") name: RequestBody,
+        @Part("email") email: RequestBody,
+        @Part("identifier") npmNip: RequestBody,
+        @Part("password") password: RequestBody,
+        @Part profilePicture: MultipartBody.Part?
     ): BaseResponse<UserResponse>
 
-    @FormUrlEncoded
+    @Multipart
     @PUT("admin/users/{id}")
     suspend fun updateUser(
         @Path("id") id: String,
-        @Field("name") name: String?,
-        @Field("email") email: String?,
-        @Field("identifier") identifier: String?
+        @Part("name") name: RequestBody?,
+        @Part("email") email: RequestBody?,
+        @Part("identifier") identifier: RequestBody?,
+        @Part("angkatan") angkatan: RequestBody?,
+        @Part("current_semester") semester: RequestBody?,
+        @Part("dosen_pa") dosenPa: RequestBody?,
+        @Part("kode_kelas") kodeKelas: RequestBody?,
+        @Part("ipk") ipk: RequestBody?,
+        @Part profilePicture: MultipartBody.Part?
     ): BaseResponse<UserResponse>
 
     @FormUrlEncoded

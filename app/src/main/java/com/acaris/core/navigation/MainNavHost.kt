@@ -137,13 +137,12 @@ fun MainNavHost(
                 onNavigateToAddAdmin = {
                     navController.navigate(Screen.AddAdmin.route)
                 },
-                onNavigateToDetail = { userId -> // 🌟 Sinyal dari Card dialirkan ke sini
+                onNavigateToDetail = { userId ->
                     navController.navigate(Screen.UserDetail.createRoute(userId))
                 }
             )
         }
 
-        // 🌟 BARU: Pendaftaran Layar User Detail
         composable(Screen.UserDetail.route) { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
             com.acaris.features.user_management.ui.screen.UserDetailScreen(
@@ -152,15 +151,19 @@ fun MainNavHost(
             )
         }
 
-        // Rute untuk Tambah Admin (Placeholder)
         composable(Screen.AddAdmin.route) {
-            ScreenPlaceholder("Formulir Tambah Admin Baru")
+            com.acaris.features.user_management.ui.screen.AddAdminScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
-        // Rute untuk Edit User (Placeholder)
         composable(Screen.EditUser.route) { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            ScreenPlaceholder("Formulir Edit Pengguna ID: $userId")
+
+            com.acaris.features.user_management.ui.screen.EditUserScreen(
+                userId = userId,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(Screen.Profile.route) {

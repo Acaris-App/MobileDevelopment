@@ -1,6 +1,7 @@
 // File: ui/components/UserItemCard.kt
 package com.acaris.features.user_management.ui.components
 
+import androidx.compose.foundation.border // 🌟 IMPOR BORDER
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -36,6 +37,7 @@ fun UserItemCard(
     modifier: Modifier = Modifier
 ) {
     val isMahasiswa = user.role.lowercase() == "mahasiswa"
+    val isAdmin = user.role.lowercase() == "admin"
 
     Card(
         modifier = modifier
@@ -83,13 +85,13 @@ fun UserItemCard(
                     Text(
                         text = user.identifier,
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         text = user.email,
                         fontSize = 12.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -140,29 +142,42 @@ fun UserItemCard(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = if (!isAdmin) Arrangement.SpaceBetween else Arrangement.End
             ) {
-                // Label Status
-                Text(
-                    text = if (user.isActive) "Akun Aktif" else "Dinonaktifkan",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (user.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-                )
+
+                if (!isAdmin) {
+                    val statusColor = if (user.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                    val statusText = if (user.isActive) "AKTIF" else "NONAKTIF"
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = statusColor.copy(alpha = 0.1f),
+                        modifier = Modifier.border(1.dp, statusColor.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                    ) {
+                        Text(
+                            text = statusText,
+                            color = statusColor,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Switch(
-                        checked = user.isActive,
-                        onCheckedChange = { onStatusToggle(user, it) },
-                        modifier = Modifier.scale(0.8f)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
+                    if (!isAdmin) {
+                        Switch(
+                            checked = user.isActive,
+                            onCheckedChange = { onStatusToggle(user, it) },
+                            modifier = Modifier.scale(0.8f)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
 
                     CustomCircularIconButton(
                         icon = Icons.Outlined.Edit,
                         contentDescription = "Edit",
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurface,
                         onClick = { onEditClick(user) }
                     )
 
@@ -171,7 +186,7 @@ fun UserItemCard(
                     CustomCircularIconButton(
                         icon = Icons.Outlined.Delete,
                         contentDescription = "Delete",
-                        color = MaterialTheme.colorScheme.error,
+                        color = MaterialTheme.colorScheme.onSurface,
                         onClick = { onDeleteClick(user) }
                     )
                 }
