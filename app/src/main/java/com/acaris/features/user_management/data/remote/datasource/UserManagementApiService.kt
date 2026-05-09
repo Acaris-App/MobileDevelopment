@@ -55,6 +55,9 @@ interface UserManagementApiService {
         @Path("id") id: String
     ): BaseResponse<Any>
 
+    @GET("admin/classes")
+    suspend fun getAllClasses(): BaseResponse<List<String>>
+
     // ==========================================
     // 🌟 ENDPOINT DETAIL MAHASISWA (READ)
     // ==========================================

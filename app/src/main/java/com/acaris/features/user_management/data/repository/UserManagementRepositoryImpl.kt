@@ -7,6 +7,8 @@ import com.acaris.features.user_management.domain.model.User
 import com.acaris.features.user_management.domain.model.BimbinganHistory
 import com.acaris.features.user_management.domain.model.MahasiswaDocument
 import com.acaris.features.user_management.domain.repository.UserManagementRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -19,29 +21,29 @@ class UserManagementRepositoryImpl @Inject constructor(
     private val localDataSource: UserLocalDataSource
 ) : UserManagementRepository {
 
-    private val accumulatedUsers = mutableListOf<User>()
+    // 🌟 Aliran data reaktif (Single Source of Truth)
+    private val _usersFlow = MutableStateFlow<List<User>>(emptyList())
+    override val usersFlow = _usersFlow.asStateFlow()
+
+    private var currentUsersList = mutableListOf<User>()
 
     override suspend fun getUsers(role: String, search: String?, sortBy: String?, page: Int): Result<List<User>> {
         return try {
             val response = apiService.getUsers(role, search, sortBy, page)
-
             if (response.status == "success" || response.status == "200") {
                 val list = response.data?.map { it.toDomain() } ?: emptyList()
 
-                if (page == 1) {
-                    accumulatedUsers.clear()
-                }
-                accumulatedUsers.addAll(list)
+                if (page == 1) currentUsersList.clear()
+                currentUsersList.addAll(list)
 
-                localDataSource.saveUsersToCache(accumulatedUsers)
+                _usersFlow.emit(currentUsersList.toList())
+                localDataSource.saveUsersToCache(currentUsersList)
 
                 Result.success(list)
             } else {
-                Result.failure(Exception(response.message ?: "Gagal mengambil data pengguna"))
+                Result.failure(Exception(response.message))
             }
-        } catch (e: Exception) {
-            Result.failure(Exception("Gagal mengambil data. Periksa koneksi internet Anda."))
-        }
+        } catch (e: Exception) { Result.failure(e) }
     }
 
     override suspend fun getUserDetail(id: String): Result<User> {
@@ -76,6 +78,12 @@ class UserManagementRepositoryImpl @Inject constructor(
 
             if (response.status == "success" || response.status == "200") {
                 val user = response.data?.toDomain() ?: throw Exception("Data kosong")
+
+                // 🌟 UPDATE LOKAL & REAKTIF: Masukkan Admin baru ke paling atas daftar
+                currentUsersList.add(0, user)
+                _usersFlow.emit(currentUsersList.toList())
+                localDataSource.saveUsersToCache(currentUsersList)
+
                 Result.success(user)
             } else {
                 Result.failure(Exception(response.message ?: "Gagal menambahkan Admin"))
@@ -85,7 +93,6 @@ class UserManagementRepositoryImpl @Inject constructor(
         }
     }
 
-    // 🌟 FIX: UBAH IMPLEMENTASI UPDATE USER AGAR MENDUKUNG MULTIPART
     override suspend fun updateUser(
         id: String, name: String?, email: String?, identifierNumber: String?,
         angkatan: Int?, currentSemester: Int?, dosenPa: String?, kodeKelas: String?, ipk: Double?,
@@ -96,7 +103,6 @@ class UserManagementRepositoryImpl @Inject constructor(
             val emailBody = email?.toRequestBody("text/plain".toMediaTypeOrNull())
             val nipBody = identifierNumber?.toRequestBody("text/plain".toMediaTypeOrNull())
 
-            // 🌟 Bungkus data tambahan
             val angkatanBody = angkatan?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
             val semesterBody = currentSemester?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
             val dosenPaBody = dosenPa?.toRequestBody("text/plain".toMediaTypeOrNull())
@@ -118,10 +124,12 @@ class UserManagementRepositoryImpl @Inject constructor(
             if (response.status == "success" || response.status == "200") {
                 val updatedUserDomain = response.data?.toDomain() ?: throw Exception("Data kosong")
 
-                val index = accumulatedUsers.indexOfFirst { it.id == id }
+                // 🌟 FIX: Menggunakan currentUsersList dan me-trigger update ke UI
+                val index = currentUsersList.indexOfFirst { it.id == id }
                 if (index != -1) {
-                    accumulatedUsers[index] = updatedUserDomain
-                    localDataSource.saveUsersToCache(accumulatedUsers)
+                    currentUsersList[index] = updatedUserDomain
+                    _usersFlow.emit(currentUsersList.toList()) // Teriak ke Observer (Daftar Pengguna)
+                    localDataSource.saveUsersToCache(currentUsersList)
                 }
 
                 Result.success(updatedUserDomain)
@@ -133,10 +141,30 @@ class UserManagementRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getAllClasses(): Result<List<String>> {
+        return try {
+            val response = apiService.getAllClasses()
+            if (response.status == "success") Result.success(response.data ?: emptyList())
+            else Result.failure(Exception(response.message))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun changeUserStatus(id: String, isActive: Boolean): Result<Unit> {
         return try {
             val response = apiService.changeUserStatus(id, isActive)
             if (response.status == "success" || response.status == "200") {
+
+                val index = currentUsersList.indexOfFirst { it.id == id }
+                if (index != -1) {
+                    currentUsersList[index] = currentUsersList[index].copy(
+                        status = if (isActive) "active" else "inactive"
+                    )
+                    _usersFlow.emit(currentUsersList.toList())
+                    localDataSource.saveUsersToCache(currentUsersList)
+                }
+
                 Result.success(Unit)
             } else {
                 Result.failure(Exception(response.message ?: "Gagal mengubah status pengguna"))
@@ -150,6 +178,15 @@ class UserManagementRepositoryImpl @Inject constructor(
         return try {
             val response = apiService.deleteUserPermanently(id)
             if (response.status == "success" || response.status == "200") {
+
+                // 🌟 Bonus: Otomatis hilangkan user dari UI saat dihapus
+                val index = currentUsersList.indexOfFirst { it.id == id }
+                if (index != -1) {
+                    currentUsersList.removeAt(index)
+                    _usersFlow.emit(currentUsersList.toList())
+                    localDataSource.saveUsersToCache(currentUsersList)
+                }
+
                 Result.success(Unit)
             } else {
                 Result.failure(Exception(response.message ?: "Gagal menghapus pengguna"))

@@ -6,6 +6,9 @@ import com.acaris.features.user_management.domain.model.MahasiswaDocument
 import java.io.File
 
 interface UserManagementRepository {
+
+    val usersFlow: kotlinx.coroutines.flow.StateFlow<List<User>>
+
     suspend fun getUsers(role: String, search: String? = null, sortBy: String? = null, page: Int = 1): Result<List<User>>
 
     suspend fun getUserDetail(id: String): Result<User>
@@ -30,6 +33,8 @@ interface UserManagementRepository {
         ipk: Double?,
         profilePicture: File?
     ): Result<User>
+
+    suspend fun getAllClasses(): Result<List<String>>
 
     suspend fun changeUserStatus(id: String, isActive: Boolean): Result<Unit>
 

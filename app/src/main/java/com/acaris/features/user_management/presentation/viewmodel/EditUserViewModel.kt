@@ -17,9 +17,11 @@ import javax.inject.Inject
 
 data class EditUserState(
     val isLoading: Boolean = false,
-    val initialUser: UserUiModel? = null, // 🌟 State khusus untuk menampung data lama
+    val initialUser: UserUiModel? = null,
     val successMessage: String? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val availableClasses: List<String> = emptyList(), // 🌟 Daftar kelas untuk dropdown murni dari API
+    val isLoadingClasses: Boolean = false
 )
 
 @HiltViewModel
@@ -31,6 +33,22 @@ class EditUserViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(EditUserState())
     val uiState: StateFlow<EditUserState> = _uiState.asStateFlow()
 
+    // 🌟 FUNGSI BARU: Mengambil daftar kelas murni dari Backend
+    fun loadClasses() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingClasses = true) }
+            repository.getAllClasses().fold(
+                onSuccess = { list ->
+                    _uiState.update { it.copy(availableClasses = list, isLoadingClasses = false) }
+                },
+                onFailure = {
+                    // Murni tanpa dummy. Kalau gagal, berhenti loading dan list tetap kosong.
+                    _uiState.update { it.copy(isLoadingClasses = false) }
+                }
+            )
+        }
+    }
+
     // 🌟 FUNGSI 1: Menarik data lama dari Cache Gudang Bawah Tanah
     fun loadInitialData(userId: String) {
         viewModelScope.launch {
@@ -40,7 +58,6 @@ class EditUserViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { user ->
-                    // Mapping dari Domain (User) ke UI (UserUiModel)
                     _uiState.update { it.copy(isLoading = false, initialUser = user.toUiModel()) }
                 },
                 onFailure = { error ->
@@ -50,7 +67,7 @@ class EditUserViewModel @Inject constructor(
         }
     }
 
-    // 🌟 FUNGSI 2: Mengirim data yang sudah diedit ke UseCase (Sekarang Mendukung Full Edit)
+    // 🌟 FUNGSI 2: Mengirim data yang sudah diedit ke UseCase (Mendukung Full Edit)
     fun updateUser(
         id: String, name: String, email: String, identifier: String,
         angkatan: Int?, currentSemester: Int?, dosenPa: String?, kodeKelas: String?, ipk: Double?,

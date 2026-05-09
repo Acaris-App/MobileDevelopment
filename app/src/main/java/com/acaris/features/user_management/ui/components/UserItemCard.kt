@@ -139,40 +139,39 @@ fun UserItemCard(
             HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(12.dp))
 
+            // 🌟 FIX: Menghapus kondisi Admin. Semua role sekarang dirender rata (SpaceBetween)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = if (!isAdmin) Arrangement.SpaceBetween else Arrangement.End
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
 
-                if (!isAdmin) {
-                    val statusColor = if (user.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-                    val statusText = if (user.isActive) "AKTIF" else "NONAKTIF"
+                // 🌟 FIX: Menampilkan label status untuk semua role
+                val statusColor = if (user.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                val statusText = if (user.isActive) "AKTIF" else "NONAKTIF"
 
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = statusColor.copy(alpha = 0.1f),
-                        modifier = Modifier.border(1.dp, statusColor.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
-                    ) {
-                        Text(
-                            text = statusText,
-                            color = statusColor,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = statusColor.copy(alpha = 0.1f),
+                    modifier = Modifier.border(1.dp, statusColor.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                ) {
+                    Text(
+                        text = statusText,
+                        color = statusColor,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (!isAdmin) {
-                        Switch(
-                            checked = user.isActive,
-                            onCheckedChange = { onStatusToggle(user, it) },
-                            modifier = Modifier.scale(0.8f)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
+                    // 🌟 FIX: Menampilkan switch (toggle) untuk semua role
+                    Switch(
+                        checked = user.isActive,
+                        onCheckedChange = { onStatusToggle(user, it) },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     CustomCircularIconButton(
                         icon = Icons.Outlined.Edit,

@@ -66,6 +66,9 @@ fun EditUserScreen(
     var isInitialized by rememberSaveable { mutableStateOf(false) }
     var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
 
+    // 🌟 STATE UNTUK DROPDOWN
+    var isDropdownExpanded by remember { mutableStateOf(false) }
+
     // State Foto Profil
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     var selectedImageFile by remember { mutableStateOf<File?>(null) }
@@ -79,12 +82,17 @@ fun EditUserScreen(
         }
     }
 
-    // 🌟 TRIGGER 1: Tarik data saat layar pertama kali dibuka
+    // 🌟 TRIGGER 1: Tarik data class (dropdown)
+    LaunchedEffect(Unit) {
+        viewModel.loadClasses()
+    }
+
+    // 🌟 TRIGGER 2: Tarik data saat layar pertama kali dibuka
     LaunchedEffect(userId) {
         viewModel.loadInitialData(userId)
     }
 
-    // 🌟 TRIGGER 2: Isi formulir otomatis saat data dari cache datang
+    // 🌟 TRIGGER 3: Isi formulir otomatis saat data dari cache datang
     LaunchedEffect(uiState.initialUser) {
         uiState.initialUser?.let { user ->
             if (!isInitialized) {
@@ -224,7 +232,6 @@ fun EditUserScreen(
                             .size(110.dp)
                             .clickable { photoLauncher.launch("image/*") }
                     ) {
-                        // Prioritas Gambar: 1. Gambar baru (imageUri) -> 2. Gambar lama (profilePictureUrl)
                         val displayImage = imageUri ?: uiState.initialUser?.profilePictureUrl
 
                         if (displayImage != null) {
@@ -299,9 +306,42 @@ fun EditUserScreen(
                             AuthTextField(value = angkatan, onValueChange = { angkatan = it }, label = "Angkatan", modifier = Modifier.weight(1f))
                             AuthTextField(value = semester, onValueChange = { semester = it }, label = "Semester", modifier = Modifier.weight(1f))
                         }
+
+                        // 🌟 IMPLEMENTASI DROPDOWN UNTUK KODE KELAS
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             AuthTextField(value = ipk, onValueChange = { ipk = it }, label = "IPK", modifier = Modifier.weight(1f))
-                            AuthTextField(value = kodeKelas, onValueChange = { kodeKelas = it }, label = "Kode Kelas", modifier = Modifier.weight(1f))
+
+                            ExposedDropdownMenuBox(
+                                expanded = isDropdownExpanded,
+                                onExpandedChange = { isDropdownExpanded = !isDropdownExpanded },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                OutlinedTextField(
+                                    value = kodeKelas,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    label = { Text("Kode Kelas") },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded) },
+                                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                                    singleLine = true
+                                )
+
+                                ExposedDropdownMenu(
+                                    expanded = isDropdownExpanded,
+                                    onDismissRequest = { isDropdownExpanded = false }
+                                ) {
+                                    uiState.availableClasses.forEach { classCode ->
+                                        DropdownMenuItem(
+                                            text = { Text(classCode) },
+                                            onClick = {
+                                                kodeKelas = classCode
+                                                isDropdownExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         // 🔒 NAMA DOSEN PA DIKUNCI (READ-ONLY)
