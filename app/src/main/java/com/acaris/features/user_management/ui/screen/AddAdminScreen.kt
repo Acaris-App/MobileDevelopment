@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
@@ -83,9 +84,6 @@ fun AddAdminScreen(
             password == confirmPassword &&
             nip.isNotBlank() && !isNipError
 
-    // ==========================================
-    // 🌟 RENDER DIALOG (KONFIRMASI, SUKSES & ERROR)
-    // ==========================================
     if (showConfirmDialog) {
         CustomDialog(
             showDialog = true,
@@ -112,7 +110,7 @@ fun AddAdminScreen(
             showDialog = true,
             onDismissRequest = {
                 viewModel.clearMessages()
-                onNavigateBack() // Kembali ke daftar admin jika sukses
+                onNavigateBack()
             },
             content = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -150,14 +148,17 @@ fun AddAdminScreen(
     }
 
     // ==========================================
-    // 🌟 RENDER LAYAR UTAMA
+    // RENDER LAYAR UTAMA
     // ==========================================
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Tambah Admin", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali") }
+                    CustomBackButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                    )
                 }
             )
         }
@@ -172,7 +173,6 @@ fun AddAdminScreen(
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 🌟 Komponen Foto Profil Adopsi dari StepDataDiri
                 Box(
                     contentAlignment = Alignment.BottomEnd,
                     modifier = Modifier
@@ -216,7 +216,6 @@ fun AddAdminScreen(
                 Text("Foto Profil (Opsional)", fontSize = 12.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // 🌟 Formulir Input Menggunakan AuthTextField
                 AuthTextField(
                     value = nip,
                     onValueChange = { nip = it },

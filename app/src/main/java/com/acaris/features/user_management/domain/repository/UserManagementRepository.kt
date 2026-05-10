@@ -2,6 +2,7 @@ package com.acaris.features.user_management.domain.repository
 
 import com.acaris.features.user_management.domain.model.User
 import com.acaris.features.user_management.domain.model.BimbinganHistory
+import com.acaris.features.user_management.domain.model.ClassInfo
 import com.acaris.features.user_management.domain.model.MahasiswaDocument
 import java.io.File
 
@@ -34,7 +35,7 @@ interface UserManagementRepository {
         profilePicture: File?
     ): Result<User>
 
-    suspend fun getAllClasses(): Result<List<String>>
+    suspend fun getAllClasses(): Result<List<ClassInfo>>
 
     suspend fun changeUserStatus(id: String, isActive: Boolean): Result<Unit>
 

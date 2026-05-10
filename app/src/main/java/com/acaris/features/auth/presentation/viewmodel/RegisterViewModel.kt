@@ -2,9 +2,8 @@ package com.acaris.features.auth.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.acaris.features.auth.domain.usecase.* // UseCase asli Auth
-// 🌟 IMPORT USE CASE DARI FITUR DOKUMEN
-import com.acaris.features.documents_mahasiswa.domain.usecase.UploadDocumentUseCase
+import com.acaris.core.domain.usecase.CalculateSemesterUseCase
+import com.acaris.features.auth.domain.usecase.* import com.acaris.features.documents_mahasiswa.domain.usecase.UploadDocumentUseCase
 import com.acaris.features.documents_mahasiswa.domain.usecase.UpdateDocumentUseCase
 import com.acaris.features.documents_mahasiswa.domain.usecase.DeleteDocumentUseCase
 import com.acaris.features.auth.presentation.mapper.toPresentation
@@ -26,10 +25,10 @@ class RegisterViewModel @Inject constructor(
     private val registerDosenUseCase: RegisterDosenUseCase,
     private val verifyOtpUseCase: VerifyOtpUseCase,
     private val resendOtpUseCase: ResendOtpUseCase,
-    // 🌟 Inject UseCase dokumen yang baru
     private val uploadDocumentUseCase: UploadDocumentUseCase,
     private val updateDocumentUseCase: UpdateDocumentUseCase,
-    private val deleteDocumentUseCase: DeleteDocumentUseCase
+    private val deleteDocumentUseCase: DeleteDocumentUseCase,
+    private val calculateSemesterUseCase: CalculateSemesterUseCase // 🌟 SUNTIKKAN DI SINI
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterState())
@@ -42,6 +41,29 @@ class RegisterViewModel @Inject constructor(
     var currentSemester: Int = 1
         private set
 
+    // ==========================================
+    // 🌟 FORM EVENT HANDLERS (STRICT MVVM)
+    // ==========================================
+    fun onNameChanged(v: String) { _uiState.update { it.copy(name = v) } }
+    fun onEmailChanged(v: String) { _uiState.update { it.copy(email = v) } }
+    fun onPasswordChanged(v: String) { _uiState.update { it.copy(password = v) } }
+    fun onConfirmPasswordChanged(v: String) { _uiState.update { it.copy(confirmPassword = v) } }
+    fun onNpmChanged(v: String) { _uiState.update { it.copy(npm = v) } }
+    fun onNipChanged(v: String) { _uiState.update { it.copy(nip = v) } }
+    fun onIpkChanged(v: String) { _uiState.update { it.copy(ipk = v) } }
+
+    // 🌟 LOGIKA AUTO-SEMESTER DARI DROPDOWN
+    fun onAngkatanChanged(newAngkatan: String) {
+        _uiState.update { it.copy(angkatan = newAngkatan) }
+        val finalSemester = calculateSemesterUseCase(newAngkatan)
+        if (finalSemester.isNotEmpty()) {
+            _uiState.update { it.copy(semester = finalSemester) }
+        }
+    }
+
+    // ==========================================
+    // 🌟 FUNGSI UTAMA
+    // ==========================================
     fun initRole(selectedRole: String) {
         role = selectedRole.lowercase()
         val initialStep = if (role == "mahasiswa") RegisterStep.INPUT_KODE_KELAS else RegisterStep.INPUT_DATA_DIRI
@@ -74,12 +96,8 @@ class RegisterViewModel @Inject constructor(
                 npm, name, email, password, angkatan, semester, ipk, tempKodeKelas, selectedProfilePictureFile
             )
             result.fold(
-                onSuccess = {
-                    _uiState.update { it.copy(isLoading = false, currentStep = RegisterStep.INPUT_OTP) }
-                },
-                onFailure = { e ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
-                }
+                onSuccess = { _uiState.update { it.copy(isLoading = false, currentStep = RegisterStep.INPUT_OTP) } },
+                onFailure = { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message) } }
             )
         }
     }
@@ -89,16 +107,10 @@ class RegisterViewModel @Inject constructor(
         tempEmail = email
 
         viewModelScope.launch {
-            val result = registerDosenUseCase(
-                nip, name, email, password, selectedProfilePictureFile
-            )
+            val result = registerDosenUseCase(nip, name, email, password, selectedProfilePictureFile)
             result.fold(
-                onSuccess = {
-                    _uiState.update { it.copy(isLoading = false, currentStep = RegisterStep.INPUT_OTP) }
-                },
-                onFailure = { e ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
-                }
+                onSuccess = { _uiState.update { it.copy(isLoading = false, currentStep = RegisterStep.INPUT_OTP) } },
+                onFailure = { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message) } }
             )
         }
     }
@@ -110,69 +122,40 @@ class RegisterViewModel @Inject constructor(
             result.fold(
                 onSuccess = { userDomain ->
                     val userPresentation = userDomain.toPresentation()
-
                     val nextStep = if (role == "mahasiswa") RegisterStep.UPLOAD_DOKUMEN else RegisterStep.SUCCESS_REGISTER
-
-                    _uiState.update {
-                        it.copy(isLoading = false, currentStep = nextStep, user = userPresentation)
-                    }
+                    _uiState.update { it.copy(isLoading = false, currentStep = nextStep, user = userPresentation) }
                 },
-                onFailure = { e ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
-                }
+                onFailure = { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message) } }
             )
         }
     }
 
-    // 🌟 UPDATE: documentId sekarang String, bukan Int
-    fun uploadOrUpdateDokumen(
-        documentType: String,
-        file: File,
-        documentSemester: Int?,
-        existingDocId: String?, // 🌟 Ubah jadi String?
-        onSuccess: (String) -> Unit // 🌟 Ubah jadi (String)
-    ) {
+    fun uploadOrUpdateDokumen(documentType: String, file: File, documentSemester: Int?, existingDocId: String?, onSuccess: (String) -> Unit) {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
             if (existingDocId == null) {
-                val result = uploadDocumentUseCase(documentType, documentSemester, file) // 🌟 Panggil UseCase baru
+                val result = uploadDocumentUseCase(documentType, documentSemester, file)
                 result.fold(
-                    onSuccess = { document ->
-                        _uiState.update { it.copy(isLoading = false) }
-                        onSuccess(document.id) // 🌟 Ambil ID dari objek Document
-                    },
-                    onFailure = { e ->
-                        _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
-                    }
+                    onSuccess = { document -> _uiState.update { it.copy(isLoading = false) }; onSuccess(document.id) },
+                    onFailure = { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message) } }
                 )
             } else {
-                val result = updateDocumentUseCase(existingDocId, documentSemester, file) // 🌟 Panggil UseCase baru
+                val result = updateDocumentUseCase(existingDocId, documentSemester, file)
                 result.fold(
-                    onSuccess = { document ->
-                        _uiState.update { it.copy(isLoading = false) }
-                        onSuccess(document.id)
-                    },
-                    onFailure = { e ->
-                        _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
-                    }
+                    onSuccess = { document -> _uiState.update { it.copy(isLoading = false) }; onSuccess(document.id) },
+                    onFailure = { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message) } }
                 )
             }
         }
     }
 
-    // 🌟 UPDATE: documentId sekarang String
     fun deleteDokumen(documentId: String, onSuccess: () -> Unit) {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
-            val result = deleteDocumentUseCase(documentId) // 🌟 Panggil UseCase baru
+            val result = deleteDocumentUseCase(documentId)
             result.fold(
-                onSuccess = {
-                    _uiState.update { it.copy(isLoading = false) }
-                    onSuccess()
-                },
-                onFailure = { e ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
-                }
+                onSuccess = { _uiState.update { it.copy(isLoading = false) }; onSuccess() },
+                onFailure = { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message) } }
             )
         }
     }
@@ -189,12 +172,8 @@ class RegisterViewModel @Inject constructor(
         viewModelScope.launch {
             val result = resendOtpUseCase(tempEmail)
             result.fold(
-                onSuccess = {
-                    onSuccess()
-                },
-                onFailure = { e ->
-                    onError(e.message ?: "Gagal mengirim ulang OTP")
-                }
+                onSuccess = { onSuccess() },
+                onFailure = { e -> onError(e.message ?: "Gagal mengirim ulang OTP") }
             )
         }
     }

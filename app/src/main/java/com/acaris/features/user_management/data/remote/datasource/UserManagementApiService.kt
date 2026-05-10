@@ -4,6 +4,7 @@ import com.acaris.features.user_management.data.remote.model.UserResponse
 import com.acaris.features.user_management.data.remote.model.MahasiswaDocumentResponse
 import com.acaris.features.user_management.data.remote.model.BimbinganHistoryResponse
 import com.acaris.core.network.model.BaseResponse
+import com.acaris.features.user_management.data.remote.model.ClassInfoResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.*
@@ -56,7 +57,7 @@ interface UserManagementApiService {
     ): BaseResponse<Any>
 
     @GET("admin/classes")
-    suspend fun getAllClasses(): BaseResponse<List<String>>
+    suspend fun getAllClasses(): BaseResponse<List<ClassInfoResponse>>
 
     // ==========================================
     // 🌟 ENDPOINT DETAIL MAHASISWA (READ)

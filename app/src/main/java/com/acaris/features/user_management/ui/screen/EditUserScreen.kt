@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.*
@@ -30,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
@@ -38,6 +38,7 @@ import com.acaris.core.utils.ValidationUtils
 import com.acaris.features.auth.ui.components.AuthTextField
 import com.acaris.features.user_management.presentation.viewmodel.EditUserViewModel
 import java.io.File
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,27 +48,18 @@ fun EditUserScreen(
     viewModel: EditUserViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
-    // State Formulir Dasar
-    var role by rememberSaveable { mutableStateOf("") }
-    var name by rememberSaveable { mutableStateOf("") }
-    var email by rememberSaveable { mutableStateOf("") }
-    var identifier by rememberSaveable { mutableStateOf("") }
-
-    // State Formulir Spesifik Role (Mahasiswa/Dosen)
-    var angkatan by rememberSaveable { mutableStateOf("") }
-    var semester by rememberSaveable { mutableStateOf("") }
-    var ipk by rememberSaveable { mutableStateOf("") }
-    var dosenPa by rememberSaveable { mutableStateOf("") }
-    var kodeKelas by rememberSaveable { mutableStateOf("") }
-
-    var isInitialized by rememberSaveable { mutableStateOf(false) }
+    // UI-specific states (Dialog & Dropdown toggle)
     var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
-
-    // 🌟 STATE UNTUK DROPDOWN
     var isDropdownExpanded by remember { mutableStateOf(false) }
+    var isAngkatanDropdownExpanded by remember { mutableStateOf(false) }
+
+    // Daftar Angkatan (Generate dari tahun sekarang mundur 7 tahun)
+    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+    val angkatanList = (currentYear downTo currentYear - 7).map { it.toString() }
 
     // State Foto Profil
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
@@ -82,49 +74,22 @@ fun EditUserScreen(
         }
     }
 
-    // 🌟 TRIGGER 1: Tarik data class (dropdown)
     LaunchedEffect(Unit) {
         viewModel.loadClasses()
     }
 
-    // 🌟 TRIGGER 2: Tarik data saat layar pertama kali dibuka
     LaunchedEffect(userId) {
         viewModel.loadInitialData(userId)
     }
 
-    // 🌟 TRIGGER 3: Isi formulir otomatis saat data dari cache datang
-    LaunchedEffect(uiState.initialUser) {
-        uiState.initialUser?.let { user ->
-            if (!isInitialized) {
-                role = user.role.lowercase()
-                name = user.name
-                email = user.email
-                identifier = user.identifier
+    val isEmailError = uiState.email.isNotEmpty() && !ValidationUtils.isValidEmail(uiState.email)
+    val isIdentifierError = uiState.identifier.isNotEmpty() && !uiState.identifier.all { it.isDigit() }
 
-                // Isi data tambahan jika ada (agar tidak null)
-                angkatan = user.angkatan?.toString() ?: ""
-                semester = user.currentSemester?.toString() ?: ""
-                ipk = user.ipk?.toString() ?: ""
-                dosenPa = user.dosenPa ?: ""
-                kodeKelas = user.kodeKelas ?: ""
+    val isFormReady = uiState.isFormInitialized &&
+            uiState.name.isNotBlank() &&
+            uiState.identifier.isNotBlank() && !isIdentifierError &&
+            ValidationUtils.isValidEmail(uiState.email)
 
-                isInitialized = true
-            }
-        }
-    }
-
-    // Validasi Real-time
-    val isEmailError = email.isNotEmpty() && !ValidationUtils.isValidEmail(email)
-    val isIdentifierError = identifier.isNotEmpty() && !identifier.all { it.isDigit() }
-
-    val isFormReady = isInitialized &&
-            name.isNotBlank() &&
-            identifier.isNotBlank() && !isIdentifierError &&
-            ValidationUtils.isValidEmail(email)
-
-    // ==========================================
-    // 🌟 RENDER DIALOG (KONFIRMASI, SUKSES & ERROR)
-    // ==========================================
     if (showConfirmDialog) {
         CustomDialog(
             showDialog = true,
@@ -132,18 +97,7 @@ fun EditUserScreen(
             confirmText = "Ya, Simpan",
             onConfirm = {
                 showConfirmDialog = false
-                viewModel.updateUser(
-                    id = userId,
-                    name = name,
-                    email = email,
-                    identifier = identifier,
-                    angkatan = angkatan.toIntOrNull(),
-                    currentSemester = semester.toIntOrNull(),
-                    dosenPa = dosenPa.takeIf { it.isNotBlank() },
-                    kodeKelas = kodeKelas.takeIf { it.isNotBlank() },
-                    ipk = ipk.toDoubleOrNull(),
-                    profilePicture = selectedImageFile
-                )
+                viewModel.updateUser(userId = userId, profilePicture = selectedImageFile)
             },
             dismissText = "Batal",
             onDismiss = { showConfirmDialog = false },
@@ -162,7 +116,7 @@ fun EditUserScreen(
             showDialog = true,
             onDismissRequest = {
                 viewModel.clearMessages()
-                onNavigateBack() // Kembali setelah sukses
+                onNavigateBack()
             },
             content = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -199,23 +153,26 @@ fun EditUserScreen(
         )
     }
 
-    // ==========================================
-    // 🌟 RENDER LAYAR UTAMA
-    // ==========================================
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Edit Pengguna", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali") }
-                }
+                    CustomBackButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent
+                )
             )
         }
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
 
-            // Hanya tampilkan form jika data awal sudah berhasil ditarik
-            if (isInitialized) {
+            if (uiState.isFormInitialized) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -225,7 +182,6 @@ fun EditUserScreen(
                 ) {
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 🌟 Area Foto Profil
                     Box(
                         contentAlignment = Alignment.BottomEnd,
                         modifier = Modifier
@@ -271,108 +227,138 @@ fun EditUserScreen(
                     Text("Ketuk untuk mengubah foto", fontSize = 12.sp, color = Color.Gray)
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // 🌟 Formulir Input Dasar
                     AuthTextField(
-                        value = identifier,
-                        onValueChange = { identifier = it },
-                        label = if (role == "mahasiswa") "NPM" else "NIP",
+                        value = uiState.identifier,
+                        onValueChange = { viewModel.onIdentifierChanged(it) },
+                        label = if (uiState.role == "mahasiswa") "NPM" else "NIP",
                         isError = isIdentifierError,
                         errorMessage = "Hanya boleh berisi angka"
                     )
 
                     AuthTextField(
-                        value = name,
-                        onValueChange = { name = it },
+                        value = uiState.name,
+                        onValueChange = { viewModel.onNameChanged(it) },
                         label = "Nama Lengkap"
                     )
 
                     AuthTextField(
-                        value = email,
-                        onValueChange = { email = it },
+                        value = uiState.email,
+                        onValueChange = { viewModel.onEmailChanged(it) },
                         label = "Email",
                         isError = isEmailError,
                         errorMessage = "Format email tidak valid"
                     )
 
-                    // 🌟 RENDER CONDITIONAL FIELD BERDASARKAN ROLE
-                    if (role == "mahasiswa") {
+                    if (uiState.role == "mahasiswa") {
                         Spacer(modifier = Modifier.height(8.dp))
                         HorizontalDivider()
                         Spacer(modifier = Modifier.height(8.dp))
                         Text("Data Akademik Mahasiswa", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            AuthTextField(value = angkatan, onValueChange = { angkatan = it }, label = "Angkatan", modifier = Modifier.weight(1f))
-                            AuthTextField(value = semester, onValueChange = { semester = it }, label = "Semester", modifier = Modifier.weight(1f))
-                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
 
-                        // 🌟 IMPLEMENTASI DROPDOWN UNTUK KODE KELAS
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            AuthTextField(value = ipk, onValueChange = { ipk = it }, label = "IPK", modifier = Modifier.weight(1f))
-
+                            // 🌟 ANGKATAN DROPDOWN
                             ExposedDropdownMenuBox(
-                                expanded = isDropdownExpanded,
-                                onExpandedChange = { isDropdownExpanded = !isDropdownExpanded },
+                                expanded = isAngkatanDropdownExpanded,
+                                onExpandedChange = { isAngkatanDropdownExpanded = !isAngkatanDropdownExpanded },
                                 modifier = Modifier.weight(1f)
                             ) {
                                 OutlinedTextField(
-                                    value = kodeKelas,
+                                    value = uiState.angkatan,
                                     onValueChange = {},
                                     readOnly = true,
-                                    label = { Text("Kode Kelas") },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded) },
+                                    label = { Text("Angkatan") },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isAngkatanDropdownExpanded) },
                                     colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                                     modifier = Modifier.menuAnchor().fillMaxWidth(),
                                     singleLine = true
                                 )
 
                                 ExposedDropdownMenu(
-                                    expanded = isDropdownExpanded,
-                                    onDismissRequest = { isDropdownExpanded = false }
+                                    expanded = isAngkatanDropdownExpanded,
+                                    onDismissRequest = { isAngkatanDropdownExpanded = false },
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                                 ) {
-                                    uiState.availableClasses.forEach { classCode ->
+                                    angkatanList.forEach { thn ->
                                         DropdownMenuItem(
-                                            text = { Text(classCode) },
+                                            text = { Text(thn) },
                                             onClick = {
-                                                kodeKelas = classCode
-                                                isDropdownExpanded = false
+                                                viewModel.onAngkatanChanged(thn)
+                                                isAngkatanDropdownExpanded = false
                                             }
                                         )
                                     }
                                 }
                             }
+
+                            // 🌟 SEMESTER (READ-ONLY)
+                            OutlinedTextField(
+                                value = uiState.semester,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Semester") },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                )
+                            )
+
+                            // 🌟 FIX: IPK SEKARANG PAKAI OUTLINEDTEXTFIELD MURNI BIAR RATA!
+                            OutlinedTextField(
+                                value = uiState.ipk,
+                                onValueChange = { viewModel.onIpkChanged(it) },
+                                label = { Text("IPK") },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true
+                            )
                         }
 
-                        // 🔒 NAMA DOSEN PA DIKUNCI (READ-ONLY)
-                        OutlinedTextField(
-                            value = dosenPa,
-                            onValueChange = {},
-                            label = { Text("Dosen PA") },
-                            enabled = false,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                disabledTextColor = Color.DarkGray,
-                                disabledBorderColor = Color.LightGray,
-                                disabledLabelColor = Color.Gray
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        ExposedDropdownMenuBox(
+                            expanded = isDropdownExpanded,
+                            onExpandedChange = { isDropdownExpanded = !isDropdownExpanded },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            val displayValue = if (uiState.kodeKelas.isNotBlank() && uiState.dosenPa.isNotBlank())
+                                "${uiState.kodeKelas} - ${uiState.dosenPa}"
+                            else
+                                uiState.kodeKelas
+
+                            OutlinedTextField(
+                                value = displayValue,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Kode Kelas & Dosen Pembimbing") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded) },
+                                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                                singleLine = true
                             )
-                        )
 
-                    } else if (role == "dosen") {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        HorizontalDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Data Akademik Dosen", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // 🚫 KODE KELAS DOSEN DISEMBUNYIKAN
-                        Text(
-                            text = "Data kelas bimbingan diatur oleh sistem akademik.",
-                            fontSize = 14.sp,
-                            color = Color.Gray,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
+                            ExposedDropdownMenu(
+                                expanded = isDropdownExpanded,
+                                onDismissRequest = { isDropdownExpanded = false },
+                                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                            ) {
+                                uiState.availableClasses.forEach { classInfo ->
+                                    DropdownMenuItem(
+                                        text = { Text("${classInfo.kodeKelas} - ${classInfo.dosenPa}") },
+                                        onClick = {
+                                            viewModel.onClassSelected(classInfo.kodeKelas, classInfo.dosenPa)
+                                            isDropdownExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(40.dp))
@@ -388,8 +374,7 @@ fun EditUserScreen(
                 }
             }
 
-            // Tampilkan Loading jika sedang menarik data awal atau sedang proses update
-            if (uiState.isLoading || !isInitialized) {
+            if (uiState.isLoading || !uiState.isFormInitialized) {
                 CustomLoadingOverlay(isLoading = true)
             }
         }

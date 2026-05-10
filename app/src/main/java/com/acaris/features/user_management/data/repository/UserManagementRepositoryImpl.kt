@@ -5,6 +5,7 @@ import com.acaris.features.user_management.data.mapper.toDomain
 import com.acaris.features.user_management.data.remote.datasource.UserManagementApiService
 import com.acaris.features.user_management.domain.model.User
 import com.acaris.features.user_management.domain.model.BimbinganHistory
+import com.acaris.features.user_management.domain.model.ClassInfo
 import com.acaris.features.user_management.domain.model.MahasiswaDocument
 import com.acaris.features.user_management.domain.repository.UserManagementRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -141,11 +142,16 @@ class UserManagementRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAllClasses(): Result<List<String>> {
+    override suspend fun getAllClasses(): Result<List<ClassInfo>> {
         return try {
             val response = apiService.getAllClasses()
-            if (response.status == "success") Result.success(response.data ?: emptyList())
-            else Result.failure(Exception(response.message))
+            // 🌟 Validasi sukses, lalu Map List<ClassInfoResponse> ke List<ClassInfo> (Domain)
+            if (response.status == "success" || response.status == "200") {
+                val list = response.data?.map { it.toDomain() } ?: emptyList()
+                Result.success(list)
+            } else {
+                Result.failure(Exception(response.message))
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }

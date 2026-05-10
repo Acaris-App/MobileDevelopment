@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.acaris.features.user_management.presentation.model.MahasiswaDocumentUiModel
 import com.acaris.features.user_management.presentation.model.UserDetailUiState
 
@@ -22,7 +23,7 @@ fun MahasiswaTabSection(
     val tabs = listOf("Dokumen", "Bimbingan", "Chatbot (Aca)")
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = selectedTabIndex) {
+        TabRow(selectedTabIndex = selectedTabIndex,containerColor = Color.Transparent) {
             tabs.forEachIndexed { index, title ->
                 Tab(selected = selectedTabIndex == index, onClick = { selectedTabIndex = index }, text = { Text(title) })
             }

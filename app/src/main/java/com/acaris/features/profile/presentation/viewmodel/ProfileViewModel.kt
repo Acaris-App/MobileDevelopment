@@ -2,6 +2,7 @@ package com.acaris.features.profile.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.acaris.core.domain.usecase.CalculateSemesterUseCase // 🌟 IMPORT DARI CORE
 import com.acaris.features.profile.domain.usecase.GetProfileUseCase
 import com.acaris.features.profile.domain.usecase.UpdatePhotoUseCase
 import com.acaris.features.profile.domain.usecase.UpdateProfileUseCase
@@ -19,7 +20,8 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val updateProfileUseCase: UpdateProfileUseCase,
-    private val updatePhotoUseCase: UpdatePhotoUseCase
+    private val updatePhotoUseCase: UpdatePhotoUseCase,
+    private val calculateSemesterUseCase: CalculateSemesterUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileState())
@@ -29,13 +31,41 @@ class ProfileViewModel @Inject constructor(
         loadProfile()
     }
 
+    fun onNameChanged(v: String) { _uiState.update { it.copy(name = v) } }
+    fun onIdentifierChanged(v: String) { _uiState.update { it.copy(identifier = v) } }
+    fun onIpkChanged(v: String) { _uiState.update { it.copy(ipk = v) } }
+
+    fun onAngkatanChanged(newAngkatan: String) {
+        _uiState.update { it.copy(angkatan = newAngkatan) }
+        val finalSemester = calculateSemesterUseCase(newAngkatan)
+        if (finalSemester.isNotEmpty()) {
+            _uiState.update { it.copy(semester = finalSemester) }
+        }
+    }
+
+    // ==========================================
+    // 🌟 FUNGSI DATA
+    // ==========================================
     fun loadProfile() {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
             val result = getProfileUseCase()
             result.fold(
                 onSuccess = { profile ->
-                    _uiState.update { it.copy(isLoading = false, userProfile = profile) }
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            userProfile = profile,
+                            // 🌟 LANGSUNG TUANGKAN KE FORM STATE
+                            name = profile.name,
+                            email = profile.email,
+                            identifier = profile.identifier,
+                            angkatan = profile.angkatan?.toString() ?: "",
+                            semester = profile.currentSemester?.toString() ?: "",
+                            ipk = profile.ipk?.toString() ?: "",
+                            isFormInitialized = true
+                        )
+                    }
                 },
                 onFailure = { e ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
@@ -44,39 +74,22 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun isProfileDataChanged(
-        currentName: String,
-        currentEmail: String,
-        currentIdentifier: String,
-        currentAngkatan: Int?,
-        currentIpk: Double?,
-        currentSemester: Int?
-    ): Boolean {
-        val originalProfile = _uiState.value.userProfile ?: return true
-
-        return currentName != originalProfile.name ||
-                currentEmail != originalProfile.email ||
-                currentIdentifier != originalProfile.identifier ||
-                currentAngkatan != originalProfile.angkatan ||
-                currentIpk != originalProfile.ipk ||
-                currentSemester != originalProfile.currentSemester
-    }
-
-    fun updateProfile(
-        name: String,
-        email: String,
-        identifier: String,
-        angkatan: Int? = null,
-        ipk: Double? = null,
-        semester: Int? = null
-    ) {
+    // 🌟 UPDATE PROFIL TANPA PARAMETER, LANGSUNG BACA DARI STATE
+    fun updateProfile() {
+        val currentState = _uiState.value
         _uiState.update { it.copy(isLoading = true, errorMessage = null, successMessage = null) }
         viewModelScope.launch {
-            val result = updateProfileUseCase(name, email, identifier, angkatan, ipk, semester)
+            val result = updateProfileUseCase(
+                name = currentState.name,
+                email = currentState.email,
+                identifier = currentState.identifier,
+                angkatan = currentState.angkatan.toIntOrNull(),
+                ipk = currentState.ipk.toDoubleOrNull(),
+                semester = currentState.semester.toIntOrNull()
+            )
             result.fold(
                 onSuccess = {
                     loadProfile()
-
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -98,7 +111,6 @@ class ProfileViewModel @Inject constructor(
             result.fold(
                 onSuccess = {
                     loadProfile()
-
                     _uiState.update {
                         it.copy(
                             isUploadingPhoto = false,

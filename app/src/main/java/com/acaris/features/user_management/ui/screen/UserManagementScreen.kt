@@ -227,7 +227,7 @@ fun UserManagementScreen(
                                 enter = expandVertically() + fadeIn(),
                                 exit = shrinkVertically() + fadeOut()
                             ) {
-                                TabRow(selectedTabIndex = selectedTabIndex) {
+                                TabRow(selectedTabIndex = selectedTabIndex, containerColor = Color.Transparent) {
                                     tabs.forEachIndexed { index, role ->
                                         Tab(
                                             selected = selectedTabIndex == index,

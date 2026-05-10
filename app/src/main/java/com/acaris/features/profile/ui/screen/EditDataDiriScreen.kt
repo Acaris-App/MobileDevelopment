@@ -34,6 +34,7 @@ import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.utils.ImageUtils
 import com.acaris.features.profile.presentation.viewmodel.ProfileViewModel
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,15 +46,12 @@ fun EditDataDiriScreen(
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var identifier by remember { mutableStateOf("") }
-    var angkatan by remember { mutableStateOf("") }
-    var ipk by remember { mutableStateOf("") }
-    var semester by remember { mutableStateOf("") }
-
     var selectedPhotoUri by remember { mutableStateOf<Uri?>(null) }
     var showConfirmDialog by remember { mutableStateOf(false) }
+    var isAngkatanDropdownExpanded by remember { mutableStateOf(false) }
+
+    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+    val angkatanList = (currentYear downTo currentYear - 7).map { it.toString() }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
@@ -61,23 +59,13 @@ fun EditDataDiriScreen(
         }
     }
 
-    LaunchedEffect(state.userProfile) {
-        state.userProfile?.let {
-            name = it.name
-            email = it.email
-            identifier = it.identifier
-            angkatan = it.angkatan?.toString() ?: ""
-            ipk = it.ipk?.toString() ?: ""
-            semester = it.currentSemester?.toString() ?: ""
-        }
-    }
-
+    // 🌟 LOGIKA TOMBOL SIMPAN MENYALA
     val isDataChanged = state.userProfile?.let {
-        name != it.name ||
-                identifier != it.identifier ||
-                angkatan != (it.angkatan?.toString() ?: "") ||
-                ipk != (it.ipk?.toString() ?: "") ||
-                semester != (it.currentSemester?.toString() ?: "") ||
+        state.name != it.name ||
+                state.identifier != it.identifier ||
+                state.angkatan != (it.angkatan?.toString() ?: "") ||
+                state.ipk != (it.ipk?.toString() ?: "") ||
+                state.semester != (it.currentSemester?.toString() ?: "") ||
                 selectedPhotoUri != null
     } ?: false
 
@@ -100,25 +88,20 @@ fun EditDataDiriScreen(
             onConfirm = {
                 showConfirmDialog = false
 
+                // 1. Eksekusi Update Teks (Baca dari ViewModel State langsung)
                 val textChanged = state.userProfile?.let {
-                    name != it.name ||
-                            identifier != it.identifier ||
-                            angkatan != (it.angkatan?.toString() ?: "") ||
-                            ipk != (it.ipk?.toString() ?: "") ||
-                            semester != (it.currentSemester?.toString() ?: "")
+                    state.name != it.name ||
+                            state.identifier != it.identifier ||
+                            state.angkatan != (it.angkatan?.toString() ?: "") ||
+                            state.ipk != (it.ipk?.toString() ?: "") ||
+                            state.semester != (it.currentSemester?.toString() ?: "")
                 } ?: false
 
                 if (textChanged) {
-                    profileViewModel.updateProfile(
-                        name = name,
-                        email = email,
-                        identifier = identifier,
-                        angkatan = angkatan.toIntOrNull(),
-                        ipk = ipk.toDoubleOrNull(),
-                        semester = semester.toIntOrNull()
-                    )
+                    profileViewModel.updateProfile() // 🌟 TANPA PARAMETER
                 }
 
+                // 2. Eksekusi Update Foto
                 selectedPhotoUri?.let { uri ->
                     val file = ImageUtils.uriToFile(context, uri)
                     if (file != null) {
@@ -192,114 +175,184 @@ fun EditDataDiriScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 24.dp)
-                    .verticalScroll(scrollState),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Edit Data Diri", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Perbarui informasi pribadi dan foto profil Anda.",
-                    color = Color.Gray,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+            if (state.isFormInitialized) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(horizontal = 24.dp)
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("Edit Data Diri", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Perbarui informasi pribadi dan foto profil Anda.",
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
 
-                Box(contentAlignment = Alignment.BottomEnd) {
-                    Box(
-                        modifier = Modifier
-                            .size(120.dp)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
-                            .clip(CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val imageToLoad = selectedPhotoUri ?: state.userProfile?.profilePictureUrl
+                    Box(contentAlignment = Alignment.BottomEnd) {
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
+                                .clip(CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            val imageToLoad = selectedPhotoUri ?: state.userProfile?.profilePictureUrl
 
-                        if (imageToLoad == null || imageToLoad.toString().isEmpty()) {
-                            Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.primary)
-                        } else {
-                            AsyncImage(
-                                model = imageToLoad,
-                                contentDescription = "Foto Profil",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
+                            if (imageToLoad == null || imageToLoad.toString().isEmpty()) {
+                                Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.primary)
+                            } else {
+                                AsyncImage(
+                                    model = imageToLoad,
+                                    contentDescription = "Foto Profil",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
+
+                        IconButton(
+                            onClick = { photoPickerLauncher.launch("image/*") },
+                            modifier = Modifier
+                                .offset(x = 8.dp, y = 8.dp)
+                                .border(1.dp, Color.Transparent, CircleShape)
+                                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Profil", tint = MaterialTheme.colorScheme.background)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    OutlinedTextField(
+                        value = state.name,
+                        onValueChange = { profileViewModel.onNameChanged(it) },
+                        label = { Text("Nama Lengkap") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = state.email,
+                        onValueChange = {},
+                        label = { Text("Email (Tidak dapat diubah)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        readOnly = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = Color(0xFFB71C1C),
+                            focusedBorderColor = Color(0xFFB71C1C),
+                            unfocusedLabelColor = Color(0xFFB71C1C),
+                            focusedLabelColor = Color(0xFFB71C1C)
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = state.identifier,
+                        onValueChange = { profileViewModel.onIdentifierChanged(it) },
+                        label = { Text(if (state.userProfile?.role == "mahasiswa") "NPM" else "NIP") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+
+                    if (state.userProfile?.role == "mahasiswa") {
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // 🌟 TIGA SERANGKAI SEJAJAR: ANGKATAN, SEMESTER, IPK
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            // DROPDOWN ANGKATAN
+                            ExposedDropdownMenuBox(
+                                expanded = isAngkatanDropdownExpanded,
+                                onExpandedChange = { isAngkatanDropdownExpanded = !isAngkatanDropdownExpanded },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                OutlinedTextField(
+                                    value = state.angkatan,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    label = { Text("Angkatan") },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isAngkatanDropdownExpanded) },
+                                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                                    singleLine = true,
+                                    shape = MaterialTheme.shapes.medium
+                                )
+
+                                ExposedDropdownMenu(
+                                    expanded = isAngkatanDropdownExpanded,
+                                    onDismissRequest = { isAngkatanDropdownExpanded = false },
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                                ) {
+                                    angkatanList.forEach { thn ->
+                                        DropdownMenuItem(
+                                            text = { Text(thn) },
+                                            onClick = {
+                                                profileViewModel.onAngkatanChanged(thn)
+                                                isAngkatanDropdownExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                            // SEMESTER (READ-ONLY)
+                            OutlinedTextField(
+                                value = state.semester,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Semester") },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true,
+                                shape = MaterialTheme.shapes.medium,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                )
+                            )
+
+                            // IPK
+                            OutlinedTextField(
+                                value = state.ipk,
+                                onValueChange = { newValue ->
+                                    if (newValue.all { it.isDigit() || it == '.' } && newValue.count { it == '.' } <= 1) {
+                                        profileViewModel.onIpkChanged(newValue)
+                                    }
+                                },
+                                label = { Text("IPK") },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true,
+                                shape = MaterialTheme.shapes.medium,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                             )
                         }
                     }
 
-                    IconButton(
-                        onClick = { photoPickerLauncher.launch("image/*") },
-                        modifier = Modifier
-                            .offset(x = 8.dp, y = 8.dp)
-                            .border(1.dp, Color.Transparent, CircleShape)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                    ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit Profil", tint = MaterialTheme.colorScheme.background)
-                    }
-                }
+                    Spacer(modifier = Modifier.height(40.dp))
 
-                Spacer(modifier = Modifier.height(32.dp))
-
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Nama Lengkap") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = {},
-                    label = { Text("Email (Tidak dapat diubah)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    readOnly = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color(0xFFB71C1C),
-                        focusedBorderColor = Color(0xFFB71C1C),
-                        unfocusedLabelColor = Color(0xFFB71C1C),
-                        focusedLabelColor = Color(0xFFB71C1C)
+                    CustomPrimaryButton(
+                        text = "Simpan",
+                        onClick = { showConfirmDialog = true },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                        enabled = isDataChanged
                     )
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = identifier,
-                    onValueChange = { identifier = it },
-                    label = { Text(if (state.userProfile?.role == "mahasiswa") "NPM" else "NIP") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-
-                if (state.userProfile?.role == "mahasiswa") {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        OutlinedTextField(value = angkatan, onValueChange = { angkatan = it }, label = { Text("Angkatan") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), shape = MaterialTheme.shapes.medium)
-                        OutlinedTextField(value = semester, onValueChange = { semester = it }, label = { Text("Semester") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), shape = MaterialTheme.shapes.medium)
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(value = ipk, onValueChange = { ipk = it }, label = { Text("IPK") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium)
                 }
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                CustomPrimaryButton(
-                    text = "Kirim",
-                    onClick = { showConfirmDialog = true },
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-                    enabled = isDataChanged
-                )
             }
 
-            if (state.isLoading || state.isUploadingPhoto) { CustomLoadingOverlay(isLoading = true) }
+            if (state.isLoading || state.isUploadingPhoto || !state.isFormInitialized) {
+                CustomLoadingOverlay(isLoading = true)
+            }
         }
     }
 }
