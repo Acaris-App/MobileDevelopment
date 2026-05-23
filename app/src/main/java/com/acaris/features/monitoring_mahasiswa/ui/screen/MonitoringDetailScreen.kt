@@ -18,17 +18,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomOutlinedButton
-import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.features.monitoring_mahasiswa.presentation.viewmodel.MonitoringViewModel
 import com.acaris.features.monitoring_mahasiswa.ui.components.DetailProfilMahasiswaCard
 import com.acaris.features.monitoring_mahasiswa.ui.components.DokumenMahasiswaCard
+import com.acaris.features.monitoring_mahasiswa.ui.components.RiwayatBimbinganCard // 🌟 IMPORT CARD RIWAYAT
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonitoringDetailScreen(
     mahasiswaId: String,
     onNavigateBack: () -> Unit,
-    onNavigateToHistoryBimbingan: (String) -> Unit,
+    // onNavigateToHistoryBimbingan dihapus karena sudah masuk ke tab!
     onNavigateToHistoryChatbot: (String) -> Unit,
     viewModel: MonitoringViewModel = hiltViewModel()
 ) {
@@ -36,8 +36,13 @@ fun MonitoringDetailScreen(
     val scrollState = rememberScrollState()
     val uriHandler = LocalUriHandler.current
 
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    val tabs = listOf("Data Diri", "Dokumen", "Bimbingan", "Chatbot")
+
+    // 🌟 KITA FETCH DATA DETAIL DAN RIWAYAT SEKALIGUS
     LaunchedEffect(mahasiswaId) {
         viewModel.fetchDetailMahasiswa(mahasiswaId)
+        viewModel.fetchHistoryBimbingan(mahasiswaId)
     }
 
     Scaffold(
@@ -69,64 +74,101 @@ fun MonitoringDetailScreen(
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 🌟 CARD 1: DATA DIRI MAHASISWA
-                    DetailProfilMahasiswaCard(detail = detail)
-
+                    ScrollableTabRow(
+                        selectedTabIndex = selectedTabIndex,
+                        containerColor = Color.Transparent,
+                        edgePadding = 0.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        tabs.forEachIndexed { index, title ->
+                            Tab(
+                                selected = selectedTabIndex == index,
+                                onClick = { selectedTabIndex = index },
+                                text = { Text(title, fontWeight = FontWeight.Bold) }
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 🌟 CARD 2: DOKUMEN MAHASISWA
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
-                        Box(modifier = Modifier.padding(24.dp)) {
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                Text("Dokumen Akademik", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Spacer(modifier = Modifier.height(16.dp))
+                    when (selectedTabIndex) {
+                        0 -> {
+                            // TAB 1: DATA DIRI MAHASISWA
+                            DetailProfilMahasiswaCard(detail = detail)
+                        }
+                        1 -> {
+                            // TAB 2: DOKUMEN MAHASISWA
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            ) {
+                                Box(modifier = Modifier.padding(24.dp)) {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        Text("Dokumen Akademik", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                        Spacer(modifier = Modifier.height(16.dp))
 
-                                if (detail.dokumen.isEmpty()) {
-                                    Text("Mahasiswa belum mengunggah dokumen.", color = Color.Gray)
-                                } else {
-                                    detail.dokumen.forEach { doc ->
-                                        DokumenMahasiswaCard(
-                                            dokumen = doc,
-                                            onClick = {
-                                                if (doc.fileUrl.isNotBlank()) {
-                                                    uriHandler.openUri(doc.fileUrl)
-                                                }
+                                        if (detail.dokumen.isEmpty()) {
+                                            Text("Mahasiswa belum mengunggah dokumen.", color = Color.Gray)
+                                        } else {
+                                            detail.dokumen.forEach { doc ->
+                                                DokumenMahasiswaCard(
+                                                    dokumen = doc,
+                                                    onClick = {
+                                                        if (doc.fileUrl.isNotBlank()) {
+                                                            uriHandler.openUri(doc.fileUrl)
+                                                        }
+                                                    }
+                                                )
+                                                Spacer(modifier = Modifier.height(12.dp))
                                             }
-                                        )
-                                        Spacer(modifier = Modifier.height(12.dp))
+                                        }
                                     }
                                 }
                             }
                         }
+                        2 -> {
+                            // 🌟 TAB 3: RIWAYAT BIMBINGAN (LANGSUNG TAMPIL DI SINI)
+                            if (uiState.historyList.isEmpty() && !uiState.isLoading) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 32.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Belum ada riwayat bimbingan.",
+                                        color = Color.Gray,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+                            } else {
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    uiState.historyList.forEach { history ->
+                                        RiwayatBimbinganCard(riwayat = history)
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                    }
+                                }
+                            }
+                        }
+                        3 -> {
+                            // TAB 4: RIWAYAT CHATBOT (Sementara masih pakai tombol)
+                            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Menu Riwayat Chatbot dipindahkan ke sini.", color = Color.Gray)
+                                Spacer(modifier = Modifier.height(16.dp))
+                                CustomOutlinedButton(
+                                    text = "Buka Riwayat Chatbot",
+                                    onClick = { onNavigateToHistoryChatbot(detail.id) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    // 🌟 TOMBOL AKSI
-                    CustomPrimaryButton(
-                        text = "Riwayat Bimbingan",
-                        onClick = { onNavigateToHistoryBimbingan(detail.id) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    CustomOutlinedButton(
-                        text = "Riwayat Chatbot Mahasiswa",
-                        onClick = { onNavigateToHistoryChatbot(detail.id) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(40.dp)) // Jarak bernafas di bawah
+                    Spacer(modifier = Modifier.height(40.dp))
                 }
             }
 
-            // Pesan Error
             if (uiState.errorMessage != null && uiState.detailMahasiswa == null) {
                 Column(
                     modifier = Modifier.align(Alignment.Center),
@@ -140,7 +182,6 @@ fun MonitoringDetailScreen(
                 }
             }
 
-            // Loading Overlay
             if (uiState.isLoading) {
                 CustomLoadingOverlay(isLoading = true)
             }

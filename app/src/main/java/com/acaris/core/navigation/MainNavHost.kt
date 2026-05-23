@@ -17,6 +17,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.acaris.core.ui.components.CustomDialog
@@ -37,45 +39,63 @@ fun MainNavHost(
         navController = navController,
         startDestination = startDestination
     ) {
-        composable(Screen.HomeMahasiswa.route) { ScreenPlaceholder("Home Mahasiswa") }
+        composable(Screen.HomeMahasiswa.route) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+
+            com.acaris.features.dashboard.ui.screen.MahasiswaDashboardScreen(
+                onNavigateToSchedule = { targetDate ->
+                    navController.currentBackStackEntry?.savedStateHandle?.set("selected_date", targetDate)
+                    navController.navigate(Screen.Schedule.route) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                onNavigateToHistoryBimbingan = {
+                    navController.navigate(Screen.BookingHistory.route) { launchSingleTop = true }
+                },
+                onNavigateToHistoryChatbot = {
+                    android.widget.Toast.makeText(context, "Fitur Riwayat Chatbot segera hadir!", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
 
         composable(Screen.DashboardDosen.route) {
-            val profileViewModel: com.acaris.features.profile.presentation.viewmodel.ProfileViewModel = hiltViewModel()
-            val profileState by profileViewModel.uiState.collectAsState()
-
-            LaunchedEffect(Unit) {
-                profileViewModel.loadProfile()
-            }
-
-            if (profileState.errorMessage != null) {
-                CustomDialog(
-                    showDialog = true,
-                    onDismissRequest = { profileViewModel.clearMessages() },
-                    confirmText = "Tutup",
-                    onConfirm = { profileViewModel.clearMessages() },
-                    content = {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Gagal Memuat Data", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(profileState.errorMessage ?: "", textAlign = TextAlign.Center, color = Color.Gray)
-                        }
+            com.acaris.features.dashboard.ui.screen.DosenDashboardScreen(
+                onNavigateToSchedule = { targetDate ->
+                    navController.currentBackStackEntry?.savedStateHandle?.set("selected_date", targetDate)
+                    navController.navigate(Screen.Schedule.route) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
                     }
-                )
-            }
-
-            DosenDashboardScreen(
-                dosenName = profileState.userProfile?.name ?: "Memuat...",
-                kodeKelas = profileState.userProfile?.kodeKelas
+                },
+                onNavigateToMonitoring = {
+                    // 🌟 FIX UTAMA: Gunakan pelindung state Bottom Nav di sini!
+                    navController.navigate(Screen.MahasiswaBimbingan.route) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         }
 
         composable(Screen.DashboardAdmin.route) { ScreenPlaceholder("Dashboard Admin") }
 
         composable(Screen.Schedule.route) {
+            val previousEntry = navController.previousBackStackEntry
+            val passedDate = previousEntry?.savedStateHandle?.get<String>("selected_date")
+
+            previousEntry?.savedStateHandle?.remove<String>("selected_date")
+
             if (userRole?.lowercase() == "dosen") {
-                com.acaris.features.schedule.ui.screen.DosenScheduleScreen()
+                com.acaris.features.schedule.ui.screen.DosenScheduleScreen(
+                    initialSelectedDate = passedDate
+                )
             } else {
                 com.acaris.features.schedule.ui.screen.MahasiswaScheduleScreen(
+                    initialSelectedDate = passedDate,
                     onNavigateToHistory = {
                         navController.navigate(Screen.BookingHistory.route) {
                             launchSingleTop = true
@@ -107,21 +127,9 @@ fun MainNavHost(
             com.acaris.features.monitoring_mahasiswa.ui.screen.MonitoringDetailScreen(
                 mahasiswaId = mahasiswaId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToHistoryBimbingan = { id ->
-                    navController.navigate(Screen.HistoryBimbinganMahasiswa.createRoute(id))
-                },
-                onNavigateToHistoryChatbot = { id ->
+                onNavigateToHistoryChatbot = { chatbotId ->
                     // (Tunggu fiturnya kelar nanti)
                 }
-            )
-        }
-
-        composable(Screen.HistoryBimbinganMahasiswa.route) { backStackEntry ->
-            val mahasiswaId = backStackEntry.arguments?.getString("mahasiswaId") ?: ""
-
-            com.acaris.features.monitoring_mahasiswa.ui.screen.MonitoringHistoryScreen(
-                mahasiswaId = mahasiswaId,
-                onNavigateBack = { navController.popBackStack() }
             )
         }
 

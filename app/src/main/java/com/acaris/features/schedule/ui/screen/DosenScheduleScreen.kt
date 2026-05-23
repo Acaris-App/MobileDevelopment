@@ -31,6 +31,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun DosenScheduleScreen(
+    initialSelectedDate: String? = null, // 🌟 FIX 1: Tambahkan penangkap parameter
     viewModel: ScheduleViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -38,7 +39,18 @@ fun DosenScheduleScreen(
 
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     var isEditMode by rememberSaveable { mutableStateOf(false) }
-    var selectedDateStr by rememberSaveable { mutableStateOf(LocalDate.now().toString()) }
+
+    // 🌟 FIX 2: Set nilai awal string tanggal dari parameter navigasi (jika ada)
+    var selectedDateStr by rememberSaveable {
+        mutableStateOf(
+            try {
+                if (initialSelectedDate != null) LocalDate.parse(initialSelectedDate).toString() else LocalDate.now().toString()
+            } catch (e: Exception) {
+                LocalDate.now().toString() // Fallback kalau format hancur
+            }
+        )
+    }
+
     val selectedDate = LocalDate.parse(selectedDateStr)
     var currentMonth by remember { mutableStateOf(YearMonth.from(selectedDate)) }
 
@@ -46,6 +58,19 @@ fun DosenScheduleScreen(
     var showSuccessDialog by rememberSaveable { mutableStateOf(false) }
     var showErrorDialog by rememberSaveable { mutableStateOf(false) }
     var activeSchedule by remember { mutableStateOf<ScheduleUiModel?>(null) }
+
+    // 🌟 FIX 3: Reaksi otomatis jika ada kiriman tanggal baru dari navigasi
+    LaunchedEffect(initialSelectedDate) {
+        if (initialSelectedDate != null) {
+            try {
+                val parsedDate = LocalDate.parse(initialSelectedDate)
+                selectedDateStr = parsedDate.toString()
+                currentMonth = YearMonth.from(parsedDate)
+            } catch (e: Exception) {
+                // Abaikan
+            }
+        }
+    }
 
     LaunchedEffect(currentMonth) {
         viewModel.fetchMonthlySchedules(currentMonth.year, currentMonth.monthValue)

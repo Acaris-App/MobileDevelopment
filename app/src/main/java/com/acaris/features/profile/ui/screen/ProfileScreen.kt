@@ -21,7 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.documents_mahasiswa.presentation.viewmodel.DocumentViewModel
 import com.acaris.features.profile.presentation.viewmodel.ProfileViewModel
-import com.acaris.features.profile.ui.component.ProfileInfoCard
+import com.acaris.features.profile.ui.components.ProfileInfoCard
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -40,6 +40,10 @@ fun ProfileScreen(
     val documentState by documentViewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
     val uriHandler = LocalUriHandler.current
+
+    // 🌟 STATE UNTUK TAB
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    val tabs = listOf("Data Diri", "Dokumen Akademik")
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -82,67 +86,99 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                profileState.userProfile?.let { user ->
-                    ProfileInfoCard(
-                        userProfile = user,
-                        onEditClick = onNavigateToEditDataDiri
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                if (profileState.userProfile?.role == "mahasiswa") {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                if (isMahasiswa) {
+                    // 🌟 TAMPILKAN TAB JIKA MAHASISWA
+                    TabRow(
+                        selectedTabIndex = selectedTabIndex,
+                        containerColor = Color.Transparent,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Box(modifier = Modifier.padding(24.dp)) {
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                Text("Dokumen Akademik", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Spacer(modifier = Modifier.height(16.dp))
+                        tabs.forEachIndexed { index, title ->
+                            Tab(
+                                selected = selectedTabIndex == index,
+                                onClick = { selectedTabIndex = index },
+                                text = { Text(title, fontWeight = FontWeight.Bold) }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                                documentState.documents.forEachIndexed { index, doc ->
-                                    com.acaris.features.documents_mahasiswa.ui.components.DocumentCard(
-                                        document = doc,
-                                        onClick = {
-                                            if (doc.fileUrl.isNotEmpty()) uriHandler.openUri(doc.fileUrl)
-                                        },
-                                        showDelete = false,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                    )
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                }
-
-                                if (documentState.documents.isEmpty()) {
-                                    Text("Belum ada dokumen yang diunggah.", color = Color.Gray)
-                                }
+                    // 🌟 KONTEN BERDASARKAN TAB YANG DIPILIH
+                    when (selectedTabIndex) {
+                        0 -> {
+                            // KONTEN TAB 1: DATA DIRI
+                            profileState.userProfile?.let { user ->
+                                ProfileInfoCard(
+                                    userProfile = user,
+                                    onEditClick = onNavigateToEditDataDiri
+                                )
                             }
-
-                            IconButton(
-                                onClick = onNavigateToEditDokumen,
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .offset(x = 12.dp, y = 12.dp)
-                                    .border(1.dp, Color.Transparent, CircleShape)
-                                    .background(MaterialTheme.colorScheme.primary, CircleShape)
+                            Spacer(modifier = Modifier.height(32.dp))
+                            CustomPrimaryButton(
+                                text = "Ganti Password",
+                                onClick = onNavigateToChangePassword,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        1 -> {
+                            // KONTEN TAB 2: DOKUMEN
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit Profil", tint = MaterialTheme.colorScheme.background)
+                                Box(modifier = Modifier.padding(24.dp)) {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        Text("Berkas Dokumen", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                        Spacer(modifier = Modifier.height(16.dp))
+
+                                        documentState.documents.forEachIndexed { index, doc ->
+                                            com.acaris.features.documents_mahasiswa.ui.components.DocumentCard(
+                                                document = doc,
+                                                onClick = {
+                                                    if (doc.fileUrl.isNotEmpty()) uriHandler.openUri(doc.fileUrl)
+                                                },
+                                                showDelete = false,
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                        }
+
+                                        if (documentState.documents.isEmpty()) {
+                                            Text("Belum ada dokumen yang diunggah.", color = Color.Gray)
+                                        }
+                                    }
+
+                                    IconButton(
+                                        onClick = onNavigateToEditDokumen,
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .offset(x = 12.dp, y = 12.dp)
+                                            .border(1.dp, Color.Transparent, CircleShape)
+                                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                    ) {
+                                        Icon(Icons.Default.Edit, contentDescription = "Edit Dokumen", tint = MaterialTheme.colorScheme.background)
+                                    }
+                                }
                             }
                         }
                     }
+                } else {
+                    // 🌟 JIKA BUKAN MAHASISWA, TAMPILKAN LANGSUNG TANPA TAB
+                    profileState.userProfile?.let { user ->
+                        ProfileInfoCard(
+                            userProfile = user,
+                            onEditClick = onNavigateToEditDataDiri
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+                    CustomPrimaryButton(
+                        text = "Ganti Password",
+                        onClick = onNavigateToChangePassword,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                CustomPrimaryButton(
-                    text = "Ganti Password",
-                    onClick = onNavigateToChangePassword,
-                    modifier = Modifier.fillMaxWidth()
-                )
 
                 Spacer(modifier = Modifier.height(120.dp))
             }

@@ -1,6 +1,6 @@
 package com.acaris.features.schedule.data.repository
 
-import com.acaris.core.network.parseApiError // 🌟 IMPORT PARSER-NYA DI SINI
+import com.acaris.core.network.parseApiError
 import com.acaris.features.schedule.data.mapper.toDomain
 import com.acaris.features.schedule.data.remote.datasource.ScheduleApiService
 import com.acaris.features.schedule.data.remote.model.CreateScheduleRequest

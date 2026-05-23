@@ -1,4 +1,4 @@
-package com.acaris.features.profile.ui.component
+package com.acaris.features.profile.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

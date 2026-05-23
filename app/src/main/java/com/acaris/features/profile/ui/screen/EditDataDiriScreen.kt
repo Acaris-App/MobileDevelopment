@@ -59,7 +59,6 @@ fun EditDataDiriScreen(
         }
     }
 
-    // 🌟 LOGIKA TOMBOL SIMPAN MENYALA
     val isDataChanged = state.userProfile?.let {
         state.name != it.name ||
                 state.identifier != it.identifier ||
@@ -88,7 +87,6 @@ fun EditDataDiriScreen(
             onConfirm = {
                 showConfirmDialog = false
 
-                // 1. Eksekusi Update Teks (Baca dari ViewModel State langsung)
                 val textChanged = state.userProfile?.let {
                     state.name != it.name ||
                             state.identifier != it.identifier ||
@@ -98,10 +96,9 @@ fun EditDataDiriScreen(
                 } ?: false
 
                 if (textChanged) {
-                    profileViewModel.updateProfile() // 🌟 TANPA PARAMETER
+                    profileViewModel.updateProfile()
                 }
 
-                // 2. Eksekusi Update Foto
                 selectedPhotoUri?.let { uri ->
                     val file = ImageUtils.uriToFile(context, uri)
                     if (file != null) {
@@ -266,13 +263,11 @@ fun EditDataDiriScreen(
                     if (state.userProfile?.role == "mahasiswa") {
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // 🌟 TIGA SERANGKAI SEJAJAR: ANGKATAN, SEMESTER, IPK
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.Top
                         ) {
-                            // DROPDOWN ANGKATAN
                             ExposedDropdownMenuBox(
                                 expanded = isAngkatanDropdownExpanded,
                                 onExpandedChange = { isAngkatanDropdownExpanded = !isAngkatanDropdownExpanded },
@@ -307,7 +302,6 @@ fun EditDataDiriScreen(
                                 }
                             }
 
-                            // SEMESTER (READ-ONLY)
                             OutlinedTextField(
                                 value = state.semester,
                                 onValueChange = {},
@@ -322,7 +316,6 @@ fun EditDataDiriScreen(
                                 )
                             )
 
-                            // IPK
                             OutlinedTextField(
                                 value = state.ipk,
                                 onValueChange = { newValue ->

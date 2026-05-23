@@ -31,10 +31,6 @@ sealed class Screen(val route: String) {
         fun createRoute(mahasiswaId: String) = "detail_mahasiswa_screen/$mahasiswaId"
     }
 
-    object HistoryBimbinganMahasiswa : Screen("history_bimbingan_mahasiswa_screen/{mahasiswaId}") {
-        fun createRoute(mahasiswaId: String) = "history_bimbingan_mahasiswa_screen/$mahasiswaId"
-    }
-
     object AddAdmin : Screen("add_admin_screen")
 
     object EditUser : Screen("edit_user_screen/{userId}") {

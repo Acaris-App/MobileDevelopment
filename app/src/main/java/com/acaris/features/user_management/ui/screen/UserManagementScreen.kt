@@ -200,7 +200,7 @@ fun UserManagementScreen(
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 80.dp)
+                contentPadding = PaddingValues(bottom = 160.dp)
             ) {
                 item {
                     Column {

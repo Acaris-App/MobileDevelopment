@@ -34,12 +34,30 @@ import java.time.YearMonth
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MahasiswaScheduleScreen(
+    initialSelectedDate: String? = null,
     viewModel: MahasiswaScheduleViewModel = hiltViewModel(),
     onNavigateToHistory: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    // Default hari ini
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var currentMonth by remember { mutableStateOf(YearMonth.from(selectedDate)) }
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+
+    // 🌟 FIX 3: Reaksi Cerdas! Jika ada kiriman tanggal baru dari Dashboard,
+    // langsung tembak ganti kalender dan bulannya.
+    LaunchedEffect(initialSelectedDate) {
+        if (initialSelectedDate != null) {
+            try {
+                val parsedDate = LocalDate.parse(initialSelectedDate)
+                selectedDate = parsedDate
+                currentMonth = YearMonth.from(parsedDate)
+            } catch (e: Exception) {
+                // Abaikan jika format salah
+            }
+        }
+    }
+
     var selectedScheduleToBook by remember { mutableStateOf<ScheduleUiModel?>(null) }
     var showSuccessDialog by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
