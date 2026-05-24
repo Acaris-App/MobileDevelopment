@@ -97,7 +97,9 @@ fun DashboardDosen.toPresentation(): DashboardDosenUiModel {
         bimbinganHariIni = this.bimbinganHariIni.toString(),
         bimbinganSemesterIni = this.bimbinganSemesterIni.toString(),
         jadwalMingguIni = this.jadwalMingguIni.map { it.toPresentation() },
-        kalenderBimbinganMap = mappedDates
+        kalenderBimbinganMap = mappedDates,
+        topMahasiswaBimbingan = this.topMahasiswaBimbingan.map { it.toPresentation() },
+        topMahasiswaChatbot = this.topMahasiswaChatbot.map { it.toPresentation() }
     )
 }
 
@@ -117,5 +119,38 @@ fun MahasiswaBookingDomain.toPresentation(): MahasiswaBookingUiModel {
         nama = this.nama,
         npm = this.npm,
         agenda = this.agenda
+    )
+}
+
+
+// mapper admin
+fun DashboardAdmin.toPresentation(): DashboardAdminUiModel {
+    return DashboardAdminUiModel(
+        namaAdmin = this.namaAdmin,
+        nipAdmin = this.nipAdmin,
+        fotoAdmin = this.fotoAdmin,
+        totalMahasiswa = this.totalMahasiswa.toString(),
+        totalDosen = this.totalDosen.toString(),
+        totalBimbingan = this.totalBimbingan.toString(),
+        totalChatbot = this.totalChatbot.toString(),
+        topDosenBimbingan = this.topDosenBimbingan.map { it.toPresentation() },
+        topMahasiswaBimbingan = this.topMahasiswaBimbingan.map { it.toPresentation() },
+        topMahasiswaChatbot = this.topMahasiswaChatbot.map { it.toPresentation() }
+    )
+}
+
+fun TopDosenBimbinganDomain.toPresentation(): TopDosenUiModel {
+    return TopDosenUiModel(
+        nama = this.nama,
+        nip = this.nip,
+        total = "${this.total} Sesi"
+    )
+}
+
+fun TopMahasiswaDomain.toPresentation(): TopMahasiswaUiModel {
+    return TopMahasiswaUiModel(
+        nama = this.nama,
+        npm = this.npm,
+        total = "${this.total} Sesi"
     )
 }

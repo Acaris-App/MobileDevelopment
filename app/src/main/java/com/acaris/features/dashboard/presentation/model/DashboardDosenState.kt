@@ -12,9 +12,10 @@ data class DashboardDosenUiModel(
     val bimbinganHariIni: String,
     val bimbinganSemesterIni: String,
     val jadwalMingguIni: List<JadwalMingguIniUiModel>,
-    val kalenderBimbinganMap: Map<LocalDate, ScheduleStatus>
+    val kalenderBimbinganMap: Map<LocalDate, ScheduleStatus>,
+    val topMahasiswaBimbingan: List<TopMahasiswaUiModel>,
+    val topMahasiswaChatbot: List<TopMahasiswaUiModel>
 ) {
-    // 🌟 TEMPLATE DATA KOSONG (Default)
     companion object {
         fun empty() = DashboardDosenUiModel(
             namaDosen = "Dosen Pembimbing",
@@ -25,7 +26,9 @@ data class DashboardDosenUiModel(
             bimbinganHariIni = "0",
             bimbinganSemesterIni = "0",
             jadwalMingguIni = emptyList(),
-            kalenderBimbinganMap = emptyMap()
+            kalenderBimbinganMap = emptyMap(),
+            topMahasiswaBimbingan = emptyList(),
+            topMahasiswaChatbot = emptyList()
         )
     }
 }

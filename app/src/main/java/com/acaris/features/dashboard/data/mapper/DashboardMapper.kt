@@ -43,7 +43,9 @@ fun DashboardDosenResponse.toDomain(): DashboardDosen {
         bimbinganHariIni = this.bimbinganHariIni ?: 0,
         bimbinganSemesterIni = this.bimbinganSemesterIni ?: 0,
         jadwalMingguIni = this.jadwalMingguIni?.map { it.toDomain() } ?: emptyList(),
-        kalenderBimbingan = this.kalenderBimbingan?.map { it.toDomain() } ?: emptyList()
+        kalenderBimbingan = this.kalenderBimbingan?.map { it.toDomain() } ?: emptyList(),
+        topMahasiswaBimbingan = this.topMahasiswaBimbingan?.map { it.toDomain() } ?: emptyList(),
+        topMahasiswaChatbot = this.topMahasiswaChatbot?.map { it.toDomain() } ?: emptyList()
     )
 }
 
@@ -64,6 +66,37 @@ fun MahasiswaBookingResponse.toDomain(): MahasiswaBookingDomain {
         nama = this.nama.orEmpty(),
         npm = this.npm.orEmpty(),
         agenda = this.agenda.orEmpty()
+    )
+}
+
+fun DashboardAdminResponse.toDomain(): DashboardAdmin {
+    return DashboardAdmin(
+        namaAdmin = this.namaAdmin.orEmpty(),
+        nipAdmin = this.nipAdmin ?: "-",
+        fotoAdmin = this.fotoAdmin.orEmpty(),
+        totalMahasiswa = this.totalMahasiswa ?: 0,
+        totalDosen = this.totalDosen ?: 0,
+        totalBimbingan = this.totalBimbingan ?: 0,
+        totalChatbot = this.totalChatbot ?: 0,
+        topDosenBimbingan = this.topDosenBimbingan?.map { it.toDomain() } ?: emptyList(),
+        topMahasiswaBimbingan = this.topMahasiswaBimbingan?.map { it.toDomain() } ?: emptyList(),
+        topMahasiswaChatbot = this.topMahasiswaChatbot?.map { it.toDomain() } ?: emptyList()
+    )
+}
+
+fun TopDosenResponse.toDomain(): TopDosenBimbinganDomain {
+    return TopDosenBimbinganDomain(
+        nama = this.nama.orEmpty(),
+        nip = this.nip ?: "-",
+        total = this.total ?: 0
+    )
+}
+
+fun TopMahasiswaResponse.toDomain(): TopMahasiswaDomain {
+    return TopMahasiswaDomain(
+        nama = this.nama.orEmpty(),
+        npm = this.npm ?: "-",
+        total = this.total ?: 0
     )
 }
 

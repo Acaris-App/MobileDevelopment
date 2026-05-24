@@ -33,6 +33,9 @@ import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.dashboard.presentation.viewmodel.DosenDashboardViewModel
 import com.acaris.features.dashboard.ui.components.DashboardStatCard
 import com.acaris.features.dashboard.ui.components.JadwalMingguIniCard
+// 🌟 IMPOR KOMPONEN LEADERBOARD
+import com.acaris.features.dashboard.ui.components.LeaderboardItemData
+import com.acaris.features.dashboard.ui.components.LeaderboardSection
 import com.acaris.features.schedule.ui.components.CustomCalendar
 import java.time.LocalDate
 
@@ -40,14 +43,13 @@ import java.time.LocalDate
 @Composable
 fun DosenDashboardScreen(
     onNavigateToSchedule: (String) -> Unit,
-    onNavigateToMonitoring: () -> Unit, // 🌟 FIX 1: Tambahan aksi klik monitoring
+    onNavigateToMonitoring: () -> Unit,
     viewModel: DosenDashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val currentMonth by viewModel.currentMonth.collectAsState()
     val scrollState = rememberScrollState()
 
-    // 🌟 FIX 2: Deklarasi Clipboard dan Context untuk Toast
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
 
@@ -74,7 +76,6 @@ fun DosenDashboardScreen(
                 ) {
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // ERROR BANNER
                     if (uiState.errorMessage != null) {
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
@@ -99,12 +100,10 @@ fun DosenDashboardScreen(
                         }
                     }
 
-                    // 🌟 GRID ASIMETRIS
                     Row(
                         modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // KIRI: Kartu Profil Dosen
                         Card(
                             modifier = Modifier.weight(1f).fillMaxHeight(),
                             shape = RoundedCornerShape(16.dp),
@@ -167,7 +166,6 @@ fun DosenDashboardScreen(
                             }
                         }
 
-                        // KANAN: 3 Statistik
                         Column(
                             modifier = Modifier.weight(1f).fillMaxHeight(),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -178,7 +176,7 @@ fun DosenDashboardScreen(
                                 title = "Mhs Bimbingan",
                                 value = data.jumlahMahasiswaBimbingan,
                                 iconColor = Color(0xFF4CAF50),
-                                onClick = onNavigateToMonitoring // 🌟 FIX 4: Pasang aksi klik
+                                onClick = onNavigateToMonitoring
                             )
                             DashboardStatCard(
                                 modifier = Modifier.fillMaxWidth().weight(1f),
@@ -198,7 +196,6 @@ fun DosenDashboardScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // KALENDER
                     Text("Kalender Bimbingan", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
                     CustomCalendar(
@@ -220,7 +217,6 @@ fun DosenDashboardScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // JADWAL MINGGU INI
                     Text("Jadwal Minggu Ini", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -246,6 +242,27 @@ fun DosenDashboardScreen(
                             }
                         }
                     }
+
+                    // 🌟 BARU: LEADERBOARD DOSEN
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    LeaderboardSection(
+                        title = "Top 5 Mahasiswa (Bimbingan Teraktif)",
+                        icon = Icons.Default.TrendingUp,
+                        iconColor = Color(0xFF4CAF50),
+                        items = data.topMahasiswaBimbingan.map { LeaderboardItemData(it.nama, "NPM: ${it.npm}", it.total) },
+                        emptyMessage = "Belum ada data bimbingan mahasiswa."
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    LeaderboardSection(
+                        title = "Top 5 Pengguna Chatbot",
+                        icon = Icons.Default.SmartToy,
+                        iconColor = Color(0xFF9C27B0),
+                        items = data.topMahasiswaChatbot.map { LeaderboardItemData(it.nama, "NPM: ${it.npm}", it.total) },
+                        emptyMessage = "Belum ada data interaksi chatbot."
+                    )
 
                     Spacer(modifier = Modifier.height(120.dp))
                 }

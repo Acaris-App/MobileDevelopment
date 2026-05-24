@@ -24,6 +24,8 @@ import androidx.navigation.compose.composable
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.features.auth.ui.screen.ChangePasswordScreen
 import com.acaris.features.dashboard.ui.screen.DosenDashboardScreen
+// 🌟 BARU: Impor Layar Admin Dashboard
+import com.acaris.features.dashboard.ui.screen.AdminDashboardScreen
 import com.acaris.features.main.ui.screen.ScreenPlaceholder
 import com.acaris.features.profile.ui.screen.EditDataDiriScreen
 import com.acaris.features.profile.ui.screen.EditDocumentScreen
@@ -71,7 +73,6 @@ fun MainNavHost(
                     }
                 },
                 onNavigateToMonitoring = {
-                    // 🌟 FIX UTAMA: Gunakan pelindung state Bottom Nav di sini!
                     navController.navigate(Screen.MahasiswaBimbingan.route) {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
                         launchSingleTop = true
@@ -81,7 +82,10 @@ fun MainNavHost(
             )
         }
 
-        composable(Screen.DashboardAdmin.route) { ScreenPlaceholder("Dashboard Admin") }
+        // 🌟 REVISI UTAMA: Mengarahkan rute ke Layar Admin yang sebenarnya
+        composable(Screen.DashboardAdmin.route) {
+            AdminDashboardScreen()
+        }
 
         composable(Screen.Schedule.route) {
             val previousEntry = navController.previousBackStackEntry

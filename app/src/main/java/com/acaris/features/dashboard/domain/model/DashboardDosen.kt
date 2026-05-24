@@ -9,7 +9,9 @@ data class DashboardDosen(
     val bimbinganHariIni: Int,
     val bimbinganSemesterIni: Int,
     val jadwalMingguIni: List<JadwalMingguIniDosenDomain>,
-    val kalenderBimbingan: List<KalenderItemDomain>
+    val kalenderBimbingan: List<KalenderItemDomain>,
+    val topMahasiswaBimbingan: List<TopMahasiswaDomain>,
+    val topMahasiswaChatbot: List<TopMahasiswaDomain>
 )
 
 data class JadwalMingguIniDosenDomain(
