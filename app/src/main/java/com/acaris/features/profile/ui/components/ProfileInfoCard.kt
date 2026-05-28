@@ -1,5 +1,6 @@
 package com.acaris.features.profile.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -7,9 +8,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,19 +22,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.features.profile.domain.model.UserProfile
 
 @Composable
 fun ProfileInfoCard(
     userProfile: UserProfile,
     onEditClick: () -> Unit,
+    onChangePasswordClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
     ) {
         Box(modifier = Modifier.padding(24.dp)) {
             Column(
@@ -80,15 +87,70 @@ fun ProfileInfoCard(
                 }
             }
 
-            IconButton(
-                onClick = onEditClick,
+            // TOMBOL 3 TITIK DAN DROPDOWN MENU
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .offset(x = 12.dp, y = 12.dp)
-                    .border(1.dp, Color.Transparent, CircleShape)
-                    .background(MaterialTheme.colorScheme.primary, CircleShape)
+                    .align(Alignment.TopEnd)
+                    .offset(x = 12.dp, y = (-12).dp)
             ) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit Profil", tint = MaterialTheme.colorScheme.background)
+                CustomCircularIconButton(
+                    icon = Icons.Default.MoreVert,
+                    contentDescription = "Opsi",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClick = { expanded = true },
+                    modifier = Modifier.size(40.dp)
+                )
+
+                // FIX LENGKUNGAN DROPDOWN DI SINI
+                // Membungkus menu dengan MaterialTheme untuk memaksa bentuk Popup-nya menjadi 16.dp
+                MaterialTheme(
+                    shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
+                ) {
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Edit Profil") },
+                            onClick = {
+                                expanded = false
+                                onEditClick()
+                            },
+                            leadingIcon = {
+                                CustomCircularIconButton(
+                                    icon = Icons.Default.Edit,
+                                    contentDescription = "Edit Profil",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    onClick = {
+                                        expanded = false
+                                        onEditClick()
+                                    },
+                                    modifier = Modifier.size(40.dp)
+                                )
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Ganti Password") },
+                            onClick = {
+                                expanded = false
+                                onChangePasswordClick()
+                            },
+                            leadingIcon = {
+                                CustomCircularIconButton(
+                                    icon = Icons.Default.Lock,
+                                    contentDescription = "Ganti Password",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    onClick = {
+                                        expanded = false
+                                        onChangePasswordClick()
+                                    },
+                                    modifier = Modifier.size(40.dp)
+                                )
+                            }
+                        )
+                    }
+                }
             }
         }
     }
@@ -101,7 +163,7 @@ fun ProfileDataLine(label: String, value: String) {
             .fillMaxWidth()
             .padding(bottom = 12.dp)
     ) {
-        Text(text = label, fontSize = 12.sp, color = Color.Gray)
+        Text(text = label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
         HorizontalDivider(
             modifier = Modifier.padding(top = 4.dp),

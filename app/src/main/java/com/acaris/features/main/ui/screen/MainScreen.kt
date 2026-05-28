@@ -144,13 +144,12 @@ fun MainScreen(
                     }
                 },
                 actions = {
-                    // 🌟 FIX: Tampilkan tombol Riwayat HANYA JIKA di tab Jadwal DAN role-nya adalah Mahasiswa
                     if (isScheduleTab && userRole?.lowercase() == "mahasiswa") {
                         Box(modifier = Modifier.padding(end = 16.dp)) {
                             CustomCircularIconButton(
                                 icon = Icons.Default.History,
                                 contentDescription = "Riwayat Booking",
-                                color = MaterialTheme.colorScheme.onBackground,
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(40.dp),
                                 onClick = {
                                     bottomNavController.navigate(Screen.BookingHistory.route) {
@@ -166,7 +165,7 @@ fun MainScreen(
                             CustomCircularIconButton(
                                 icon = Icons.AutoMirrored.Filled.Logout,
                                 contentDescription = "Logout",
-                                color = MaterialTheme.colorScheme.onBackground,
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(40.dp),
                                 onClick = { showLogoutDialog = true }
                             )

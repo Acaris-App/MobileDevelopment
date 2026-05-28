@@ -1,5 +1,6 @@
 package com.acaris.features.profile.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -18,14 +19,14 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.documents_mahasiswa.presentation.viewmodel.DocumentViewModel
 import com.acaris.features.profile.presentation.viewmodel.ProfileViewModel
 import com.acaris.features.profile.ui.components.ProfileInfoCard
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import com.acaris.core.ui.components.CustomPrimaryButton
 
 @Composable
 fun ProfileScreen(
@@ -40,8 +41,6 @@ fun ProfileScreen(
     val documentState by documentViewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
     val uriHandler = LocalUriHandler.current
-
-    // 🌟 STATE UNTUK TAB
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Data Diri", "Dokumen Akademik")
 
@@ -75,19 +74,7 @@ fun ProfileScreen(
                     .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "Profil",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
                 if (isMahasiswa) {
-                    // 🌟 TAMPILKAN TAB JIKA MAHASISWA
                     TabRow(
                         selectedTabIndex = selectedTabIndex,
                         containerColor = Color.Transparent,
@@ -97,40 +84,51 @@ fun ProfileScreen(
                             Tab(
                                 selected = selectedTabIndex == index,
                                 onClick = { selectedTabIndex = index },
-                                text = { Text(title, fontWeight = FontWeight.Bold) }
+                                text = { Text(title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) }
                             )
                         }
                     }
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 🌟 KONTEN BERDASARKAN TAB YANG DIPILIH
                     when (selectedTabIndex) {
                         0 -> {
-                            // KONTEN TAB 1: DATA DIRI
+                            // TAB 1: DATA DIRI
                             profileState.userProfile?.let { user ->
                                 ProfileInfoCard(
                                     userProfile = user,
-                                    onEditClick = onNavigateToEditDataDiri
+                                    onEditClick = onNavigateToEditDataDiri,
+                                    onChangePasswordClick = onNavigateToChangePassword
                                 )
                             }
-                            Spacer(modifier = Modifier.height(32.dp))
-                            CustomPrimaryButton(
-                                text = "Ganti Password",
-                                onClick = onNavigateToChangePassword,
-                                modifier = Modifier.fillMaxWidth()
-                            )
                         }
                         1 -> {
-                            // KONTEN TAB 2: DOKUMEN
+                            // TAB 2: DOKUMEN
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                             ) {
                                 Box(modifier = Modifier.padding(24.dp)) {
                                     Column(modifier = Modifier.fillMaxWidth()) {
-                                        Text("Berkas Dokumen", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "Berkas Dokumen",
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                            CustomCircularIconButton(
+                                                icon = Icons.Default.Edit,
+                                                contentDescription = "Edit Dokumen",
+                                                color = MaterialTheme.colorScheme.primary,
+                                                onClick = onNavigateToEditDokumen,
+                                                modifier = Modifier.size(40.dp)
+                                            )
+                                        }
                                         Spacer(modifier = Modifier.height(16.dp))
 
                                         documentState.documents.forEachIndexed { index, doc ->
@@ -149,35 +147,19 @@ fun ProfileScreen(
                                             Text("Belum ada dokumen yang diunggah.", color = Color.Gray)
                                         }
                                     }
-
-                                    IconButton(
-                                        onClick = onNavigateToEditDokumen,
-                                        modifier = Modifier
-                                            .align(Alignment.BottomEnd)
-                                            .offset(x = 12.dp, y = 12.dp)
-                                            .border(1.dp, Color.Transparent, CircleShape)
-                                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                                    ) {
-                                        Icon(Icons.Default.Edit, contentDescription = "Edit Dokumen", tint = MaterialTheme.colorScheme.background)
-                                    }
                                 }
                             }
                         }
                     }
                 } else {
-                    // 🌟 JIKA BUKAN MAHASISWA, TAMPILKAN LANGSUNG TANPA TAB
+                    // JIKA BUKAN MAHASISWA, TAMPILKAN LANGSUNG
                     profileState.userProfile?.let { user ->
                         ProfileInfoCard(
                             userProfile = user,
-                            onEditClick = onNavigateToEditDataDiri
+                            onEditClick = onNavigateToEditDataDiri,
+                            onChangePasswordClick = onNavigateToChangePassword
                         )
                     }
-                    Spacer(modifier = Modifier.height(32.dp))
-                    CustomPrimaryButton(
-                        text = "Ganti Password",
-                        onClick = onNavigateToChangePassword,
-                        modifier = Modifier.fillMaxWidth()
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(120.dp))
