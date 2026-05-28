@@ -13,8 +13,7 @@ data class RegisterState(
     val currentStep: RegisterStep = RegisterStep.LOADING_INIT,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val user: UserPresentationModel? = null,
-
+    val user: UserUiModel? = null, // 🌟 Ganti di sini
     val name: String = "",
     val email: String = "",
     val password: String = "",

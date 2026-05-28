@@ -38,7 +38,6 @@ fun JadwalMingguIniCard(
     }
 
     Card(
-        // 🌟 Mengadopsi gaya shadow dari ScheduleDetailCard
         modifier = modifier
             .fillMaxWidth()
             .shadow(2.dp, RoundedCornerShape(16.dp), clip = false)
@@ -46,7 +45,7 @@ fun JadwalMingguIniCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, statusColor.copy(alpha = 0.8f)) // Border mengikuti status
+        border = BorderStroke(1.dp, statusColor.copy(alpha = 0.8f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // HEADER: Tanggal, Waktu, & Status
@@ -96,10 +95,8 @@ fun JadwalMingguIniCard(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    // Jika teks dari server isNotBlank pake teksnya, jika kosong jadikan "Tidak ada keterangan"
                     text = if (jadwal.keterangan.isNotBlank()) jadwal.keterangan else "Tidak ada keterangan",
                     fontSize = 14.sp,
-                    // Jika kosong, warnanya kita bikin sedikit muted/abu-abu agar dosen tahu ini teks bawaan sistem
                     color = if (jadwal.keterangan.isNotBlank()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     fontStyle = if (jadwal.keterangan.isNotBlank()) FontStyle.Normal else FontStyle.Italic,
                     lineHeight = 20.sp
@@ -129,7 +126,6 @@ fun JadwalMingguIniCard(
                 }
             } else {
                 jadwal.listMahasiswa.forEach { mahasiswa ->
-                    // 🌟 Mengadopsi struktur persis seperti StudentListItem di Schedule
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()

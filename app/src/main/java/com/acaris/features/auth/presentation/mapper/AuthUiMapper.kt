@@ -1,10 +1,11 @@
 package com.acaris.features.auth.presentation.mapper
 
 import com.acaris.features.auth.domain.model.User
-import com.acaris.features.auth.presentation.model.UserPresentationModel
+import com.acaris.features.auth.presentation.model.UserUiModel
 
-fun User.toPresentation(): UserPresentationModel {
-    return UserPresentationModel(
+// 🌟 REVISI: Langsung map ke UserUiModel
+fun User.toPresentation(): UserUiModel {
+    return UserUiModel(
         email = this.email,
         name = this.name,
         role = this.role,

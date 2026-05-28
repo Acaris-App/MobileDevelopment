@@ -10,14 +10,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -30,14 +30,12 @@ import com.acaris.R
 import com.acaris.core.navigation.MainNavHost
 import com.acaris.core.navigation.Screen
 import com.acaris.core.network.AuthEvent
+import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.features.main.presentation.model.AdminMenus
+import com.acaris.features.main.presentation.model.DosenMenus
+import com.acaris.features.main.presentation.model.MahasiswaMenus
 import com.acaris.features.main.presentation.viewmodel.MainViewModel
-
-object AcarisIcons {
-    val Schedule: ImageVector = Icons.Default.DateRange
-    val Chatbot: ImageVector = Icons.Default.Chat
-    val Profile: ImageVector = Icons.Default.PersonOutline
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,34 +87,24 @@ fun MainScreen(
     }
 
     val menus = when (userRole?.lowercase()) {
-        "mahasiswa" -> listOf(
-            Pair(Screen.HomeMahasiswa.route, Pair(Icons.Default.Home, "Home")),
-            Pair(Screen.Schedule.route, Pair(AcarisIcons.Schedule, "Jadwal")),
-            Pair(Screen.Chatbot.route, Pair(AcarisIcons.Chatbot, "Chatbot")),
-            Pair(Screen.Profile.route, Pair(AcarisIcons.Profile, "Profil"))
-        )
-        "dosen" -> listOf(
-            Pair(Screen.DashboardDosen.route, Pair(Icons.Default.Dashboard, "Dashboard")),
-            Pair(Screen.Schedule.route, Pair(AcarisIcons.Schedule, "Jadwal")),
-            Pair(Screen.MahasiswaBimbingan.route, Pair(Icons.Default.Group, "Mahasiswa")),
-            Pair(Screen.Profile.route, Pair(AcarisIcons.Profile, "Profil"))
-        )
-        "admin" -> listOf(
-            Pair(Screen.DashboardAdmin.route, Pair(Icons.Default.Dashboard, "Dashboard")),
-            Pair(Screen.KnowledgeBase.route, Pair(Icons.Default.Book, "Knowledge")),
-            Pair(Screen.UserManagement.route, Pair(Icons.Default.ManageAccounts, "Pengguna")),
-            Pair(Screen.Profile.route, Pair(AcarisIcons.Profile, "Profil"))
-        )
+        "mahasiswa" -> MahasiswaMenus
+        "dosen" -> DosenMenus
+        "admin" -> AdminMenus
         else -> emptyList()
     }
 
-    val isMainMenu = menus.any { it.first == currentRoute }
+    val isMainMenu = menus.any { it.route == currentRoute }
+
+    val currentMenuItem = menus.find { it.route == currentRoute }
+    val isHomeTab = currentRoute == menus.firstOrNull()?.route
+    val isProfileTab = currentRoute == Screen.Profile.route
+    val isScheduleTab = currentRoute == Screen.Schedule.route
 
     Box(modifier = Modifier.fillMaxSize()) {
         val topPadding = if (isMainMenu) 64.dp else 0.dp
 
         Box(modifier = Modifier.fillMaxSize().padding(top = topPadding)) {
-            val startDest = menus.firstOrNull()?.first ?: "home_mahasiswa"
+            val startDest = menus.firstOrNull()?.route ?: Screen.HomeMahasiswa.route
 
             MainNavHost(
                 navController = bottomNavController,
@@ -128,42 +116,61 @@ fun MainScreen(
         if (isMainMenu) {
             TopAppBar(
                 title = {
-                    Row(
-                        modifier = Modifier.clickable(
-                            interactionSource = remember { MutableInteractionSource() }, indication = null,
-                            onClick = {
-                                val homeRoute = menus.firstOrNull()?.first ?: "home_mahasiswa"
-                                bottomNavController.navigate(homeRoute) {
-                                    popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
+                    if (isHomeTab) {
+                        Row(
+                            modifier = Modifier.clickable(
+                                interactionSource = remember { MutableInteractionSource() }, indication = null,
+                                onClick = {
+                                    val homeRoute = menus.firstOrNull()?.route ?: Screen.HomeMahasiswa.route
+                                    bottomNavController.navigate(homeRoute) {
+                                        popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 }
-                            }
-                        ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo Acaris", modifier = Modifier.size(24.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "ACARIS", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo Acaris", modifier = Modifier.size(24.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "ACARIS", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                        }
+                    } else {
+                        Text(
+                            text = currentMenuItem?.title ?: "Acaris",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 },
                 actions = {
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.background)
-                            .border(1.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
-                            .clickable { showLogoutDialog = true },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Logout",
-                            tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(16.dp)
-                        )
+                    // 🌟 FIX: Tampilkan tombol Riwayat HANYA JIKA di tab Jadwal DAN role-nya adalah Mahasiswa
+                    if (isScheduleTab && userRole?.lowercase() == "mahasiswa") {
+                        Box(modifier = Modifier.padding(end = 16.dp)) {
+                            CustomCircularIconButton(
+                                icon = Icons.Default.History,
+                                contentDescription = "Riwayat Booking",
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.size(40.dp),
+                                onClick = {
+                                    bottomNavController.navigate(Screen.BookingHistory.route) {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                    if (isProfileTab) {
+                        Box(modifier = Modifier.padding(end = 16.dp)) {
+                            CustomCircularIconButton(
+                                icon = Icons.AutoMirrored.Filled.Logout,
+                                contentDescription = "Logout",
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.size(40.dp),
+                                onClick = { showLogoutDialog = true }
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -175,20 +182,29 @@ fun MainScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                        clip = false
+                    )
                     .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(vertical = 12.dp, horizontal = 24.dp)
             ) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     menus.forEach { item ->
-                        val selected = currentRoute == item.first
+                        val selected = currentRoute == item.route
+
+                        val unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        val itemColor = if (selected) MaterialTheme.colorScheme.primary else unselectedColor
+
                         Column(
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() }, indication = null,
                                     onClick = {
-                                        bottomNavController.navigate(item.first) {
+                                        bottomNavController.navigate(item.route) {
                                             popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
                                             launchSingleTop = true
                                             restoreState = true
@@ -197,9 +213,19 @@ fun MainScreen(
                                 ),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Icon(imageVector = item.second.first, contentDescription = item.second.second, tint = if (selected) MaterialTheme.colorScheme.primary else Color.Gray, modifier = Modifier.size(28.dp))
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.title,
+                                tint = itemColor,
+                                modifier = Modifier.size(28.dp)
+                            )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(text = item.second.second, style = MaterialTheme.typography.labelSmall, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal, color = if (selected) MaterialTheme.colorScheme.primary else Color.Gray)
+                            Text(
+                                text = item.title,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                                color = itemColor
+                            )
                         }
                     }
                 }
@@ -211,6 +237,6 @@ fun MainScreen(
 @Composable
 fun ScreenPlaceholder(title: String) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = title, style = MaterialTheme.typography.titleLarge, color = Color.Gray)
+        Text(text = title, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
     }
 }

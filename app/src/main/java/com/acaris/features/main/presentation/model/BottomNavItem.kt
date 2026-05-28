@@ -3,6 +3,8 @@ package com.acaris.features.main.presentation.model
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
+// 🌟 IMPOR KELAS SCREEN MILIK KAPTEN
+import com.acaris.core.navigation.Screen
 
 data class BottomNavItem(
     val route: String,
@@ -11,22 +13,22 @@ data class BottomNavItem(
 )
 
 val MahasiswaMenus = listOf(
-    BottomNavItem("home_mahasiswa", "Home", Icons.Default.Home),
-    BottomNavItem("jadwal", "Jadwal", Icons.Default.DateRange),
-    BottomNavItem("chatbot", "Chatbot", Icons.Default.Chat),
-    BottomNavItem("profil", "Profil", Icons.Default.Person)
+    BottomNavItem(Screen.HomeMahasiswa.route, "Home", Icons.Default.Home),
+    BottomNavItem(Screen.Schedule.route, "Jadwal", Icons.Default.DateRange),
+    BottomNavItem(Screen.Chatbot.route, "Chatbot", Icons.Default.Chat),
+    BottomNavItem(Screen.Profile.route, "Profil", Icons.Default.Person)
 )
 
 val DosenMenus = listOf(
-    BottomNavItem("dashboard_dosen", "Dashboard", Icons.Default.Dashboard),
-    BottomNavItem("jadwal", "Jadwal", Icons.Default.DateRange),
-    BottomNavItem("daftar_mahasiswa", "Mahasiswa", Icons.Default.Group),
-    BottomNavItem("profil", "Profil", Icons.Default.Person)
+    BottomNavItem(Screen.DashboardDosen.route, "Dashboard", Icons.Default.Dashboard),
+    BottomNavItem(Screen.Schedule.route, "Jadwal", Icons.Default.DateRange),
+    BottomNavItem(Screen.MahasiswaBimbingan.route, "Mahasiswa", Icons.Default.Group),
+    BottomNavItem(Screen.Profile.route, "Profil", Icons.Default.Person)
 )
 
 val AdminMenus = listOf(
-    BottomNavItem("dashboard_admin", "Dashboard", Icons.Default.Dashboard),
-    BottomNavItem("knowledge_base", "Knowledge", Icons.Default.Book),
-    BottomNavItem("manajemen_pengguna", "Pengguna", Icons.Default.ManageAccounts),
-    BottomNavItem("profil", "Profil", Icons.Default.Person)
+    BottomNavItem(Screen.DashboardAdmin.route, "Dashboard", Icons.Default.Dashboard),
+    BottomNavItem(Screen.KnowledgeBase.route, "Knowledge", Icons.Default.Book),
+    BottomNavItem(Screen.UserManagement.route, "Pengguna", Icons.Default.ManageAccounts),
+    BottomNavItem(Screen.Profile.route, "Profil", Icons.Default.Person)
 )

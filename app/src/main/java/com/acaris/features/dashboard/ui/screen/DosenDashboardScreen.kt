@@ -1,5 +1,6 @@
 package com.acaris.features.dashboard.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -156,7 +157,7 @@ fun DosenDashboardScreen(
                                         }
                                 ) {
                                     Text(
-                                        text = "Kelas: ${data.kodeKelas}",
+                                        text = "Kode Kelas:\n${data.kodeKelas}",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface,
@@ -223,11 +224,12 @@ fun DosenDashboardScreen(
                     if (data.jadwalMingguIni.isEmpty()) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                            shape = RoundedCornerShape(12.dp)
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = CardDefaults.cardElevation(2.dp)
                         ) {
                             Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                                Text("Tidak ada jadwal dalam 7 hari ke depan.", color = Color.Gray, fontSize = 14.sp)
+                                Text("Tidak ada jadwal dalam 7 hari ke depan.", color =  MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
                             }
                         }
                     } else {
@@ -243,7 +245,6 @@ fun DosenDashboardScreen(
                         }
                     }
 
-                    // 🌟 BARU: LEADERBOARD DOSEN
                     Spacer(modifier = Modifier.height(32.dp))
 
                     LeaderboardSection(

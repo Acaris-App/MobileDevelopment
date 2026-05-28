@@ -54,9 +54,6 @@ fun StepUploadDokumen(
     var showSuccessDialog by rememberSaveable { mutableStateOf(false) }
     var showWarningDialog by rememberSaveable { mutableStateOf(false) }
 
-    var showOrderErrorDialog by rememberSaveable { mutableStateOf(false) }
-    var orderErrorMessage by rememberSaveable { mutableStateOf("") }
-
     val requiredDocs = remember(semester) {
         val list = mutableListOf("transkrip")
         for (i in 1 until semester) {
@@ -113,30 +110,6 @@ fun StepUploadDokumen(
         )
     }
 
-    if (showOrderErrorDialog) {
-        CustomDialog(
-            showDialog = true,
-            onDismissRequest = { showOrderErrorDialog = false },
-            confirmText = "Mengerti",
-            onConfirm = { showOrderErrorDialog = false },
-            content = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "Aksi Ditolak",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = orderErrorMessage,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-        )
-    }
-
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null && activeDocType.isNotEmpty()) {
             val file = FileUtils.uriToFile(context, uri)
@@ -184,15 +157,9 @@ fun StepUploadDokumen(
                     title = "KRS Semester $i",
                     fileName = uploadedDocs["krs_$i"]?.fileName,
                     onUploadClick = {
-                        // Kunci Urutan KRS
-                        if (i == 1 || uploadedDocs.containsKey("krs_${i - 1}")) {
-                            activeDocType = "krs"
-                            activeDocSemester = i
-                            launcher.launch("application/pdf")
-                        } else {
-                            orderErrorMessage = "Upload dokumen KRS harus berurutan. Silakan unggah KRS Semester ${i - 1} terlebih dahulu."
-                            showOrderErrorDialog = true
-                        }
+                        activeDocType = "krs"
+                        activeDocSemester = i
+                        launcher.launch("application/pdf")
                     },
                     onDeleteClick = {
                         uploadedDocs["krs_$i"]?.documentId?.let { docId ->
@@ -205,15 +172,9 @@ fun StepUploadDokumen(
                     title = "KHS Semester $i",
                     fileName = uploadedDocs["khs_$i"]?.fileName,
                     onUploadClick = {
-                        // Kunci Urutan KHS
-                        if (i == 1 || uploadedDocs.containsKey("khs_${i - 1}")) {
-                            activeDocType = "khs"
-                            activeDocSemester = i
-                            launcher.launch("application/pdf")
-                        } else {
-                            orderErrorMessage = "Upload dokumen KHS harus berurutan. Silakan unggah KHS Semester ${i - 1} terlebih dahulu."
-                            showOrderErrorDialog = true
-                        }
+                        activeDocType = "khs"
+                        activeDocSemester = i
+                        launcher.launch("application/pdf")
                     },
                     onDeleteClick = {
                         uploadedDocs["khs_$i"]?.documentId?.let { docId ->

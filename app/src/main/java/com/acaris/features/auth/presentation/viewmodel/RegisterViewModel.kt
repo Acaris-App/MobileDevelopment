@@ -41,9 +41,6 @@ class RegisterViewModel @Inject constructor(
     var currentSemester: Int = 1
         private set
 
-    // ==========================================
-    // 🌟 FORM EVENT HANDLERS (STRICT MVVM)
-    // ==========================================
     fun onNameChanged(v: String) { _uiState.update { it.copy(name = v) } }
     fun onEmailChanged(v: String) { _uiState.update { it.copy(email = v) } }
     fun onPasswordChanged(v: String) { _uiState.update { it.copy(password = v) } }
@@ -52,7 +49,6 @@ class RegisterViewModel @Inject constructor(
     fun onNipChanged(v: String) { _uiState.update { it.copy(nip = v) } }
     fun onIpkChanged(v: String) { _uiState.update { it.copy(ipk = v) } }
 
-    // 🌟 LOGIKA AUTO-SEMESTER DARI DROPDOWN
     fun onAngkatanChanged(newAngkatan: String) {
         _uiState.update { it.copy(angkatan = newAngkatan) }
         val finalSemester = calculateSemesterUseCase(newAngkatan)
@@ -61,9 +57,6 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    // ==========================================
-    // 🌟 FUNGSI UTAMA
-    // ==========================================
     fun initRole(selectedRole: String) {
         role = selectedRole.lowercase()
         val initialStep = if (role == "mahasiswa") RegisterStep.INPUT_KODE_KELAS else RegisterStep.INPUT_DATA_DIRI

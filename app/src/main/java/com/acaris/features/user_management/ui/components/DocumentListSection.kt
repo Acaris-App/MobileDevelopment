@@ -38,8 +38,7 @@ fun DocumentListSection(
     onUploadNewClick: (type: String, semester: Int?) -> Unit,
     onDocumentClick: (MahasiswaDocumentUiModel) -> Unit,
     onEditClick: (MahasiswaDocumentUiModel) -> Unit,
-    onDeleteClick: (MahasiswaDocumentUiModel) -> Unit,
-    onOrderError: (String) -> Unit
+    onDeleteClick: (MahasiswaDocumentUiModel) -> Unit
 ) {
     val requiredSemesters = if (currentSemester > 1) (1 until currentSemester).toList() else emptyList()
     val krsSemesters = (requiredSemesters + krs.mapNotNull { it.semester }).distinct().sorted()
@@ -93,12 +92,10 @@ fun DocumentListSection(
                     } else {
                         krsSemesters.forEachIndexed { index, sem ->
                             val krsDoc = getKrs(sem)
+
+                            // 🌟 REVISI SPRINT 1: Hapus pengecekan urutan
                             val onClickAction = {
-                                if (sem == 1 || getKrs(sem - 1) != null) {
-                                    onUploadNewClick("krs", sem)
-                                } else {
-                                    onOrderError("Upload dokumen KRS harus berurutan. Silakan unggah KRS Semester ${sem - 1} terlebih dahulu.")
-                                }
+                                onUploadNewClick("krs", sem)
                             }
 
                             if (krsDoc != null) {
@@ -129,12 +126,10 @@ fun DocumentListSection(
                     } else {
                         khsSemesters.forEachIndexed { index, sem ->
                             val khsDoc = getKhs(sem)
+
+                            // 🌟 REVISI SPRINT 1: Hapus pengecekan urutan
                             val onClickAction = {
-                                if (sem == 1 || getKhs(sem - 1) != null) {
-                                    onUploadNewClick("khs", sem)
-                                } else {
-                                    onOrderError("Upload dokumen KHS harus berurutan. Silakan unggah KHS Semester ${sem - 1} terlebih dahulu.")
-                                }
+                                onUploadNewClick("khs", sem)
                             }
 
                             if (khsDoc != null) {

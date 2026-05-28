@@ -1,4 +1,3 @@
-// File: ui/components/MahasiswaTabSection.kt
 package com.acaris.features.user_management.ui.components
 
 import androidx.compose.foundation.layout.Column
@@ -17,7 +16,6 @@ fun MahasiswaTabSection(
     onDocumentClick: (MahasiswaDocumentUiModel) -> Unit,
     onEditDocument: (MahasiswaDocumentUiModel) -> Unit,
     onDeleteDocument: (MahasiswaDocumentUiModel) -> Unit,
-    onOrderError: (String) -> Unit
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Dokumen", "Bimbingan", "Chatbot (Aca)")
@@ -39,7 +37,6 @@ fun MahasiswaTabSection(
                 onDocumentClick = onDocumentClick,
                 onEditClick = onEditDocument,
                 onDeleteClick = onDeleteDocument,
-                onOrderError = onOrderError
             )
             1 -> BimbinganRiwayatSection(bimbinganHistory = uiState.bimbinganHistory)
             2 -> ChatbotRiwayatSection()

@@ -51,16 +51,15 @@ fun EditDocumentScreen(
     var pendingUploadType by remember { mutableStateOf("") }
     var pendingUploadSemester by remember { mutableStateOf<Int?>(null) }
 
-    // 🌟 FIX: State baru untuk menyimpan ID dokumen yang mau di-update
+    // State baru untuk menyimpan ID dokumen yang mau di-update
     var documentIdToUpdate by remember { mutableStateOf<String?>(null) }
 
     var showReplaceDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
-    var showOrderErrorDialog by remember { mutableStateOf(false) }
-    var orderErrorMessage by remember { mutableStateOf("") }
+    // 🌟 REVISI SPRINT 1: State showOrderErrorDialog dan orderErrorMessage sudah dihapus!
 
-    // 🌟 FIX: Logika Launcher dipisah jadi dua (Update vs Upload)
+    // Logika Launcher dipisah jadi dua (Update vs Upload)
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             val file = FileUtils.uriToFile(context, uri)
@@ -114,21 +113,7 @@ fun EditDocumentScreen(
         )
     }
 
-    if (showOrderErrorDialog) {
-        CustomDialog(
-            showDialog = true,
-            onDismissRequest = { showOrderErrorDialog = false },
-            content = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Aksi Ditolak", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = orderErrorMessage, textAlign = TextAlign.Center, color = Color.DarkGray)
-                }
-            },
-            confirmText = "Mengerti",
-            onConfirm = { showOrderErrorDialog = false }
-        )
-    }
+    // 🌟 REVISI SPRINT 1: CustomDialog untuk showOrderErrorDialog sudah dicabut dari sini!
 
     if (documentIdToDelete != null) {
         CustomDialog(
@@ -170,6 +155,7 @@ fun EditDocumentScreen(
             }
         )
     }
+
     if (state.errorMessage != null) {
         CustomDialog(
             showDialog = true,
@@ -262,7 +248,7 @@ fun EditDocumentScreen(
                             DocumentCard(
                                 document = transkripDoc,
                                 onClick = {
-                                    documentIdToUpdate = transkripDoc.id // 🌟 Set ID untuk update
+                                    documentIdToUpdate = transkripDoc.id
                                     pendingUploadSemester = null
                                     showReplaceDialog = true
                                 },
@@ -301,19 +287,15 @@ fun EditDocumentScreen(
                             krsSemesters.forEachIndexed { index, sem ->
                                 val krsDoc = getDoc("krs", sem)
 
+                                // 🌟 REVISI SPRINT 1: Hapus pengecekan urutan, langsung eksekusi
                                 val onClickAction = {
-                                    if (sem == 1 || getDoc("krs", sem - 1) != null) {
-                                        pendingUploadSemester = sem
-                                        if (krsDoc != null) {
-                                            documentIdToUpdate = krsDoc.id // 🌟 Set ID untuk update
-                                            showReplaceDialog = true
-                                        } else {
-                                            pendingUploadType = "krs" // 🌟 Set Type untuk upload baru
-                                            launcher.launch("application/pdf")
-                                        }
+                                    pendingUploadSemester = sem
+                                    if (krsDoc != null) {
+                                        documentIdToUpdate = krsDoc.id
+                                        showReplaceDialog = true
                                     } else {
-                                        orderErrorMessage = "Upload dokumen KRS harus berurutan. Silakan unggah KRS Semester ${sem - 1} terlebih dahulu."
-                                        showOrderErrorDialog = true
+                                        pendingUploadType = "krs"
+                                        launcher.launch("application/pdf")
                                     }
                                 }
 
@@ -355,19 +337,15 @@ fun EditDocumentScreen(
                             khsSemesters.forEachIndexed { index, sem ->
                                 val khsDoc = getDoc("khs", sem)
 
+                                // 🌟 REVISI SPRINT 1: Hapus pengecekan urutan, langsung eksekusi
                                 val onClickAction = {
-                                    if (sem == 1 || getDoc("khs", sem - 1) != null) {
-                                        pendingUploadSemester = sem
-                                        if (khsDoc != null) {
-                                            documentIdToUpdate = khsDoc.id // 🌟 Set ID untuk update
-                                            showReplaceDialog = true
-                                        } else {
-                                            pendingUploadType = "khs" // 🌟 Set Type untuk upload baru
-                                            launcher.launch("application/pdf")
-                                        }
+                                    pendingUploadSemester = sem
+                                    if (khsDoc != null) {
+                                        documentIdToUpdate = khsDoc.id
+                                        showReplaceDialog = true
                                     } else {
-                                        orderErrorMessage = "Upload dokumen KHS harus berurutan. Silakan unggah KHS Semester ${sem - 1} terlebih dahulu."
-                                        showOrderErrorDialog = true
+                                        pendingUploadType = "khs"
+                                        launcher.launch("application/pdf")
                                     }
                                 }
 

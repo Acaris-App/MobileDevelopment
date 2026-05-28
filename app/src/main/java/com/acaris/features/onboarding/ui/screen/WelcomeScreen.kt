@@ -111,14 +111,3 @@ fun WelcomeScreen(
         )
     }
 }
-
-@Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
-@Composable
-fun WelcomeScreenPreview() {
-    AcarisTheme {
-        WelcomeScreen(
-            onLoginClick = {},
-            onRegisterClick = {}
-        )
-    }
-}

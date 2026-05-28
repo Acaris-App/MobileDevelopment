@@ -1,4 +1,3 @@
-// File: core/navigation/Screen.kt
 package com.acaris.core.navigation
 
 sealed class Screen(val route: String) {

@@ -50,4 +50,37 @@ object DateUtils {
             rawDate // Fallback jika format dari server aneh
         }
     }
+
+    fun formatIsoToTimeOnly(rawDate: String?): String {
+        if (rawDate.isNullOrEmpty() || rawDate == "Memuat...") return rawDate ?: ""
+
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+            inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+
+            // Format output HANYA jam dan menit (24 jam)
+            val outputFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+            outputFormat.timeZone = TimeZone.getDefault() // Gunakan zona waktu HP user (WIB/WITA/WIT)
+
+            val date = inputFormat.parse(rawDate)
+            if (date != null) {
+                outputFormat.format(date)
+            } else {
+                rawDate
+            }
+        } catch (e: Exception) {
+            // Jika parsing ISO gagal (mungkin dari server datang string aneh), coba parsing standard
+            try {
+                // Fallback sederhana jika formatnya YYYY-MM-DD HH:mm:ss
+                val fallbackFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                val date = fallbackFormat.parse(rawDate)
+                if (date != null) {
+                    val outputFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    outputFormat.format(date)
+                } else rawDate
+            } catch (ex: Exception) {
+                rawDate
+            }
+        }
+    }
 }

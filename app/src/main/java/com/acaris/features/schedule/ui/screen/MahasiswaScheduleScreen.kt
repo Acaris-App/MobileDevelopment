@@ -1,8 +1,6 @@
 package com.acaris.features.schedule.ui.screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,13 +8,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -44,8 +40,7 @@ fun MahasiswaScheduleScreen(
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
-    // 🌟 FIX 3: Reaksi Cerdas! Jika ada kiriman tanggal baru dari Dashboard,
-    // langsung tembak ganti kalender dan bulannya.
+    // Reaksi Cerdas! Jika ada kiriman tanggal baru dari Dashboard
     LaunchedEffect(initialSelectedDate) {
         if (initialSelectedDate != null) {
             try {
@@ -60,8 +55,6 @@ fun MahasiswaScheduleScreen(
 
     var selectedScheduleToBook by remember { mutableStateOf<ScheduleUiModel?>(null) }
     var showSuccessDialog by remember { mutableStateOf(false) }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
-    var lastClickTime by remember { mutableLongStateOf(0L) }
 
     LaunchedEffect(currentMonth) {
         viewModel.fetchMonthlySchedules(currentMonth.year, currentMonth.monthValue)
@@ -132,60 +125,15 @@ fun MahasiswaScheduleScreen(
         )
     }
 
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                title = { Text("Jadwal Bimbingan", fontWeight = FontWeight.Bold) },
-                actions = {
-                    val interactionSource = remember { MutableInteractionSource() }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null,
-                                onClick = {
-                                    val currentTime = System.currentTimeMillis()
-                                    if (currentTime - lastClickTime > 500L) {
-                                        lastClickTime = currentTime
-                                        onNavigateToHistory()
-                                    }
-                                }
-                            )
-                            .padding(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.History,
-                            contentDescription = "Riwayat Booking",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "Riwayat",
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background
-                ),
-                scrollBehavior = scrollBehavior
-            )
-        }
-    ) { innerPadding ->
+    // 🌟 FIX: TopAppBar dan modifier nestedScroll dibuang sepenuhnya
+    Scaffold { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding() + 16.dp,
-                    bottom = 120.dp,
+                    bottom = 120.dp, // Jarak aman untuk Bottom Nav
                     start = 24.dp,
                     end = 24.dp
                 ),

@@ -6,7 +6,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -47,9 +46,6 @@ fun UserDetailScreen(
     var showReplaceDialog by remember { mutableStateOf(false) }
     var documentToDelete by remember { mutableStateOf<MahasiswaDocumentUiModel?>(null) }
 
-    var showOrderErrorDialog by remember { mutableStateOf(false) }
-    var orderErrorMessage by remember { mutableStateOf("") }
-
     LaunchedEffect(userId) {
         viewModel.loadUserDetail(userId)
     }
@@ -85,22 +81,6 @@ fun UserDetailScreen(
             onConfirm = { showReplaceDialog = false; launcher.launch("application/pdf") },
             dismissText = "Batal",
             onDismiss = { showReplaceDialog = false; documentIdToUpdate = null }
-        )
-    }
-
-    if (showOrderErrorDialog) {
-        CustomDialog(
-            showDialog = true,
-            onDismissRequest = { showOrderErrorDialog = false },
-            content = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Aksi Ditolak", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = orderErrorMessage, textAlign = TextAlign.Center, color = Color.DarkGray)
-                }
-            },
-            confirmText = "Mengerti",
-            onConfirm = { showOrderErrorDialog = false }
         )
     }
 
@@ -213,11 +193,7 @@ fun UserDetailScreen(
                                     pendingUploadSemester = doc.semester
                                     showReplaceDialog = true
                                 },
-                                onDeleteDocument = { doc -> documentToDelete = doc },
-                                onOrderError = { msg ->
-                                    orderErrorMessage = msg
-                                    showOrderErrorDialog = true
-                                }
+                                onDeleteDocument = { doc -> documentToDelete = doc }
                             )
                         } else {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Detail dokumen dan bimbingan tidak tersedia untuk peran ${user.role}.") }

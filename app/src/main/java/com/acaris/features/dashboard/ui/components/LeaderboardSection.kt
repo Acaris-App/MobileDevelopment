@@ -34,12 +34,12 @@ fun LeaderboardSection(
         if (items.isEmpty()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(0.dp)
+                elevation = CardDefaults.cardElevation(2.dp)
             ) {
                 Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                    Text(emptyMessage, color = Color.Gray, fontSize = 13.sp, textAlign = TextAlign.Center)
+                    Text(emptyMessage, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, textAlign = TextAlign.Center)
                 }
             }
         } else {
@@ -58,7 +58,7 @@ fun LeaderboardSection(
                             // Angka Peringkat (1, 2, 3...)
                             Surface(
                                 shape = CircleShape,
-                                color = if (index < 3) iconColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant,
+                                color = if (index < 3) iconColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface,
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {

@@ -21,18 +21,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.acaris.core.ui.components.CustomBackButton // 🌟 IMPORT INI
+import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.ui.theme.AcarisTheme
 import com.acaris.core.utils.ValidationUtils
 import com.acaris.features.auth.presentation.model.LoginState
+import com.acaris.features.auth.presentation.model.UserUiModel
 import com.acaris.features.auth.presentation.viewmodel.LoginViewModel
 import com.acaris.features.auth.ui.components.AuthTextField
 import com.acaris.features.auth.ui.components.RoleSelectionSheet
-import com.acaris.features.auth.ui.mapper.toUiModel
-import com.acaris.features.auth.ui.model.UserUiModel
 
 @Composable
 fun LoginScreen(
@@ -178,7 +177,10 @@ fun LoginScreenContent(
 
     when (val state = loginState) {
         is LoginState.Success -> {
-            val userUi = state.user.toUiModel()
+            // 🌟 FIX: Karena state.user sekarang sudah berupa UserUiModel,
+            // kita bisa langsung memanggilnya tanpa perlu mem-parsing-nya lagi!
+            val userUi = state.user
+
             CustomDialog(
                 showDialog = true,
                 onDismissRequest = { },
@@ -231,20 +233,4 @@ fun LoginScreenContent(
     )
 
     CustomLoadingOverlay(isLoading = isLoading)
-}
-
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun LoginScreenPreview() {
-    AcarisTheme {
-        LoginScreenContent(
-            loginState = LoginState.Idle,
-            onLoginClick = { _, _ -> },
-            onResetState = {},
-            onBackClick = {},
-            onLoginSuccess = {},
-            onNavigateToRegister = {},
-            onNavigateToForgotPassword = {}
-        )
-    }
 }
