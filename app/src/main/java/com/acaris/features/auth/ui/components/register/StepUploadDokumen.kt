@@ -3,35 +3,26 @@ package com.acaris.features.auth.ui.components.register
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
-import com.acaris.core.ui.components.DottedUploadBox
 import com.acaris.core.utils.FileUtils
+// 🌟 IMPORT SHARED COMPONENT
+import com.acaris.features.documents_mahasiswa.presentation.model.SharedDocumentUiModel
+import com.acaris.features.documents_mahasiswa.ui.components.SharedDocumentManager
 import java.io.File
 
 data class UploadedDocInfo(val fileName: String, val documentId: String)
@@ -126,6 +117,21 @@ fun StepUploadDokumen(
         }
     }
 
+    // 🌟 MAPPING STATE LOKAL KE UI MODEL NETRAL
+    val mappedDocuments = uploadedDocs.map { (key, info) ->
+        val parts = key.split("_")
+        val type = parts[0]
+        val sem = if (parts.size > 1) parts[1].toIntOrNull() else null
+
+        SharedDocumentUiModel(
+            id = info.documentId,
+            type = type,
+            semester = sem,
+            fileUrl = "",
+            uploadedAt = info.fileName
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -134,56 +140,42 @@ fun StepUploadDokumen(
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
-        SectionHeader("Unggah Dokumen", "Maksimal ukuran per file adalah 1 MB. Dapat dilewati jika dokumen belum siap.")
+        Text(text = "Unggah Dokumen", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Maksimal ukuran per file adalah 1 MB. Dapat dilewati jika dokumen belum siap.",
+            color = Color.Gray,
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center
+        )
 
-        DocumentSection(
-            title = "Transkrip Nilai (Keseluruhan)",
-            fileName = uploadedDocs["transkrip"]?.fileName,
-            onUploadClick = {
-                activeDocType = "transkrip"
-                activeDocSemester = null
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // 🌟 PANGGIL SHARED COMPONENT DI SINI
+        SharedDocumentManager(
+            documents = mappedDocuments,
+            currentSemester = semester,
+            isReadOnly = false,
+            onViewDocument = {
+                // Beri tahu user kalau file belum bisa dilihat selama proses registrasi
+                android.widget.Toast.makeText(context, "Pratinjau dokumen tersedia setelah pendaftaran selesai.", android.widget.Toast.LENGTH_SHORT).show()
+            },
+            onUploadDocument = { type, sem, _ ->
+                activeDocType = type
+                activeDocSemester = sem
                 launcher.launch("application/pdf")
             },
-            onDeleteClick = {
-                uploadedDocs["transkrip"]?.documentId?.let { docId ->
-                    onDeleteFile(docId) { uploadedDocs = uploadedDocs - "transkrip" }
+            onDeleteDocument = { docId ->
+                // Cari key (misal: "krs_2") berdasarkan ID dokumen
+                val entry = uploadedDocs.entries.find { it.value.documentId == docId }
+                if (entry != null) {
+                    onDeleteFile(docId) {
+                        // Hapus dari state lokal jika berhasil dihapus di server
+                        uploadedDocs = uploadedDocs - entry.key
+                    }
                 }
             }
         )
-
-        if (semester > 1) {
-            for (i in 1 until semester) {
-                DocumentSection(
-                    title = "KRS Semester $i",
-                    fileName = uploadedDocs["krs_$i"]?.fileName,
-                    onUploadClick = {
-                        activeDocType = "krs"
-                        activeDocSemester = i
-                        launcher.launch("application/pdf")
-                    },
-                    onDeleteClick = {
-                        uploadedDocs["krs_$i"]?.documentId?.let { docId ->
-                            onDeleteFile(docId) { uploadedDocs = uploadedDocs - "krs_$i" }
-                        }
-                    }
-                )
-
-                DocumentSection(
-                    title = "KHS Semester $i",
-                    fileName = uploadedDocs["khs_$i"]?.fileName,
-                    onUploadClick = {
-                        activeDocType = "khs"
-                        activeDocSemester = i
-                        launcher.launch("application/pdf")
-                    },
-                    onDeleteClick = {
-                        uploadedDocs["khs_$i"]?.documentId?.let { docId ->
-                            onDeleteFile(docId) { uploadedDocs = uploadedDocs - "khs_$i" }
-                        }
-                    }
-                )
-            }
-        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -204,56 +196,4 @@ fun StepUploadDokumen(
     }
 
     CustomLoadingOverlay(isLoading = isLoading)
-}
-
-@Composable
-fun DocumentSection(
-    title: String,
-    fileName: String?,
-    onUploadClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp)) {
-        Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp, modifier = Modifier.padding(bottom = 8.dp))
-
-        if (fileName != null) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
-                    .clickable { onUploadClick() }
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.primary, CircleShape), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Text(
-                    text = fileName,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                IconButton(onClick = onDeleteClick) {
-                    Icon(Icons.Default.Close, contentDescription = "Hapus Dokumen", tint = Color.Red)
-                }
-            }
-        } else {
-            DottedUploadBox(
-                text = "Pilih File PDF",
-                onClick = onUploadClick
-            )
-            Text(
-                text = "Maksimal 1 MB. Format: .pdf",
-                fontSize = 12.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(top = 4.dp).align(Alignment.CenterHorizontally)
-            )
-        }
-    }
 }

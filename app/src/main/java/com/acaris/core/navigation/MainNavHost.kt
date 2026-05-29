@@ -1,6 +1,7 @@
 package com.acaris.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -8,7 +9,6 @@ import com.acaris.features.auth.ui.screen.ChangePasswordScreen
 import com.acaris.features.dashboard.ui.screen.AdminDashboardScreen
 import com.acaris.features.chatbot.ui.screen.ChatbotScreen
 import com.acaris.features.profile.ui.screen.EditDataDiriScreen
-import com.acaris.features.profile.ui.screen.EditDocumentScreen
 import com.acaris.features.profile.ui.screen.ProfileScreen
 
 @Composable
@@ -17,6 +17,9 @@ fun MainNavHost(
     startDestination: String,
     userRole: String?
 ) {
+    // 🌟 FIX: Buat ViewModel History di sini agar List dan Detail menggunakan instance yang persis sama
+    val chatbotHistoryViewModel: com.acaris.features.chatbot.presentation.viewmodel.ChatbotHistoryViewModel = hiltViewModel()
+
     NavHost(
         navController = navController,
         startDestination = startDestination
@@ -37,7 +40,8 @@ fun MainNavHost(
                     navController.navigate(Screen.BookingHistory.route) { launchSingleTop = true }
                 },
                 onNavigateToHistoryChatbot = {
-                    android.widget.Toast.makeText(context, "Fitur Riwayat Chatbot segera hadir!", android.widget.Toast.LENGTH_SHORT).show()
+                    // 🌟 FIX: Buka rute History Chatbot dari Dashboard
+                    navController.navigate(Screen.ChatbotHistory.route) { launchSingleTop = true }
                 }
             )
         }
@@ -94,10 +98,35 @@ fun MainNavHost(
             )
         }
 
-        // 🌟 REVISI UTAMA: Arahkan rute ke ChatbotScreen asli buatan kita
+        // 🌟 HALAMAN CHATBOT UTAMA
         composable(Screen.Chatbot.route) {
             ChatbotScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHistory = {
+                    // 🌟 FIX: Navigasi ke Halaman List Riwayat Chatbot
+                    navController.navigate(Screen.ChatbotHistory.route) {
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        // 🌟 HALAMAN LIST RIWAYAT CHATBOT
+        composable(Screen.ChatbotHistory.route) {
+            com.acaris.features.chatbot.ui.screen.ChatbotHistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToDetail = { sessionId ->
+                    navController.navigate(Screen.ChatbotHistoryDetail.createRoute(sessionId))
+                },
+                viewModel = chatbotHistoryViewModel // Inject ViewModel yang sama
+            )
+        }
+
+        // 🌟 HALAMAN DETAIL RIWAYAT CHATBOT
+        composable(Screen.ChatbotHistoryDetail.route) {
+            com.acaris.features.chatbot.ui.screen.ChatbotHistoryDetailScreen(
+                onNavigateBack = { navController.popBackStack() },
+                viewModel = chatbotHistoryViewModel // Inject ViewModel yang sama
             )
         }
 
@@ -170,17 +199,12 @@ fun MainNavHost(
                     }
                 },
                 onNavigateToEditDataDiri = { navController.navigate(Screen.EditDataDiri.route) },
-                onNavigateToEditDokumen = { navController.navigate(Screen.EditDokumen.route) },
                 onNavigateToChangePassword = { navController.navigate(Screen.ChangePassword.route) }
             )
         }
 
         composable(Screen.EditDataDiri.route) {
             EditDataDiriScreen(onNavigateBack = { navController.popBackStack() })
-        }
-
-        composable(Screen.EditDokumen.route) {
-            EditDocumentScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable(Screen.ChangePassword.route) {

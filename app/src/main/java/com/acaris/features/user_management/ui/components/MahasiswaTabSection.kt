@@ -1,43 +1,71 @@
 package com.acaris.features.user_management.ui.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.acaris.features.user_management.presentation.model.MahasiswaDocumentUiModel
+import androidx.compose.ui.unit.dp
+import com.acaris.features.documents_mahasiswa.presentation.model.SharedDocumentUiModel
+import com.acaris.features.documents_mahasiswa.ui.components.SharedDocumentManager
 import com.acaris.features.user_management.presentation.model.UserDetailUiState
 
 @Composable
 fun MahasiswaTabSection(
     uiState: UserDetailUiState,
-    onUploadNewClick: (type: String, semester: Int?) -> Unit,
-    onDocumentClick: (MahasiswaDocumentUiModel) -> Unit,
-    onEditDocument: (MahasiswaDocumentUiModel) -> Unit,
-    onDeleteDocument: (MahasiswaDocumentUiModel) -> Unit,
+    onViewDocument: (String) -> Unit,
+    onUploadOrEditDocument: (type: String, semester: Int?, existingDocId: String?) -> Unit,
+    onDeleteDocument: (String) -> Unit,
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Dokumen", "Bimbingan", "Chatbot (Aca)")
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = selectedTabIndex,containerColor = Color.Transparent) {
+        TabRow(selectedTabIndex = selectedTabIndex, containerColor = Color.Transparent) {
             tabs.forEachIndexed { index, title ->
                 Tab(selected = selectedTabIndex == index, onClick = { selectedTabIndex = index }, text = { Text(title) })
             }
         }
 
         when (selectedTabIndex) {
-            0 -> DocumentListSection(
-                krs = uiState.krsDocuments,
-                khs = uiState.khsDocuments,
-                transkrip = uiState.transkripDocuments,
-                currentSemester = uiState.user?.currentSemester ?: 1,
-                onUploadNewClick = onUploadNewClick,
-                onDocumentClick = onDocumentClick,
-                onEditClick = onEditDocument,
-                onDeleteClick = onDeleteDocument,
-            )
+            0 -> {
+                // 1. Gabungkan semua dokumen Admin
+                val allAdminDocs = uiState.krsDocuments + uiState.khsDocuments + uiState.transkripDocuments
+
+                // 2. Map ke UI Model Netral
+                val mappedDocuments = allAdminDocs.map { doc ->
+                    SharedDocumentUiModel(
+                        id = doc.id,
+                        type = doc.documentType,
+                        semester = doc.semester,
+                        fileUrl = doc.filePath ?: "",
+                        uploadedAt = doc.uploadedAt ?: "-"
+                    )
+                }
+
+                // 🌟 FIX: BUNGKUS DENGAN SCROLL DAN PADDING DI SINI
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 24.dp, vertical = 24.dp)
+                ) {
+                    // 3. Panggil Shared Component
+                    SharedDocumentManager(
+                        documents = mappedDocuments,
+                        currentSemester = uiState.user?.currentSemester ?: 1,
+                        isReadOnly = false, // Admin bisa edit & hapus
+                        onViewDocument = onViewDocument,
+                        onUploadDocument = onUploadOrEditDocument,
+                        onDeleteDocument = onDeleteDocument
+                    )
+
+                    // Spacer tambahan di bawah agar dokumen terakhir tidak tertutup navigasi
+                    Spacer(modifier = Modifier.height(80.dp))
+                }
+            }
             1 -> BimbinganRiwayatSection(bimbinganHistory = uiState.bimbinganHistory)
             2 -> ChatbotRiwayatSection()
         }

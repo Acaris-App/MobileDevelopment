@@ -1,9 +1,11 @@
 package com.acaris.features.chatbot.data.mapper
 
+import com.acaris.features.chatbot.data.remote.model.ChatHistoryItemResponse
 import com.acaris.features.chatbot.data.remote.model.ChatMessageResponse
 import com.acaris.features.chatbot.data.remote.model.ChatReplyResponse
 import com.acaris.features.chatbot.data.remote.model.ChatSessionResponse
 import com.acaris.features.chatbot.data.remote.model.ChatSummaryResponse
+import com.acaris.features.chatbot.domain.model.ChatHistoryDomain
 import com.acaris.features.chatbot.domain.model.ChatMessageDomain
 import com.acaris.features.chatbot.domain.model.ChatReplyDomain
 import com.acaris.features.chatbot.domain.model.ChatSessionDomain
@@ -42,5 +44,15 @@ fun ChatReplyResponse.toDomain(): ChatReplyDomain {
 fun ChatSummaryResponse.toDomain(): ChatSummaryDomain {
     return ChatSummaryDomain(
         draftSummary = this.draftSummary.orEmpty()
+    )
+}
+
+fun ChatHistoryItemResponse.toDomain(): ChatHistoryDomain {
+    return ChatHistoryDomain(
+        sessionId = this.sessionId.orEmpty(),
+        // Jika belum ada ringkasan, beri judul default
+        title = this.summary ?: "Sesi Bimbingan Akademik",
+        createdAt = this.createdAt.orEmpty(),
+        status = this.status ?: "completed"
     )
 }

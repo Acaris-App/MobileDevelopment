@@ -8,20 +8,24 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color // 🌟 Tambahan import Color
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.acaris.core.ui.components.CustomDialog // 🌟 Tambahan import CustomDialog
+import com.acaris.core.ui.components.CustomCircularIconButton
+import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.chatbot.presentation.viewmodel.ChatbotViewModel
 import com.acaris.features.chatbot.ui.components.ChatBubble
@@ -33,12 +37,14 @@ import com.acaris.features.chatbot.ui.components.TypingIndicator
 @Composable
 fun ChatbotScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToHistory: () -> Unit, // 🌟 Callback ke halaman riwayat
     viewModel: ChatbotViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
     val isKeyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     var showEndSessionDialog by remember { mutableStateOf(false) }
+    var expandedMenu by remember { mutableStateOf(false) } // 🌟 State Dropdown Menu
 
     LaunchedEffect(Unit) {
         viewModel.loadActiveSession()
@@ -78,7 +84,7 @@ fun ChatbotScreen(
     if (uiState.errorMessage != null) {
         CustomDialog(
             showDialog = true,
-            onDismissRequest = { viewModel.dismissDialogs() }, // Memanggil fungsi dismissDialogs di ViewModel
+            onDismissRequest = { viewModel.dismissDialogs() },
             confirmText = "Tutup",
             onConfirm = { viewModel.dismissDialogs() },
             content = {
@@ -111,92 +117,148 @@ fun ChatbotScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 title = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("ACA", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.SmartToy,
+                            contentDescription = "Aca Robot",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Aca (Chatbot)", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
                     }
                 },
                 navigationIcon = {},
                 actions = {
-                    // 🌟 FIX: Ikon Robot sekarang memicu dialog konfirmasi
-                    IconButton(onClick = { showEndSessionDialog = true }) {
-                        Icon(
-                            imageVector = Icons.Default.SmartToy,
-                            contentDescription = "Akhiri Sesi",
-                            tint = MaterialTheme.colorScheme.primary
+                    Box(modifier = Modifier.padding(end = 16.dp)) {
+                        CustomCircularIconButton(
+                            icon = Icons.Default.MoreVert,
+                            contentDescription = "Opsi Chatbot",
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(40.dp),
+                            onClick = { expandedMenu = true }
                         )
+
+                        // 🌟 FIX LENGKUNGAN DROPDOWN ALA PROFILE CARD
+                        MaterialTheme(
+                            shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
+                        ) {
+                            DropdownMenu(
+                                expanded = expandedMenu,
+                                onDismissRequest = { expandedMenu = false },
+                                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Akhiri Sesi") },
+                                    onClick = {
+                                        expandedMenu = false
+                                        showEndSessionDialog = true
+                                    },
+                                    leadingIcon = {
+                                        CustomCircularIconButton(
+                                            icon = Icons.Default.CheckCircle, // Ikon untuk Akhiri
+                                            contentDescription = "Akhiri Sesi",
+                                            color = MaterialTheme.colorScheme.primary,
+                                            onClick = {
+                                                expandedMenu = false
+                                                showEndSessionDialog = true
+                                            },
+                                            modifier = Modifier.size(40.dp)
+                                        )
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Riwayat Chat") },
+                                    onClick = {
+                                        expandedMenu = false
+                                        onNavigateToHistory()
+                                    },
+                                    leadingIcon = {
+                                        CustomCircularIconButton(
+                                            icon = Icons.Default.History, // Ikon untuk Riwayat
+                                            contentDescription = "Riwayat Chat",
+                                            color = MaterialTheme.colorScheme.primary,
+                                            onClick = {
+                                                expandedMenu = false
+                                                onNavigateToHistory()
+                                            },
+                                            modifier = Modifier.size(40.dp)
+                                        )
+                                    }
+                                )
+                            }
+                        }
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .imePadding()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                if (uiState.messages.isEmpty() && !uiState.isLoading) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp)
-                            .align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "🤖\nHalo! Ada yang bisa Aca bantu?",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 26.sp
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Tanyakan seputar format dokumen, alur bimbingan skripsi, atau administrasi akademik lainnya.",
-                            fontSize = 13.sp,
-                            color = Color.Gray,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                } else {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        items(uiState.messages, key = { it.id }) { message ->
-                            ChatBubble(message = message)
-                        }
 
-                        if (uiState.isSending) {
-                            item {
-                                Box(modifier = Modifier.padding(vertical = 4.dp)) {
-                                    Card(
-                                        shape = RoundedCornerShape(16.dp, 16.dp, 16.dp, 0.dp),
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                                        )
+        Box(modifier = Modifier.fillMaxSize()) {
+
+            // --- 1. KONTEN CHAT (Di Belakang) ---
+            if (uiState.messages.isEmpty() && !uiState.isLoading) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(innerPadding)
+                        .padding(32.dp)
+                        .align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "🤖\nHalo! Ada yang bisa Aca bantu?",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 26.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Tanyakan seputar format dokumen, alur bimbingan skripsi, atau administrasi akademik lainnya.",
+                        fontSize = 13.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = innerPadding.calculateTopPadding() + 8.dp,
+                        bottom = 180.dp
+                    )
+                ) {
+                    items(uiState.messages, key = { it.id }) { message ->
+                        ChatBubble(message = message)
+                    }
+
+                    if (uiState.isSending) {
+                        item {
+                            Box(modifier = Modifier.padding(vertical = 4.dp)) {
+                                Card(
+                                    shape = RoundedCornerShape(16.dp, 16.dp, 16.dp, 0.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                                    )
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                                     ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                                        ) {
-                                            Text(
-                                                text = "Aca sedang mengetik",
-                                                fontSize = 13.sp,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                                            )
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            TypingIndicator() // 🌟 PANGGIL ANIMASINYA DI SINI!
-                                        }
+                                        Text(
+                                            text = "Aca sedang mengetik",
+                                            fontSize = 13.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        TypingIndicator()
                                     }
                                 }
                             }
@@ -205,14 +267,28 @@ fun ChatbotScreen(
                 }
             }
 
-            ChatInputBar(
-                onSendMessage = { viewModel.sendMessage(it) },
-                enabled = !uiState.isLoading && !uiState.isGeneratingSummary,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            if (!isKeyboardVisible) {
-                Spacer(modifier = Modifier.height(72.dp))
+            // --- 2. INPUT BAR MENGAMBANG (Di Depan) ---
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(
+                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
+                                MaterialTheme.colorScheme.background
+                            )
+                        )
+                    )
+                    .padding(bottom = 70.dp)
+                    .imePadding()
+            ) {
+                ChatInputBar(
+                    onSendMessage = { viewModel.sendMessage(it) },
+                    enabled = !uiState.isLoading && !uiState.isGeneratingSummary,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }

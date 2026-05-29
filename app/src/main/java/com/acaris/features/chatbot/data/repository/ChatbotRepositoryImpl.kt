@@ -5,6 +5,7 @@ import com.acaris.features.chatbot.data.mapper.toDomain
 import com.acaris.features.chatbot.data.remote.datasource.ChatbotApiService
 import com.acaris.features.chatbot.data.remote.model.CloseSessionRequest
 import com.acaris.features.chatbot.data.remote.model.SendMessageRequest
+import com.acaris.features.chatbot.domain.model.ChatHistoryDomain
 import com.acaris.features.chatbot.domain.model.ChatReplyDomain
 import com.acaris.features.chatbot.domain.model.ChatSessionDomain
 import com.acaris.features.chatbot.domain.model.ChatSummaryDomain
@@ -25,7 +26,6 @@ class ChatbotRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message ?: "Gagal memuat sesi aktif"))
             }
         } catch (e: Exception) {
-            // 🌟 FIX: Bungkus pesan error asli dari API ke dalam Exception baru
             Result.failure(Exception(e.parseApiError()))
         }
     }
@@ -42,7 +42,6 @@ class ChatbotRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message ?: "Gagal mengirim pesan"))
             }
         } catch (e: Exception) {
-            // 🌟 FIX: Gunakan parseApiError()
             Result.failure(Exception(e.parseApiError()))
         }
     }
@@ -57,7 +56,6 @@ class ChatbotRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message ?: "Gagal merangkum obrolan"))
             }
         } catch (e: Exception) {
-            // 🌟 FIX: Gunakan parseApiError() agar HTTP 502 Bad Gateway berubah jadi pesan JSON
             Result.failure(Exception(e.parseApiError()))
         }
     }
@@ -73,7 +71,35 @@ class ChatbotRepositoryImpl @Inject constructor(
                 Result.failure(Exception(response.message ?: "Gagal mengakhiri sesi bimbingan"))
             }
         } catch (e: Exception) {
-            // 🌟 FIX: Gunakan parseApiError()
+            Result.failure(Exception(e.parseApiError()))
+        }
+    }
+
+    override suspend fun getChatHistory(): Result<List<ChatHistoryDomain>> {
+        return try {
+            val response = apiService.getChatHistory()
+
+            if (response.status == "success" || response.status == "200") {
+                val domainData = response.data?.map { it.toDomain() } ?: emptyList()
+                Result.success(domainData)
+            } else {
+                Result.failure(Exception(response.message ?: "Gagal memuat riwayat obrolan"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception(e.parseApiError()))
+        }
+    }
+
+    override suspend fun getChatHistoryDetail(sessionId: String): Result<ChatSessionDomain> {
+        return try {
+            val response = apiService.getChatHistoryDetail(sessionId)
+            if (response.status == "success" || response.status == "200") {
+                val domainData = response.data?.toDomain() ?: throw Exception("Data detail kosong")
+                Result.success(domainData)
+            } else {
+                Result.failure(Exception(response.message ?: "Gagal memuat detail riwayat"))
+            }
+        } catch (e: Exception) {
             Result.failure(Exception(e.parseApiError()))
         }
     }

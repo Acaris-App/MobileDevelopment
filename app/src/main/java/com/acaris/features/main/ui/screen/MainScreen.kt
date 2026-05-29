@@ -2,11 +2,9 @@ package com.acaris.features.main.ui.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -22,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -94,14 +93,16 @@ fun MainScreen(
     }
 
     val isMainMenu = menus.any { it.route == currentRoute }
-
     val currentMenuItem = menus.find { it.route == currentRoute }
     val isHomeTab = currentRoute == menus.firstOrNull()?.route
     val isProfileTab = currentRoute == Screen.Profile.route
     val isScheduleTab = currentRoute == Screen.Schedule.route
+    // Deteksi Tab Chatbot & Kondisi Menampilkan TopAppBar
+    val isChatbotTab = currentMenuItem?.title?.contains("Chatbot", ignoreCase = true) == true
+    val showMainTopAppBar = isMainMenu && !isChatbotTab
 
     Box(modifier = Modifier.fillMaxSize()) {
-        val topPadding = if (isMainMenu) 64.dp else 0.dp
+        val topPadding = if (showMainTopAppBar) 64.dp else 0.dp
 
         Box(modifier = Modifier.fillMaxSize().padding(top = topPadding)) {
             val startDest = menus.firstOrNull()?.route ?: Screen.HomeMahasiswa.route
@@ -113,22 +114,24 @@ fun MainScreen(
             )
         }
 
-        if (isMainMenu) {
+        if (showMainTopAppBar) {
             TopAppBar(
                 title = {
                     if (isHomeTab) {
                         Row(
-                            modifier = Modifier.clickable(
-                                interactionSource = remember { MutableInteractionSource() }, indication = null,
-                                onClick = {
-                                    val homeRoute = menus.firstOrNull()?.route ?: Screen.HomeMahasiswa.route
-                                    bottomNavController.navigate(homeRoute) {
-                                        popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() }, indication = null,
+                                    onClick = {
+                                        val homeRoute = menus.firstOrNull()?.route ?: Screen.HomeMahasiswa.route
+                                        bottomNavController.navigate(homeRoute) {
+                                            popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
                                     }
-                                }
-                            ),
+                                ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo Acaris", modifier = Modifier.size(24.dp))
@@ -138,8 +141,10 @@ fun MainScreen(
                     } else {
                         Text(
                             text = currentMenuItem?.title ?: "Acaris",
+                            modifier = Modifier.padding(start = 8.dp),
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
                         )
                     }
                 },

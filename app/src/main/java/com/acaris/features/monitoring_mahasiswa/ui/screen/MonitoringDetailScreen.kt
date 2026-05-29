@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,17 +16,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomOutlinedButton
+// 🌟 IMPORT SHARED COMPONENT DAN MODEL DARI FITUR DOCUMENTS MAHASISWA
+import com.acaris.features.documents_mahasiswa.presentation.model.SharedDocumentUiModel
+import com.acaris.features.documents_mahasiswa.ui.components.SharedDocumentManager
 import com.acaris.features.monitoring_mahasiswa.presentation.viewmodel.MonitoringViewModel
 import com.acaris.features.monitoring_mahasiswa.ui.components.DetailProfilMahasiswaCard
-import com.acaris.features.monitoring_mahasiswa.ui.components.DokumenMahasiswaCard
-import com.acaris.features.monitoring_mahasiswa.ui.components.RiwayatBimbinganCard // 🌟 IMPORT CARD RIWAYAT
+import com.acaris.features.monitoring_mahasiswa.ui.components.RiwayatBimbinganCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonitoringDetailScreen(
     mahasiswaId: String,
     onNavigateBack: () -> Unit,
-    // onNavigateToHistoryBimbingan dihapus karena sudah masuk ke tab!
     onNavigateToHistoryChatbot: (String) -> Unit,
     viewModel: MonitoringViewModel = hiltViewModel()
 ) {
@@ -96,39 +95,48 @@ fun MonitoringDetailScreen(
                             DetailProfilMahasiswaCard(detail = detail)
                         }
                         1 -> {
-                            // TAB 2: DOKUMEN MAHASISWA
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                            ) {
-                                Box(modifier = Modifier.padding(24.dp)) {
-                                    Column(modifier = Modifier.fillMaxWidth()) {
-                                        Text("Dokumen Akademik", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                        Spacer(modifier = Modifier.height(16.dp))
+                            // TAB 2: DOKUMEN MAHASISWA (MENGGUNAKAN SHARED COMPONENT)
 
-                                        if (detail.dokumen.isEmpty()) {
-                                            Text("Mahasiswa belum mengunggah dokumen.", color = Color.Gray)
-                                        } else {
-                                            detail.dokumen.forEach { doc ->
-                                                DokumenMahasiswaCard(
-                                                    dokumen = doc,
-                                                    onClick = {
-                                                        if (doc.fileUrl.isNotBlank()) {
-                                                            uriHandler.openUri(doc.fileUrl)
-                                                        }
-                                                    }
-                                                )
-                                                Spacer(modifier = Modifier.height(12.dp))
-                                            }
-                                        }
-                                    }
+                            // 1. Ekstrak type dan semester dari 'title'
+                            // (Contoh title: "KRS Semester 6" atau "Transkrip Nilai")
+                            val mappedDocuments = detail.dokumen.map { doc ->
+                                val typeLowerCase = when {
+                                    doc.title.contains("KRS", ignoreCase = true) -> "krs"
+                                    doc.title.contains("KHS", ignoreCase = true) -> "khs"
+                                    doc.title.contains("Transkrip", ignoreCase = true) -> "transkrip"
+                                    else -> "unknown"
                                 }
+
+                                // Mencari angka setelah kata "Semester"
+                                val semesterMatch = Regex("Semester\\s+(\\d+)", RegexOption.IGNORE_CASE).find(doc.title)
+                                val extractedSemester = semesterMatch?.groupValues?.get(1)?.toIntOrNull()
+
+                                SharedDocumentUiModel(
+                                    id = doc.id,
+                                    type = typeLowerCase,
+                                    semester = extractedSemester,
+                                    fileUrl = doc.fileUrl,
+                                    uploadedAt = doc.uploadedAt
+                                )
                             }
+
+                            // 2. Ekstrak current semester dari 'infoAkademik'
+                            // (Contoh infoAkademik: "Angkatan 2021 • Semester 6")
+                            val currentSemesterMatch = Regex("Semester\\s+(\\d+)", RegexOption.IGNORE_CASE).find(detail.infoAkademik)
+                            val currentSemester = currentSemesterMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+
+                            // 3. Panggil Komponen Shared dengan isReadOnly = true
+                            SharedDocumentManager(
+                                documents = mappedDocuments,
+                                currentSemester = currentSemester,
+                                isReadOnly = true, // DOSEN HANYA BISA MELIHAT
+                                onViewDocument = { url ->
+                                    if (url.isNotBlank()) uriHandler.openUri(url)
+                                }
+                            )
                         }
                         2 -> {
-                            // 🌟 TAB 3: RIWAYAT BIMBINGAN (LANGSUNG TAMPIL DI SINI)
+                            // 🌟 TAB 3: RIWAYAT BIMBINGAN
                             if (uiState.historyList.isEmpty() && !uiState.isLoading) {
                                 Box(
                                     modifier = Modifier
@@ -152,7 +160,7 @@ fun MonitoringDetailScreen(
                             }
                         }
                         3 -> {
-                            // TAB 4: RIWAYAT CHATBOT (Sementara masih pakai tombol)
+                            // TAB 4: RIWAYAT CHATBOT
                             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text("Menu Riwayat Chatbot dipindahkan ke sini.", color = Color.Gray)
                                 Spacer(modifier = Modifier.height(16.dp))

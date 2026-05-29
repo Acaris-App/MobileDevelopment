@@ -24,7 +24,6 @@ import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.utils.FileUtils
-import com.acaris.features.user_management.presentation.model.MahasiswaDocumentUiModel
 import com.acaris.features.user_management.presentation.viewmodel.UserDetailViewModel
 import com.acaris.features.user_management.ui.components.MahasiswaTabSection
 
@@ -44,7 +43,8 @@ fun UserDetailScreen(
     var documentIdToUpdate by remember { mutableStateOf<String?>(null) }
 
     var showReplaceDialog by remember { mutableStateOf(false) }
-    var documentToDelete by remember { mutableStateOf<MahasiswaDocumentUiModel?>(null) }
+    // Ubah tipe state hapus menjadi String (ID Dokumen)
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(userId) {
         viewModel.loadUserDetail(userId)
@@ -84,10 +84,10 @@ fun UserDetailScreen(
         )
     }
 
-    if (documentToDelete != null) {
+    if (documentIdToDelete != null) {
         CustomDialog(
             showDialog = true,
-            onDismissRequest = { documentToDelete = null },
+            onDismissRequest = { documentIdToDelete = null },
             content = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Hapus Dokumen", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
@@ -96,9 +96,12 @@ fun UserDetailScreen(
                 }
             },
             confirmText = "Hapus",
-            onConfirm = { documentToDelete?.let { viewModel.deleteDocument(userId, it.id) }; documentToDelete = null },
+            onConfirm = {
+                documentIdToDelete?.let { viewModel.deleteDocument(userId, it) }
+                documentIdToDelete = null
+            },
             dismissText = "Batal",
-            onDismiss = { documentToDelete = null }
+            onDismiss = { documentIdToDelete = null }
         )
     }
 
@@ -179,24 +182,27 @@ fun UserDetailScreen(
                         if (user.role.lowercase() == "mahasiswa") {
                             MahasiswaTabSection(
                                 uiState = uiState,
-                                onUploadNewClick = { type, semester ->
-                                    android.util.Log.d("DEBUG_UPLOAD", "type=$type, semester=$semester")
+                                onViewDocument = { url ->
+                                    if (url.isNotBlank()) uriHandler.openUri(url)
+                                },
+                                onUploadOrEditDocument = { type, semester, existingDocId ->
                                     pendingUploadType = type
                                     pendingUploadSemester = semester
-                                    launcher.launch("application/pdf")
+                                    if (existingDocId != null) {
+                                        documentIdToUpdate = existingDocId
+                                        showReplaceDialog = true
+                                    } else {
+                                        launcher.launch("application/pdf")
+                                    }
                                 },
-                                onDocumentClick = { doc ->
-                                    if (!doc.filePath.isNullOrEmpty()) uriHandler.openUri(doc.filePath)
-                                },
-                                onEditDocument = { doc ->
-                                    documentIdToUpdate = doc.id
-                                    pendingUploadSemester = doc.semester
-                                    showReplaceDialog = true
-                                },
-                                onDeleteDocument = { doc -> documentToDelete = doc }
+                                onDeleteDocument = { docId ->
+                                    documentIdToDelete = docId
+                                }
                             )
                         } else {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Detail dokumen dan bimbingan tidak tersedia untuk peran ${user.role}.") }
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("Detail dokumen dan bimbingan tidak tersedia untuk peran ${user.role}.")
+                            }
                         }
                     }
                 }

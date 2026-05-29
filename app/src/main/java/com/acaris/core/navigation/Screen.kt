@@ -18,6 +18,12 @@ sealed class Screen(val route: String) {
     object BookingHistory : Screen("booking_history_screen")
 
     object Chatbot : Screen("chatbot_screen")
+
+    object ChatbotHistory : Screen("chatbot_history_screen")
+    object ChatbotHistoryDetail : Screen("chatbot_history_detail_screen/{sessionId}") {
+        fun createRoute(sessionId: String) = "chatbot_history_detail_screen/$sessionId"
+    }
+
     object KnowledgeBase : Screen("knowledge_base_screen")
     object MahasiswaBimbingan : Screen("mahasiswa_bimbingan_screen")
     object UserManagement : Screen("user_management_screen")

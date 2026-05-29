@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.acaris.features.documents_mahasiswa.domain.usecase.DeleteDocumentUseCase
 import com.acaris.features.documents_mahasiswa.domain.usecase.GetDocumentsUseCase
-import com.acaris.features.documents_mahasiswa.domain.usecase.UploadDocumentUseCase
 import com.acaris.features.documents_mahasiswa.domain.usecase.UpdateDocumentUseCase
+import com.acaris.features.documents_mahasiswa.domain.usecase.UploadDocumentUseCase
+import com.acaris.features.documents_mahasiswa.presentation.mapper.toUiModel
 import com.acaris.features.documents_mahasiswa.presentation.model.DocumentState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +34,9 @@ class DocumentViewModel @Inject constructor(
             val result = getDocumentsUseCase()
             result.fold(
                 onSuccess = { list ->
-                    _uiState.update { it.copy(isLoading = false, documents = list) }
+                    // Mapping dari Domain Model ke UI Model
+                    val uiDocuments = list.map { it.toUiModel() }
+                    _uiState.update { it.copy(isLoading = false, documents = uiDocuments) }
                 },
                 onFailure = { e ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
@@ -75,7 +78,7 @@ class DocumentViewModel @Inject constructor(
                             successMessage = "Dokumen berhasil diperbarui!"
                         )
                     }
-                    loadDocuments() // Refresh data setelah sukses
+                    loadDocuments()
                 },
                 onFailure = { e ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }

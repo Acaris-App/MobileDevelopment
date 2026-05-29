@@ -27,4 +27,12 @@ interface ChatbotApiService {
         @Path("session_id") sessionId: String,
         @Body request: CloseSessionRequest
     ): BaseResponse<Unit>
+
+    @GET("chatbot/history")
+    suspend fun getChatHistory(): BaseResponse<List<ChatHistoryItemResponse>>
+
+    @GET("chatbot/history/{session_id}")
+    suspend fun getChatHistoryDetail(
+        @Path("session_id") sessionId: String
+    ): BaseResponse<ChatSessionResponse>
 }
