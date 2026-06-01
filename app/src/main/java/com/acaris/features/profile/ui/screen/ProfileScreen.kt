@@ -24,6 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.acaris.core.ui.components.CustomChipTabRow
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.utils.FileUtils
@@ -211,20 +212,16 @@ fun ProfileScreen(
                     .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = Modifier.height(16.dp))
                 if (isMahasiswa) {
-                    TabRow(
+
+                    CustomChipTabRow(
+                        tabs = tabs,
                         selectedTabIndex = selectedTabIndex,
-                        containerColor = Color.Transparent,
+                        onTabSelected = { selectedTabIndex = it },
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        tabs.forEachIndexed { index, title ->
-                            Tab(
-                                selected = selectedTabIndex == index,
-                                onClick = { selectedTabIndex = index },
-                                text = { Text(title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) }
-                            )
-                        }
-                    }
+                    )
+
                     Spacer(modifier = Modifier.height(24.dp))
 
                     when (selectedTabIndex) {
@@ -239,11 +236,11 @@ fun ProfileScreen(
                             }
                         }
                         1 -> {
-                            // TAB 2: DOKUMEN (Gunakan Shared Component)
+                            // TAB 2: DOKUMEN
                             SharedDocumentManager(
                                 documents = documentState.documents,
                                 currentSemester = profileState.userProfile?.currentSemester ?: 1,
-                                isReadOnly = false, // Mahasiswa bisa edit dokumen miliknya
+                                isReadOnly = false,
                                 onViewDocument = { url ->
                                     if (url.isNotBlank()) uriHandler.openUri(url)
                                 },
@@ -265,6 +262,7 @@ fun ProfileScreen(
                     }
                 } else {
                     // JIKA BUKAN MAHASISWA, TAMPILKAN LANGSUNG PROFIL (TANPA TAB)
+                    Spacer(modifier = Modifier.height(8.dp))
                     profileState.userProfile?.let { user ->
                         ProfileInfoCard(
                             userProfile = user,

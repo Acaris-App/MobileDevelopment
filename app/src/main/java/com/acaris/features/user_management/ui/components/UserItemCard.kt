@@ -1,4 +1,3 @@
-// File: ui/components/UserItemCard.kt
 package com.acaris.features.user_management.ui.components
 
 import androidx.compose.foundation.border // 🌟 IMPOR BORDER
@@ -139,14 +138,12 @@ fun UserItemCard(
             HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 🌟 FIX: Menghapus kondisi Admin. Semua role sekarang dirender rata (SpaceBetween)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
 
-                // 🌟 FIX: Menampilkan label status untuk semua role
                 val statusColor = if (user.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 val statusText = if (user.isActive) "AKTIF" else "NONAKTIF"
 
@@ -165,7 +162,6 @@ fun UserItemCard(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // 🌟 FIX: Menampilkan switch (toggle) untuk semua role
                     Switch(
                         checked = user.isActive,
                         onCheckedChange = { onStatusToggle(user, it) },
@@ -176,7 +172,7 @@ fun UserItemCard(
                     CustomCircularIconButton(
                         icon = Icons.Outlined.Edit,
                         contentDescription = "Edit",
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.primary,
                         onClick = { onEditClick(user) }
                     )
 
@@ -185,7 +181,7 @@ fun UserItemCard(
                     CustomCircularIconButton(
                         icon = Icons.Outlined.Delete,
                         contentDescription = "Delete",
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.error,
                         onClick = { onDeleteClick(user) }
                     )
                 }

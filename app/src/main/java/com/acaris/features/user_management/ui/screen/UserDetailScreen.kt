@@ -3,6 +3,8 @@ package com.acaris.features.user_management.ui.screen
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -11,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -43,7 +46,6 @@ fun UserDetailScreen(
     var documentIdToUpdate by remember { mutableStateOf<String?>(null) }
 
     var showReplaceDialog by remember { mutableStateOf(false) }
-    // Ubah tipe state hapus menjadi String (ID Dokumen)
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(userId) {
@@ -140,7 +142,49 @@ fun UserDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Akademik") },
+                title = {
+                    uiState.user?.let { user ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), modifier = Modifier.size(60.dp)) {
+                                if (!user.profilePictureUrl.isNullOrEmpty()) {
+                                    AsyncImage(model = user.profilePictureUrl, contentDescription = "Foto Profil", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                                } else {
+                                    Icon(Icons.Outlined.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(8.dp))
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = user.name,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                // 🌟 FIX 2: Desain NPM lebih lengkung (CircleShape) dan background transparan dengan border
+                                Box(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(Color.Transparent)
+                                        .border(
+                                            width = 1.dp,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            shape = CircleShape
+                                        )
+                                        .padding(horizontal = 10.dp, vertical = 1.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = user.identifier,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+                    }
+                },
                 navigationIcon = {
                     CustomBackButton(
                         onClick = onNavigateBack,
@@ -162,22 +206,8 @@ fun UserDetailScreen(
             } else {
                 uiState.user?.let { user ->
                     Column(modifier = Modifier.fillMaxSize()) {
-                        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), modifier = Modifier.size(48.dp)) {
-                                if (!user.profilePictureUrl.isNullOrEmpty()) {
-                                    AsyncImage(model = user.profilePictureUrl, contentDescription = "Foto Profil", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-                                } else {
-                                    Icon(Icons.Outlined.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(12.dp))
-                                }
-                            }
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column {
-                                Text(text = user.name, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                                Text(text = user.identifier, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
-                            }
-                        }
 
-                        HorizontalDivider()
+                        // 🌟 FIX 1: HorizontalDivider() sudah dihapus dari sini
 
                         if (user.role.lowercase() == "mahasiswa") {
                             MahasiswaTabSection(

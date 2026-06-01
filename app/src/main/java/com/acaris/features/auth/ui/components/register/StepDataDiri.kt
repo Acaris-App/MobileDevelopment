@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.ui.components.CustomLoadingOverlay
@@ -127,7 +128,7 @@ fun StepDataDiri(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(16.dp))
-        SectionHeader("Data Diri", "Lengkapi profil Anda")
+        SectionHeader("Lengkapi profil Anda")
 
         Box(
             contentAlignment = Alignment.BottomEnd,
@@ -139,23 +140,40 @@ fun StepDataDiri(
                 AsyncImage(
                     model = imageUri,
                     contentDescription = "Profile Picture",
-                    modifier = Modifier.fillMaxSize().clip(CircleShape).border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
                     contentScale = ContentScale.Crop
                 )
             } else {
                 Box(
-                    modifier = Modifier.fillMaxSize().clip(CircleShape).background(MaterialTheme.colorScheme.onBackground),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.onBackground),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.background, modifier = Modifier.size(65.dp))
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.background,
+                        modifier = Modifier.size(65.dp)
+                    )
                 }
             }
-            Box(
-                modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary).border(2.dp, Color.Transparent, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.background, modifier = Modifier.size(20.dp))
-            }
+
+            CustomCircularIconButton(
+                icon = Icons.Default.Add,
+                contentDescription = "Pilih Foto",
+                color = MaterialTheme.colorScheme.primary, // Warna ikon/outline
+                modifier = Modifier
+                    .offset(x = 4.dp, y = 4.dp)
+                    .size(36.dp)
+                    // Background solid setara warna layar agar tidak tembus pandang
+                    .background(MaterialTheme.colorScheme.background, CircleShape),
+                onClick = { photoLauncher.launch("image/*") }
+            )
         }
 
         Spacer(modifier = Modifier.height(32.dp))

@@ -33,17 +33,15 @@ fun StepInputEmail(
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            Text(text = "Email", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-
             Text(
                 text = "Tolong masukan email terdaftar",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(40.dp)) // Jarak disesuaikan
 
             OutlinedTextField(
                 value = email,

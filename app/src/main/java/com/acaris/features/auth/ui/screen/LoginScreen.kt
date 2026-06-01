@@ -21,7 +21,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
@@ -36,7 +35,6 @@ import com.acaris.features.auth.ui.components.RoleSelectionSheet
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
-    onBackClick: () -> Unit,
     onLoginSuccess: (UserUiModel) -> Unit,
     onNavigateToRegister: (String) -> Unit,
     onNavigateToForgotPassword: () -> Unit
@@ -47,7 +45,6 @@ fun LoginScreen(
         loginState = loginState,
         onLoginClick = { email, password -> viewModel.login(email, password) },
         onResetState = { viewModel.resetState() },
-        onBackClick = onBackClick,
         onLoginSuccess = onLoginSuccess,
         onNavigateToRegister = onNavigateToRegister,
         onNavigateToForgotPassword = onNavigateToForgotPassword
@@ -59,7 +56,6 @@ fun LoginScreenContent(
     loginState: LoginState,
     onLoginClick: (String, String) -> Unit,
     onResetState: () -> Unit,
-    onBackClick: () -> Unit,
     onLoginSuccess: (UserUiModel) -> Unit,
     onNavigateToRegister: (String) -> Unit,
     onNavigateToForgotPassword: () -> Unit
@@ -86,11 +82,7 @@ fun LoginScreenContent(
                 .padding(horizontal = 24.dp)
                 .verticalScroll(scrollState)
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            CustomBackButton(onClick = onBackClick)
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(56.dp)) // Disesuaikan karena tombol back hilang
 
             Text(
                 text = "Masuk",
@@ -177,8 +169,6 @@ fun LoginScreenContent(
 
     when (val state = loginState) {
         is LoginState.Success -> {
-            // 🌟 FIX: Karena state.user sekarang sudah berupa UserUiModel,
-            // kita bisa langsung memanggilnya tanpa perlu mem-parsing-nya lagi!
             val userUi = state.user
 
             CustomDialog(

@@ -47,13 +47,49 @@ fun ChatbotScreen(
     var expandedMenu by remember { mutableStateOf(false) } // 🌟 State Dropdown Menu
 
     LaunchedEffect(Unit) {
-        viewModel.loadActiveSession()
+        // 🌟 FIX: Ubah jadi memanggil fungsi validasi dokumen terlebih dahulu
+        viewModel.checkDocumentAndLoadSession()
     }
 
     LaunchedEffect(uiState.messages.size, uiState.isSending) {
         if (uiState.messages.isNotEmpty()) {
             listState.animateScrollToItem(uiState.messages.size - 1)
         }
+    }
+
+    // 🌟 POP-UP BLOKIR DOKUMEN BELUM LENGKAP
+    if (uiState.isDocumentIncomplete) {
+        CustomDialog(
+            showDialog = true,
+            onDismissRequest = { onNavigateBack() }, // Paksa kembali jika klik di luar
+            confirmText = "Mengerti",
+            onConfirm = { onNavigateBack() }, // Paksa kembali jika klik tombol
+            content = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(
+                        modifier = Modifier
+                            .size(72.dp)
+                            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ErrorOutline,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Akses Ditolak", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Maaf, Anda belum dapat menggunakan fitur Aca (Chatbot) karena dokumen persyaratan akademik Anda belum lengkap. Silakan lengkapi dokumen Anda terlebih dahulu.",
+                        textAlign = TextAlign.Center,
+                        color = Color.Gray
+                    )
+                }
+            }
+        )
     }
 
     if (showEndSessionDialog) {

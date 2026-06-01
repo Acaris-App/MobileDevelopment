@@ -1,6 +1,5 @@
 package com.acaris.features.user_management.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,16 +15,41 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.acaris.core.ui.components.CustomCircularIconButton
+import com.acaris.core.ui.components.CustomFloatingDropdownMenu
+
+data class SortItem(val id: String, val label: String)
 
 @Composable
 fun UserSearchAndSortBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     currentRole: String,
+    currentSort: String, // 🌟 FIX 1: Menambahkan parameter untuk menerima status urutan aktif
     onSortSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expandedSortMenu by remember { mutableStateOf(false) }
+
+    val sortOptions = remember(currentRole) {
+        val baseOptions = listOf(
+            SortItem("name_asc", "Nama (A-Z)"),
+            SortItem("name_desc", "Nama (Z-A)"),
+            SortItem("identifier_asc", "NPM/NIP (Kecil ke Besar)")
+        )
+        if (currentRole == "mahasiswa") {
+            baseOptions + listOf(
+                SortItem("angkatan_asc", "Angkatan (Tua ke Muda)"),
+                SortItem("angkatan_desc", "Angkatan (Muda ke Tua)"),
+                SortItem("semester_asc", "Semester (Kecil ke Besar)"),
+                SortItem("semester_desc", "Semester (Besar ke Kecil)")
+            )
+        } else {
+            baseOptions
+        }
+    }
+
+    // 🌟 FIX 2: Mencari objek SortItem yang cocok dengan currentSort String
+    val activeSortOption = sortOptions.find { it.id == currentSort }
 
     Row(
         modifier = modifier
@@ -73,23 +97,17 @@ fun UserSearchAndSortBar(
                 onClick = { expandedSortMenu = true }
             )
 
-            DropdownMenu(
+            CustomFloatingDropdownMenu(
                 expanded = expandedSortMenu,
                 onDismissRequest = { expandedSortMenu = false },
-                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-            ) {
-                DropdownMenuItem(text = { Text("Nama (A-Z)") }, onClick = { onSortSelected("name_asc"); expandedSortMenu = false })
-                DropdownMenuItem(text = { Text("Nama (Z-A)") }, onClick = { onSortSelected("name_desc"); expandedSortMenu = false })
-                DropdownMenuItem(text = { Text("NPM/NIP (Kecil ke Besar)") }, onClick = { onSortSelected("identifier_asc"); expandedSortMenu = false })
-
-                if (currentRole == "mahasiswa") {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                    DropdownMenuItem(text = { Text("Angkatan (Tua ke Muda)") }, onClick = { onSortSelected("angkatan_asc"); expandedSortMenu = false })
-                    DropdownMenuItem(text = { Text("Angkatan (Muda ke Tua)") }, onClick = { onSortSelected("angkatan_desc"); expandedSortMenu = false })
-                    DropdownMenuItem(text = { Text("Semester (Kecil ke Besar)") }, onClick = { onSortSelected("semester_asc"); expandedSortMenu = false })
-                    DropdownMenuItem(text = { Text("Semester (Besar ke Kecil)") }, onClick = { onSortSelected("semester_desc"); expandedSortMenu = false })
+                options = sortOptions,
+                // 🌟 FIX 3: Masukkan objek SortItem yang aktif ke sini!
+                selectedOption = activeSortOption,
+                optionLabelProvider = { it.label },
+                onOptionSelected = { selectedItem ->
+                    onSortSelected(selectedItem.id)
                 }
-            }
+            )
         }
     }
 }

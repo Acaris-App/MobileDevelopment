@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.*
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomBackButton
+import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
@@ -211,16 +213,17 @@ fun EditUserScreen(
                                 Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.background, modifier = Modifier.size(65.dp))
                             }
                         }
-                        Box(
+
+                        CustomCircularIconButton(
+                            icon = Icons.Default.Edit,
+                            contentDescription = "Edit Foto Profil",
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary)
-                                .border(2.dp, Color.Transparent, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.background, modifier = Modifier.size(20.dp))
-                        }
+                                .offset(x = 4.dp, y = 4.dp)
+                                .size(36.dp)
+                                .background(MaterialTheme.colorScheme.background, CircleShape),
+                            onClick = { photoLauncher.launch("image/*") }
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))

@@ -8,14 +8,15 @@ data class ChatMessageUiModel(
 )
 
 data class ChatbotUiState(
-    val isLoading: Boolean = false, // Untuk loading awal cek sesi
-    val isSending: Boolean = false, // Untuk indikator "AI sedang mengetik..."
+    val isLoading: Boolean = false,
+    val isSending: Boolean = false,
     val errorMessage: String? = null,
-    val sessionId: String? = null, // Jika null = tidak ada sesi aktif
+    val sessionId: String? = null,
     val messages: List<ChatMessageUiModel> = emptyList(),
 
-    // State untuk fitur Akhiri Sesi (Rangkuman)
     val isGeneratingSummary: Boolean = false,
     val showSummaryDialog: Boolean = false,
-    val draftSummary: String = ""
+    val draftSummary: String = "",
+
+    val isDocumentIncomplete: Boolean = false
 )

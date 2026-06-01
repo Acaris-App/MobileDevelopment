@@ -144,7 +144,7 @@ fun MainScreen(
                             modifier = Modifier.padding(start = 8.dp),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                            fontSize = 24.sp
                         )
                     }
                 },

@@ -1,7 +1,7 @@
 package com.acaris.features.knowledge_base.ui.screen
 
 import android.content.Context
-import android.content.Intent // 🌟 Tambahan Import Intent
+import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -88,12 +88,15 @@ fun KnowledgeBaseScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 item {
+                    // 🌟 FIX: Judul dihapus, diganti menjadi teks keterangan yang lebih kecil
                     Text(
-                        text = "Knowledge Base Aca",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp),
+                        text = "Dokumen knowledge base chatbot Aca",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp, bottom = 8.dp)
+                            .padding(horizontal = 16.dp),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
@@ -105,7 +108,7 @@ fun KnowledgeBaseScreen(
                         category = category,
                         documents = docsInCategory,
                         onUploadClick = {
-                            isEditMode = false // 🌟 Mode Tambah
+                            isEditMode = false
                             editDocumentId = null
                             uploadTargetCategory = category
                             uploadTitle = ""
@@ -114,17 +117,16 @@ fun KnowledgeBaseScreen(
                             showUploadDialog = true
                         },
                         onReadClick = { doc ->
-                            // 🌟 FUNGSI BACA FILE (Buka di Browser/PDF Viewer via Intent)
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(doc.fileUrl))
                             context.startActivity(intent)
                         },
                         onEditClick = { doc ->
-                            isEditMode = true // 🌟 Mode Edit
+                            isEditMode = true
                             editDocumentId = doc.id
                             uploadTargetCategory = doc.category
                             uploadTitle = doc.title
-                            selectedFileUri = null // Reset file picker, biarkan user pilih baru jika mau
-                            selectedFileName = doc.fileName // Tampilkan nama file yang lama
+                            selectedFileUri = null
+                            selectedFileName = doc.fileName
                             showUploadDialog = true
                         },
                         onDeleteClick = { doc ->
@@ -204,14 +206,12 @@ fun KnowledgeBaseScreen(
         onConfirm = {
             if (uploadTitle.isNotBlank()) {
                 if (isEditMode) {
-                    // 🌟 LOGIKA EDIT: File sifatnya opsional (boleh tidak diganti)
                     val file = if (selectedFileUri != null) {
                         FileUtils.uriToFile(context, selectedFileUri!!, selectedFileName ?: "update_${System.currentTimeMillis()}.pdf")
                     } else null
 
                     viewModel.updateDocument(editDocumentId!!, uploadTitle, uploadTargetCategory, file)
                 } else {
-                    // 🌟 LOGIKA TAMBAH: File wajib ada
                     if (selectedFileUri != null) {
                         val file = FileUtils.uriToFile(context, selectedFileUri!!, selectedFileName ?: "upload_${System.currentTimeMillis()}.pdf")
                         if (file != null) {

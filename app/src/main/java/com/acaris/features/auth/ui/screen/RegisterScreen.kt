@@ -91,11 +91,28 @@ fun RegisterScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { },
+                // 🌟 FIX: Judul dibuat dinamis mengikuti step pendaftaran
+                title = {
+                    val titleText = when (state.currentStep) {
+                        RegisterStep.INPUT_KODE_KELAS -> "Kode Kelas"
+                        RegisterStep.INPUT_DATA_DIRI -> "Data Diri"
+                        RegisterStep.INPUT_OTP -> "Verifikasi OTP"
+                        RegisterStep.UPLOAD_DOKUMEN -> "Unggah Dokumen"
+                        else -> ""
+                    }
+
+                    if (titleText.isNotEmpty()) {
+                        Text(
+                            text = titleText,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
                 navigationIcon = {
                     CustomBackButton(
                         onClick = onNavigateBack,
-                        modifier = Modifier.padding(start = 16.dp)
+                        modifier = Modifier.padding(start = 16.dp, end = 8.dp) // Tambahan end padding agar berjarak dengan judul
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)

@@ -22,7 +22,7 @@ fun StepKodeKelas(isLoading: Boolean, onSubmit: (String) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(24.dp))
-        SectionHeader("Kode Kelas", "Masukkan kode unik yang diberikan oleh Dosen Pembimbing Akademik Anda.")
+        SectionHeader( "Masukkan kode unik yang diberikan oleh Dosen Pembimbing Akademik Anda.")
 
         AuthTextField(
             value = kode,

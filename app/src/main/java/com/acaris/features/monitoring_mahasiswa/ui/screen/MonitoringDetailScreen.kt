@@ -16,7 +16,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomOutlinedButton
-// 🌟 IMPORT SHARED COMPONENT DAN MODEL DARI FITUR DOCUMENTS MAHASISWA
+import com.acaris.core.ui.components.CustomChipTabRow
 import com.acaris.features.documents_mahasiswa.presentation.model.SharedDocumentUiModel
 import com.acaris.features.documents_mahasiswa.ui.components.SharedDocumentManager
 import com.acaris.features.monitoring_mahasiswa.presentation.viewmodel.MonitoringViewModel
@@ -38,7 +38,6 @@ fun MonitoringDetailScreen(
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Data Diri", "Dokumen", "Bimbingan", "Chatbot")
 
-    // 🌟 KITA FETCH DATA DETAIL DAN RIWAYAT SEKALIGUS
     LaunchedEffect(mahasiswaId) {
         viewModel.fetchDetailMahasiswa(mahasiswaId)
         viewModel.fetchHistoryBimbingan(mahasiswaId)
@@ -66,114 +65,106 @@ fun MonitoringDetailScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(horizontal = 24.dp)
-                        .verticalScroll(scrollState),
+                        .padding(innerPadding), // Padding dasar dari Scaffold
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    ScrollableTabRow(
+                    // 🌟 FIX: BAGIAN STICKY (TIDAK IKUT DI-SCROLL)
+                    CustomChipTabRow(
+                        tabs = tabs,
                         selectedTabIndex = selectedTabIndex,
-                        containerColor = Color.Transparent,
-                        edgePadding = 0.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        tabs.forEachIndexed { index, title ->
-                            Tab(
-                                selected = selectedTabIndex == index,
-                                onClick = { selectedTabIndex = index },
-                                text = { Text(title, fontWeight = FontWeight.Bold) }
-                            )
-                        }
-                    }
+                        onTabSelected = { selectedTabIndex = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp) // Pastikan sejajar dengan konten di bawah
+                    )
+
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    when (selectedTabIndex) {
-                        0 -> {
-                            // TAB 1: DATA DIRI MAHASISWA
-                            DetailProfilMahasiswaCard(detail = detail)
-                        }
-                        1 -> {
-                            // TAB 2: DOKUMEN MAHASISWA (MENGGUNAKAN SHARED COMPONENT)
-
-                            // 1. Ekstrak type dan semester dari 'title'
-                            // (Contoh title: "KRS Semester 6" atau "Transkrip Nilai")
-                            val mappedDocuments = detail.dokumen.map { doc ->
-                                val typeLowerCase = when {
-                                    doc.title.contains("KRS", ignoreCase = true) -> "krs"
-                                    doc.title.contains("KHS", ignoreCase = true) -> "khs"
-                                    doc.title.contains("Transkrip", ignoreCase = true) -> "transkrip"
-                                    else -> "unknown"
-                                }
-
-                                // Mencari angka setelah kata "Semester"
-                                val semesterMatch = Regex("Semester\\s+(\\d+)", RegexOption.IGNORE_CASE).find(doc.title)
-                                val extractedSemester = semesterMatch?.groupValues?.get(1)?.toIntOrNull()
-
-                                SharedDocumentUiModel(
-                                    id = doc.id,
-                                    type = typeLowerCase,
-                                    semester = extractedSemester,
-                                    fileUrl = doc.fileUrl,
-                                    uploadedAt = doc.uploadedAt
-                                )
+                    // 🌟 FIX: BAGIAN KONTEN (YANG BISA DI-SCROLL)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                            .padding(horizontal = 24.dp), // Padding konten dipertahankan
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        when (selectedTabIndex) {
+                            0 -> {
+                                DetailProfilMahasiswaCard(detail = detail)
                             }
+                            1 -> {
+                                val mappedDocuments = detail.dokumen.map { doc ->
+                                    val typeLowerCase = when {
+                                        doc.title.contains("KRS", ignoreCase = true) -> "krs"
+                                        doc.title.contains("KHS", ignoreCase = true) -> "khs"
+                                        doc.title.contains("Transkrip", ignoreCase = true) -> "transkrip"
+                                        else -> "unknown"
+                                    }
 
-                            // 2. Ekstrak current semester dari 'infoAkademik'
-                            // (Contoh infoAkademik: "Angkatan 2021 • Semester 6")
-                            val currentSemesterMatch = Regex("Semester\\s+(\\d+)", RegexOption.IGNORE_CASE).find(detail.infoAkademik)
-                            val currentSemester = currentSemesterMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                                    val semesterMatch = Regex("Semester\\s+(\\d+)", RegexOption.IGNORE_CASE).find(doc.title)
+                                    val extractedSemester = semesterMatch?.groupValues?.get(1)?.toIntOrNull()
 
-                            // 3. Panggil Komponen Shared dengan isReadOnly = true
-                            SharedDocumentManager(
-                                documents = mappedDocuments,
-                                currentSemester = currentSemester,
-                                isReadOnly = true, // DOSEN HANYA BISA MELIHAT
-                                onViewDocument = { url ->
-                                    if (url.isNotBlank()) uriHandler.openUri(url)
-                                }
-                            )
-                        }
-                        2 -> {
-                            // 🌟 TAB 3: RIWAYAT BIMBINGAN
-                            if (uiState.historyList.isEmpty() && !uiState.isLoading) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 32.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Belum ada riwayat bimbingan.",
-                                        color = Color.Gray,
-                                        style = MaterialTheme.typography.bodyLarge
+                                    SharedDocumentUiModel(
+                                        id = doc.id,
+                                        type = typeLowerCase,
+                                        semester = extractedSemester,
+                                        fileUrl = doc.fileUrl,
+                                        uploadedAt = doc.uploadedAt
                                     )
                                 }
-                            } else {
-                                Column(modifier = Modifier.fillMaxWidth()) {
-                                    uiState.historyList.forEach { history ->
-                                        RiwayatBimbinganCard(riwayat = history)
-                                        Spacer(modifier = Modifier.height(16.dp))
+
+                                val currentSemesterMatch = Regex("Semester\\s+(\\d+)", RegexOption.IGNORE_CASE).find(detail.infoAkademik)
+                                val currentSemester = currentSemesterMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+
+                                SharedDocumentManager(
+                                    documents = mappedDocuments,
+                                    currentSemester = currentSemester,
+                                    isReadOnly = true,
+                                    onViewDocument = { url ->
+                                        if (url.isNotBlank()) uriHandler.openUri(url)
+                                    }
+                                )
+                            }
+                            2 -> {
+                                if (uiState.historyList.isEmpty() && !uiState.isLoading) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 32.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "Belum ada riwayat bimbingan.",
+                                            color = Color.Gray,
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                    }
+                                } else {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        uiState.historyList.forEach { history ->
+                                            RiwayatBimbinganCard(riwayat = history)
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                        }
                                     }
                                 }
                             }
-                        }
-                        3 -> {
-                            // TAB 4: RIWAYAT CHATBOT
-                            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Menu Riwayat Chatbot dipindahkan ke sini.", color = Color.Gray)
-                                Spacer(modifier = Modifier.height(16.dp))
-                                CustomOutlinedButton(
-                                    text = "Buka Riwayat Chatbot",
-                                    onClick = { onNavigateToHistoryChatbot(detail.id) },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                            3 -> {
+                                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("Menu Riwayat Chatbot dipindahkan ke sini.", color = Color.Gray)
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    CustomOutlinedButton(
+                                        text = "Buka Riwayat Chatbot",
+                                        onClick = { onNavigateToHistoryChatbot(detail.id) },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(40.dp))
+                        Spacer(modifier = Modifier.height(40.dp))
+                    }
                 }
             }
 

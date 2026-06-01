@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomCircularIconButton
+import com.acaris.core.ui.components.CustomFloatingDropdownMenu // 🌟 FIX: IMPORT CUSTOM FLOATING DROPDOWN KITA
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.monitoring_mahasiswa.presentation.model.SortOption
 import com.acaris.features.monitoring_mahasiswa.presentation.viewmodel.MonitoringViewModel
@@ -40,25 +41,15 @@ fun MonitoringListScreen(
     }
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Mahasiswa Bimbingan",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        }
+        modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            Spacer(modifier = Modifier.height(8.dp)) // Memberi sedikit jarak dari TopBar utama
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -119,30 +110,18 @@ fun MonitoringListScreen(
                         contentDescription = "Urutkan",
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(40.dp),
+                        // 🌟 FIX 2: Sama seperti di profil, cukup set true
                         onClick = { isDropdownExpanded = true }
                     )
 
-                    DropdownMenu(
+                    CustomFloatingDropdownMenu(
                         expanded = isDropdownExpanded,
                         onDismissRequest = { isDropdownExpanded = false },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                    ) {
-                        SortOption.values().forEach { option ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = option.label,
-                                        fontWeight = if (uiState.sortOption == option) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (uiState.sortOption == option) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                    )
-                                },
-                                onClick = {
-                                    viewModel.onSortOptionChanged(option)
-                                    isDropdownExpanded = false
-                                }
-                            )
-                        }
-                    }
+                        options = SortOption.values().toList(),
+                        selectedOption = uiState.sortOption,
+                        optionLabelProvider = { it.label },
+                        onOptionSelected = { viewModel.onSortOptionChanged(it) }
+                    )
                 }
             }
 
@@ -150,12 +129,19 @@ fun MonitoringListScreen(
                 if (uiState.filteredListMahasiswa.isEmpty() && !uiState.isLoading && uiState.errorMessage == null) {
                     Text(
                         text = if (uiState.searchQuery.isNotBlank()) "Mahasiswa tidak ditemukan." else "Belum ada mahasiswa bimbingan.",
-                        modifier = Modifier.align(Alignment.Center),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(bottom = 90.dp),
                         color = Color.Gray
                     )
                 } else {
                     LazyColumn(
-                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+                        contentPadding = PaddingValues(
+                            start = 24.dp,
+                            end = 24.dp,
+                            top = 16.dp,
+                            bottom = 100.dp
+                        ),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(uiState.filteredListMahasiswa) { mahasiswa ->
@@ -169,7 +155,9 @@ fun MonitoringListScreen(
 
                 if (uiState.errorMessage != null && uiState.listMahasiswa.isEmpty()) {
                     Column(
-                        modifier = Modifier.align(Alignment.Center),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(bottom = 90.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(text = uiState.errorMessage ?: "Terjadi kesalahan", color = MaterialTheme.colorScheme.error)

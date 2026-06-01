@@ -45,9 +45,6 @@ fun StepInputNewPassword(
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            Text(text = "Password Baru", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-
             Text(
                 text = "Buat kombinasi password yang kuat",
                 style = MaterialTheme.typography.bodyMedium,

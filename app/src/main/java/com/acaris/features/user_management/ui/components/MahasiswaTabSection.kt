@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.acaris.core.ui.components.CustomChipTabRow // 🌟 IMPORT CUSTOM CHIP TAB ROW
 import com.acaris.features.documents_mahasiswa.presentation.model.SharedDocumentUiModel
 import com.acaris.features.documents_mahasiswa.ui.components.SharedDocumentManager
 import com.acaris.features.user_management.presentation.model.UserDetailUiState
@@ -23,11 +24,17 @@ fun MahasiswaTabSection(
     val tabs = listOf("Dokumen", "Bimbingan", "Chatbot (Aca)")
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = selectedTabIndex, containerColor = Color.Transparent) {
-            tabs.forEachIndexed { index, title ->
-                Tab(selected = selectedTabIndex == index, onClick = { selectedTabIndex = index }, text = { Text(title) })
-            }
-        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 🌟 FIX 1: Terapkan Custom Tab
+        CustomChipTabRow(
+            tabs = tabs,
+            selectedTabIndex = selectedTabIndex,
+            onTabSelected = { selectedTabIndex = it },
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         when (selectedTabIndex) {
             0 -> {
@@ -45,12 +52,12 @@ fun MahasiswaTabSection(
                     )
                 }
 
-                // 🌟 FIX: BUNGKUS DENGAN SCROLL DAN PADDING DI SINI
+                // BUNGKUS DENGAN SCROLL DAN PADDING DI SINI
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 24.dp, vertical = 24.dp)
+                        .padding(horizontal = 24.dp, vertical = 8.dp)
                 ) {
                     // 3. Panggil Shared Component
                     SharedDocumentManager(

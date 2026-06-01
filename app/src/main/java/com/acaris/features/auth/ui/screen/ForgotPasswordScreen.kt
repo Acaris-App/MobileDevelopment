@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -86,7 +85,23 @@ fun ForgotPasswordScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { },
+                // 🌟 FIX 1: Judul dibuat dinamis mengikuti step Lupa Password
+                title = {
+                    val titleText = when (state.currentStep) {
+                        ForgotPasswordStep.INPUT_EMAIL -> "Lupa Password"
+                        ForgotPasswordStep.INPUT_OTP -> "Verifikasi OTP"
+                        ForgotPasswordStep.INPUT_NEW_PASSWORD -> "Password Baru"
+                        else -> ""
+                    }
+
+                    if (titleText.isNotEmpty()) {
+                        Text(
+                            text = titleText,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
                 navigationIcon = {
                     CustomBackButton(
                         onClick = {
@@ -96,7 +111,7 @@ fun ForgotPasswordScreen(
                                 viewModel.navigateBack()
                             }
                         },
-                        modifier = Modifier.padding(start = 16.dp)
+                        modifier = Modifier.padding(start = 16.dp, end = 8.dp) // Tambahan end padding agar berjarak dengan judul
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)

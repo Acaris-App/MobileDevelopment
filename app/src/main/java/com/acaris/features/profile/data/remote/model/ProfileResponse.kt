@@ -13,7 +13,8 @@ data class ProfileResponse(
     @SerializedName("ipk") val ipk: String?,
     @SerializedName("current_semester") val currentSemester: Int?,
     @SerializedName("nama_dosen_pa") val dosenPa: String?,
-    @SerializedName("kode_kelas") val kodeKelas: String?
+    @SerializedName("kode_kelas") val kodeKelas: String?,
+    @SerializedName("is_dokumen_lengkap") val isDokumenLengkap: Boolean?
 )
 
 data class PhotoUpdateResponse(

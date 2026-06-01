@@ -46,7 +46,7 @@ fun StepOtp(
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
-        SectionHeader("Verifikasi OTP", "Masukkan 6 digit kode yang telah kami kirimkan ke email Anda.")
+        SectionHeader( "Masukkan 6 digit kode yang telah kami kirimkan ke email Anda.")
 
         OtpTextField(
             otpText = otp,

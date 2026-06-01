@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomBackButton
+import com.acaris.core.ui.components.CustomCircularIconButton // 🌟 IMPORT INI DITAMBAHKAN
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
@@ -160,11 +161,18 @@ fun EditDataDiriScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {},
+                // 🌟 FIX: Judul dipindahkan ke sini
+                title = {
+                    Text(
+                        text = "Edit Data Diri",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     CustomBackButton(
                         onClick = onNavigateBack,
-                        modifier = Modifier.padding(start = 16.dp)
+                        modifier = Modifier.padding(start = 16.dp, end = 8.dp)
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -181,12 +189,14 @@ fun EditDataDiriScreen(
                         .verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Edit Data Diri", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(16.dp)) // Jarak ekstra dari TopAppBar
+
                     Text(
                         text = "Perbarui informasi pribadi dan foto profil Anda.",
                         color = Color.Gray,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
@@ -213,15 +223,16 @@ fun EditDataDiriScreen(
                             }
                         }
 
-                        IconButton(
-                            onClick = { photoPickerLauncher.launch("image/*") },
+                        CustomCircularIconButton(
+                            icon = Icons.Default.Edit,
+                            contentDescription = "Edit Profil",
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
                                 .offset(x = 8.dp, y = 8.dp)
-                                .border(1.dp, Color.Transparent, CircleShape)
-                                .background(MaterialTheme.colorScheme.primary, CircleShape)
-                        ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit Profil", tint = MaterialTheme.colorScheme.background)
-                        }
+                                .size(40.dp)
+                                .background(MaterialTheme.colorScheme.background, CircleShape),
+                            onClick = { photoPickerLauncher.launch("image/*") }
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))

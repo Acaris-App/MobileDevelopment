@@ -2,7 +2,6 @@ package com.acaris.features.profile.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,14 +15,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomCircularIconButton
+import com.acaris.core.ui.components.CustomFloatingDropdownMenu
 import com.acaris.features.profile.domain.model.UserProfile
+
+enum class ProfileAction(val label: String, val icon: ImageVector) {
+    EDIT("Edit Profil", Icons.Default.Edit),
+    CHANGE_PASSWORD("Ganti Password", Icons.Default.Lock)
+}
 
 @Composable
 fun ProfileInfoCard(
@@ -87,7 +92,6 @@ fun ProfileInfoCard(
                 }
             }
 
-            // TOMBOL 3 TITIK DAN DROPDOWN MENU
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -97,60 +101,26 @@ fun ProfileInfoCard(
                     icon = Icons.Default.MoreVert,
                     contentDescription = "Opsi",
                     color = MaterialTheme.colorScheme.primary,
+                    // 🌟 FIX 2: Kembalikan menjadi expanded = true saja.
+                    // Popup bawaan Compose akan otomatis menutup (onDismissRequest) jika kamu klik tombol ini lagi
                     onClick = { expanded = true },
                     modifier = Modifier.size(40.dp)
                 )
 
-                // FIX LENGKUNGAN DROPDOWN DI SINI
-                // Membungkus menu dengan MaterialTheme untuk memaksa bentuk Popup-nya menjadi 16.dp
-                MaterialTheme(
-                    shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
-                ) {
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Edit Profil") },
-                            onClick = {
-                                expanded = false
-                                onEditClick()
-                            },
-                            leadingIcon = {
-                                CustomCircularIconButton(
-                                    icon = Icons.Default.Edit,
-                                    contentDescription = "Edit Profil",
-                                    color = MaterialTheme.colorScheme.primary,
-                                    onClick = {
-                                        expanded = false
-                                        onEditClick()
-                                    },
-                                    modifier = Modifier.size(40.dp)
-                                )
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Ganti Password") },
-                            onClick = {
-                                expanded = false
-                                onChangePasswordClick()
-                            },
-                            leadingIcon = {
-                                CustomCircularIconButton(
-                                    icon = Icons.Default.Lock,
-                                    contentDescription = "Ganti Password",
-                                    color = MaterialTheme.colorScheme.primary,
-                                    onClick = {
-                                        expanded = false
-                                        onChangePasswordClick()
-                                    },
-                                    modifier = Modifier.size(40.dp)
-                                )
-                            }
-                        )
+                CustomFloatingDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    options = ProfileAction.values().toList(),
+                    selectedOption = null,
+                    optionLabelProvider = { it.label },
+                    optionIconProvider = { it.icon },
+                    onOptionSelected = { action ->
+                        when (action) {
+                            ProfileAction.EDIT -> onEditClick()
+                            ProfileAction.CHANGE_PASSWORD -> onChangePasswordClick()
+                        }
                     }
-                }
+                )
             }
         }
     }

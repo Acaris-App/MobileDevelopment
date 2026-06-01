@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.acaris.core.ui.components.CustomChipTabRow
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.user_management.presentation.model.UserUiModel
@@ -202,51 +203,38 @@ fun UserManagementScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 160.dp)
             ) {
-                item {
-                    Column {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Manajemen Pengguna",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                }
-
                 stickyHeader {
                     Surface(
                         color = MaterialTheme.colorScheme.background,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column {
+                            // 🌟 FIX 4: Melempar state urutan aktif (currentSortBy) ke komponen
+                            UserSearchAndSortBar(
+                                searchQuery = searchQuery,
+                                onSearchQueryChange = { searchQuery = it },
+                                currentRole = state.currentRole,
+                                currentSort = state.currentSortBy, // <--- INI TAMBAHANNYA
+                                onSortSelected = { viewModel.setSortByAndLoad(it) }
+                            )
+
                             AnimatedVisibility(
                                 visible = showTabRow,
                                 enter = expandVertically() + fadeIn(),
                                 exit = shrinkVertically() + fadeOut()
                             ) {
-                                TabRow(selectedTabIndex = selectedTabIndex, containerColor = Color.Transparent) {
-                                    tabs.forEachIndexed { index, role ->
-                                        Tab(
-                                            selected = selectedTabIndex == index,
-                                            onClick = {
-                                                viewModel.setFilterAndLoad(role)
-                                                searchQuery = ""
-                                            },
-                                            text = { Text(role.replaceFirstChar { it.uppercase() }) }
-                                        )
-                                    }
-                                }
+                                CustomChipTabRow(
+                                    tabs = tabs.map { it.replaceFirstChar { char -> char.uppercase() } },
+                                    selectedTabIndex = selectedTabIndex,
+                                    onTabSelected = {
+                                        viewModel.setFilterAndLoad(tabs[it])
+                                        searchQuery = ""
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 24.dp, vertical = 8.dp)
+                                )
                             }
-
-                            UserSearchAndSortBar(
-                                searchQuery = searchQuery,
-                                onSearchQueryChange = { searchQuery = it },
-                                currentRole = state.currentRole,
-                                onSortSelected = { viewModel.setSortByAndLoad(it) }
-                            )
                         }
                     }
                 }
