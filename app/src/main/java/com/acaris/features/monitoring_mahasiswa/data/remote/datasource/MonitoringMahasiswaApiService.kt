@@ -1,6 +1,8 @@
 package com.acaris.features.monitoring_mahasiswa.data.remote.datasource
 
 import com.acaris.core.network.model.BaseResponse
+import com.acaris.features.chatbot.data.remote.model.ChatHistoryItemResponse
+import com.acaris.features.chatbot.data.remote.model.ChatSessionResponse
 import com.acaris.features.monitoring_mahasiswa.data.remote.model.DetailMahasiswaResponse
 import com.acaris.features.monitoring_mahasiswa.data.remote.model.MahasiswaBimbinganResponse
 import com.acaris.features.monitoring_mahasiswa.data.remote.model.RiwayatBimbinganResponse
@@ -21,4 +23,15 @@ interface MonitoringMahasiswaApiService {
     suspend fun getRiwayatBimbingan(
         @Path("mahasiswaId") mahasiswaId: String
     ): BaseResponse<List<RiwayatBimbinganResponse>>
+
+    @GET("dosen/mahasiswa/{mahasiswaId}/chatbot")
+    suspend fun getMahasiswaChatbotHistory(
+        @Path("mahasiswaId") mahasiswaId: String
+    ): BaseResponse<List<ChatHistoryItemResponse>>
+
+    @GET("dosen/mahasiswa/{mahasiswaId}/chatbot/{sessionId}")
+    suspend fun getMahasiswaChatbotDetail(
+        @Path("mahasiswaId") mahasiswaId: String,
+        @Path("sessionId") sessionId: String
+    ): BaseResponse<ChatSessionResponse>
 }

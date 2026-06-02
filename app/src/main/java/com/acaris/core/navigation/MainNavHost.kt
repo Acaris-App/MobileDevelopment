@@ -1,6 +1,7 @@
 package com.acaris.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -17,7 +18,6 @@ fun MainNavHost(
     startDestination: String,
     userRole: String?
 ) {
-    // 🌟 FIX: Buat ViewModel History di sini agar List dan Detail menggunakan instance yang persis sama
     val chatbotHistoryViewModel: com.acaris.features.chatbot.presentation.viewmodel.ChatbotHistoryViewModel = hiltViewModel()
 
     NavHost(
@@ -40,7 +40,6 @@ fun MainNavHost(
                     navController.navigate(Screen.BookingHistory.route) { launchSingleTop = true }
                 },
                 onNavigateToHistoryChatbot = {
-                    // 🌟 FIX: Buka rute History Chatbot dari Dashboard
                     navController.navigate(Screen.ChatbotHistory.route) { launchSingleTop = true }
                 }
             )
@@ -98,12 +97,10 @@ fun MainNavHost(
             )
         }
 
-        // 🌟 HALAMAN CHATBOT UTAMA
         composable(Screen.Chatbot.route) {
             ChatbotScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToHistory = {
-                    // 🌟 FIX: Navigasi ke Halaman List Riwayat Chatbot
                     navController.navigate(Screen.ChatbotHistory.route) {
                         launchSingleTop = true
                     }
@@ -111,22 +108,20 @@ fun MainNavHost(
             )
         }
 
-        // 🌟 HALAMAN LIST RIWAYAT CHATBOT
         composable(Screen.ChatbotHistory.route) {
             com.acaris.features.chatbot.ui.screen.ChatbotHistoryScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToDetail = { sessionId ->
                     navController.navigate(Screen.ChatbotHistoryDetail.createRoute(sessionId))
                 },
-                viewModel = chatbotHistoryViewModel // Inject ViewModel yang sama
+                viewModel = chatbotHistoryViewModel
             )
         }
 
-        // 🌟 HALAMAN DETAIL RIWAYAT CHATBOT
         composable(Screen.ChatbotHistoryDetail.route) {
             com.acaris.features.chatbot.ui.screen.ChatbotHistoryDetailScreen(
                 onNavigateBack = { navController.popBackStack() },
-                viewModel = chatbotHistoryViewModel // Inject ViewModel yang sama
+                viewModel = chatbotHistoryViewModel
             )
         }
 
@@ -144,9 +139,30 @@ fun MainNavHost(
             com.acaris.features.monitoring_mahasiswa.ui.screen.MonitoringDetailScreen(
                 mahasiswaId = mahasiswaId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToHistoryChatbot = { chatbotId ->
-                    // (Tunggu fiturnya kelar nanti)
+                // 🌟 FIX: Menyesuaikan callback parameter navigasi ke halaman detail chatbot
+                onNavigateToChatbotDetail = { mId, sId ->
+                    navController.navigate(Screen.MahasiswaChatbotDetail.createRoute(mId, sId))
                 }
+            )
+        }
+
+        // 🌟 HALAMAN BARU: DETAIL CHATBOT UNTUK DOSEN
+        composable(Screen.MahasiswaChatbotDetail.route) { backStackEntry ->
+            val mahasiswaId = backStackEntry.arguments?.getString("mahasiswaId") ?: ""
+            val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
+
+            // 🌟 TRIK CERDAS: Menggunakan ViewModel dari halaman "DetailMahasiswa"
+            // Agar data list riwayat yang sudah di-fetch sebelumnya tidak hilang.
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Screen.DetailMahasiswa.route)
+            }
+            val sharedViewModel: com.acaris.features.monitoring_mahasiswa.presentation.viewmodel.MonitoringViewModel = hiltViewModel(parentEntry)
+
+            com.acaris.features.monitoring_mahasiswa.ui.screen.MahasiswaChatbotDetailScreen(
+                mahasiswaId = mahasiswaId,
+                sessionId = sessionId,
+                onNavigateBack = { navController.popBackStack() },
+                viewModel = sharedViewModel
             )
         }
 

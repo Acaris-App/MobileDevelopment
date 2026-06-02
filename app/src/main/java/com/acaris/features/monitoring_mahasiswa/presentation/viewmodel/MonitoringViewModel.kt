@@ -2,9 +2,12 @@ package com.acaris.features.monitoring_mahasiswa.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.acaris.features.chatbot.presentation.mapper.toPresentation // 🌟 MAPPER DARI CHATBOT
 import com.acaris.features.monitoring_mahasiswa.domain.usecase.GetDaftarMahasiswaUseCase
 import com.acaris.features.monitoring_mahasiswa.domain.usecase.GetDetailMahasiswaUseCase
 import com.acaris.features.monitoring_mahasiswa.domain.usecase.GetRiwayatBimbinganUseCase
+import com.acaris.features.monitoring_mahasiswa.domain.usecase.GetMahasiswaChatbotHistoryUseCase // 🌟 USE CASE BARU
+import com.acaris.features.monitoring_mahasiswa.domain.usecase.GetMahasiswaChatbotDetailUseCase // 🌟 USE CASE BARU
 import com.acaris.features.monitoring_mahasiswa.presentation.mapper.toUiModel
 import com.acaris.features.monitoring_mahasiswa.presentation.model.MonitoringUiState
 import com.acaris.features.monitoring_mahasiswa.presentation.model.SortOption
@@ -22,7 +25,9 @@ import javax.inject.Inject
 class MonitoringViewModel @Inject constructor(
     private val getDaftarMahasiswaUseCase: GetDaftarMahasiswaUseCase,
     private val getDetailMahasiswaUseCase: GetDetailMahasiswaUseCase,
-    private val getRiwayatBimbinganUseCase: GetRiwayatBimbinganUseCase
+    private val getRiwayatBimbinganUseCase: GetRiwayatBimbinganUseCase,
+    private val getMahasiswaChatbotHistoryUseCase: GetMahasiswaChatbotHistoryUseCase, // 🌟 INJECT INI
+    private val getMahasiswaChatbotDetailUseCase: GetMahasiswaChatbotDetailUseCase // 🌟 INJECT INI
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MonitoringUiState())
@@ -68,7 +73,6 @@ class MonitoringViewModel @Inject constructor(
                 }
             }
 
-            // 2. Lakukan Pengurutan (Sort)
             result = when (state.sortOption) {
                 SortOption.NAMA_AZ -> result.sortedBy { it.name.lowercase() }
                 SortOption.NPM_ASC -> result.sortedBy { it.npm }
@@ -116,6 +120,66 @@ class MonitoringViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    // 🌟 FUNGSI BARU 1: FETCH DAFTAR RIWAYAT CHATBOT
+    fun fetchChatbotHistory(mahasiswaId: String) {
+        viewModelScope.launch {
+            getMahasiswaChatbotHistoryUseCase(mahasiswaId)
+                .onStart {
+                    _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                }
+                .catch { e ->
+                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "Gagal memuat riwayat chatbot") }
+                }
+                .collect { domainList ->
+                    _uiState.update { state ->
+                        state.copy(
+                            isLoading = false,
+                            // Kita pakai toPresentation() milik mapper Chatbot
+                            historyChatbotList = domainList.map { it.toPresentation() }
+                        )
+                    }
+                }
+        }
+    }
+
+    // 🌟 FUNGSI BARU 2: FETCH DETAIL OBROLAN CHATBOT TERTENTU
+    fun fetchChatbotDetail(mahasiswaId: String, sessionId: String) {
+        // Cari judul/summary dari list yang ada untuk ditampilkan di pop-up
+        val selectedItem = _uiState.value.historyChatbotList.find { it.sessionId == sessionId }
+        val summary = selectedItem?.title ?: "Sesi Bimbingan Akademik"
+
+        viewModelScope.launch {
+            getMahasiswaChatbotDetailUseCase(mahasiswaId, sessionId)
+                .onStart {
+                    _uiState.update { it.copy(
+                        isLoading = true,
+                        errorMessage = null,
+                        chatbotDetailSessionMessages = emptyList(), // Reset sebelum load
+                        chatbotDetailSummary = summary
+                    )}
+                }
+                .catch { e ->
+                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "Gagal memuat detail obrolan") }
+                }
+                .collect { domainSession ->
+                    _uiState.update { state ->
+                        state.copy(
+                            isLoading = false,
+                            // Kita pakai toPresentation() milik mapper Chatbot
+                            chatbotDetailSessionMessages = domainSession.messages.map { it.toPresentation() }
+                        )
+                    }
+                }
+        }
+    }
+
+    fun clearChatbotDetail() {
+        _uiState.update { it.copy(
+            chatbotDetailSessionMessages = emptyList(),
+            chatbotDetailSummary = ""
+        )}
     }
 
     fun resetError() {

@@ -6,6 +6,9 @@ import com.acaris.features.monitoring_mahasiswa.domain.model.DetailMahasiswa
 import com.acaris.features.monitoring_mahasiswa.domain.model.MahasiswaBimbingan
 import com.acaris.features.monitoring_mahasiswa.domain.model.RiwayatBimbingan
 import com.acaris.features.monitoring_mahasiswa.domain.repository.MonitoringMahasiswaRepository
+import com.acaris.features.chatbot.domain.model.ChatHistoryDomain
+import com.acaris.features.chatbot.data.mapper.toDomain
+import com.acaris.features.chatbot.domain.model.ChatSessionDomain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -30,7 +33,19 @@ class MonitoringMahasiswaRepositoryImpl @Inject constructor(
 
     override fun getRiwayatBimbingan(mahasiswaId: String): Flow<List<RiwayatBimbingan>> = flow {
         val response = apiService.getRiwayatBimbingan(mahasiswaId)
-        val data = response.data ?: emptyList() // Buka bungkus BaseResponse
+        val data = response.data ?: emptyList()
         emit(data.map { it.toDomain() })
+    }.flowOn(Dispatchers.IO)
+
+    override fun getMahasiswaChatbotHistory(mahasiswaId: String): Flow<List<ChatHistoryDomain>> = flow {
+        val response = apiService.getMahasiswaChatbotHistory(mahasiswaId)
+        val data = response.data ?: emptyList()
+        emit(data.map { it.toDomain() })
+    }.flowOn(Dispatchers.IO)
+
+    override fun getMahasiswaChatbotDetail(mahasiswaId: String, sessionId: String): Flow<ChatSessionDomain> = flow {
+        val response = apiService.getMahasiswaChatbotDetail(mahasiswaId, sessionId)
+        val data = response.data ?: throw Exception("Data Detail Chatbot Tidak Ditemukan")
+        emit(data.toDomain())
     }.flowOn(Dispatchers.IO)
 }
