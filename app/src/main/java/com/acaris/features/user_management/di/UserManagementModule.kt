@@ -1,4 +1,3 @@
-// File: di/UserManagementModule.kt
 package com.acaris.features.user_management.di
 
 import com.acaris.features.user_management.data.local.datasource.UserLocalDataSource
@@ -56,7 +55,9 @@ object UserManagementModule {
             getBimbinganHistory = GetBimbinganHistoryUseCase(repository),
             uploadMahasiswaDocument = UploadMahasiswaDocumentUseCase(repository),
             updateMahasiswaDocument = UpdateMahasiswaDocumentUseCase(repository),
-            deleteMahasiswaDocument = DeleteMahasiswaDocumentUseCase(repository)
+            deleteMahasiswaDocument = DeleteMahasiswaDocumentUseCase(repository),
+            getAdminMahasiswaChatbotHistory = GetAdminMahasiswaChatbotHistoryUseCase(repository),
+            getAdminMahasiswaChatbotDetail = GetAdminMahasiswaChatbotDetailUseCase(repository)
         )
     }
 }

@@ -29,14 +29,12 @@ sealed class Screen(val route: String) {
     object UserManagement : Screen("user_management_screen")
 
     object EditDataDiri : Screen("edit_data_diri_screen")
-    object EditDokumen : Screen("edit_dokumen_screen")
     object ChangePassword : Screen("change_password_screen")
 
     object DetailMahasiswa : Screen("detail_mahasiswa_screen/{mahasiswaId}") {
         fun createRoute(mahasiswaId: String) = "detail_mahasiswa_screen/$mahasiswaId"
     }
 
-    // 🌟 RUTE BARU: Detail Obrolan Mahasiswa (Untuk Dosen)
     object MahasiswaChatbotDetail : Screen("mahasiswa_chatbot_detail_screen/{mahasiswaId}/{sessionId}") {
         fun createRoute(mahasiswaId: String, sessionId: String) = "mahasiswa_chatbot_detail_screen/$mahasiswaId/$sessionId"
     }
@@ -49,5 +47,9 @@ sealed class Screen(val route: String) {
 
     object UserDetail : Screen("user_detail_screen/{userId}") {
         fun createRoute(userId: String) = "user_detail_screen/$userId"
+    }
+
+    object AdminMahasiswaChatbotDetail : Screen("admin_mahasiswa_chatbot_detail_screen/{userId}/{sessionId}") {
+        fun createRoute(userId: String, sessionId: String) = "admin_mahasiswa_chatbot_detail_screen/$userId/$sessionId"
     }
 }

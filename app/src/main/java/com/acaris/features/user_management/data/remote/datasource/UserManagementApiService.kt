@@ -4,6 +4,8 @@ import com.acaris.features.user_management.data.remote.model.UserResponse
 import com.acaris.features.user_management.data.remote.model.MahasiswaDocumentResponse
 import com.acaris.features.user_management.data.remote.model.BimbinganHistoryResponse
 import com.acaris.core.network.model.BaseResponse
+import com.acaris.features.chatbot.data.remote.model.ChatHistoryItemResponse
+import com.acaris.features.chatbot.data.remote.model.ChatSessionResponse
 import com.acaris.features.user_management.data.remote.model.ClassInfoResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -96,4 +98,15 @@ interface UserManagementApiService {
     suspend fun deleteMahasiswaDocument(
         @Path("document_id") documentId: String
     ): BaseResponse<Any>
+
+    @GET("admin/users/{id}/chatbot")
+    suspend fun getMahasiswaChatbotHistory(
+        @Path("id") userId: String
+    ): BaseResponse<List<ChatHistoryItemResponse>>
+
+    @GET("admin/users/{id}/chatbot/{sessionId}")
+    suspend fun getMahasiswaChatbotDetail(
+        @Path("id") userId: String,
+        @Path("sessionId") sessionId: String
+    ): BaseResponse<ChatSessionResponse>
 }

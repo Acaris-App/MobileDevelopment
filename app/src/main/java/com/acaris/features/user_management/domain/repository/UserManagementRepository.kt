@@ -1,5 +1,7 @@
 package com.acaris.features.user_management.domain.repository
 
+import com.acaris.features.chatbot.domain.model.ChatHistoryDomain
+import com.acaris.features.chatbot.domain.model.ChatSessionDomain
 import com.acaris.features.user_management.domain.model.User
 import com.acaris.features.user_management.domain.model.BimbinganHistory
 import com.acaris.features.user_management.domain.model.ClassInfo
@@ -50,4 +52,8 @@ interface UserManagementRepository {
     suspend fun updateMahasiswaDocument(documentId: String, semester: Int?, file: File?): Result<MahasiswaDocument>
 
     suspend fun deleteMahasiswaDocument(documentId: String): Result<Unit>
+
+    suspend fun getMahasiswaChatbotHistory(userId: String): Result<List<ChatHistoryDomain>>
+
+    suspend fun getMahasiswaChatbotDetail(userId: String, sessionId: String): Result<ChatSessionDomain>
 }

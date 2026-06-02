@@ -11,5 +11,7 @@ data class UserManagementUseCases(
     val getBimbinganHistory: GetBimbinganHistoryUseCase,
     val uploadMahasiswaDocument: UploadMahasiswaDocumentUseCase,
     val updateMahasiswaDocument: UpdateMahasiswaDocumentUseCase,
-    val deleteMahasiswaDocument: DeleteMahasiswaDocumentUseCase
+    val deleteMahasiswaDocument: DeleteMahasiswaDocumentUseCase,
+    val getAdminMahasiswaChatbotHistory: GetAdminMahasiswaChatbotHistoryUseCase,
+    val getAdminMahasiswaChatbotDetail: GetAdminMahasiswaChatbotDetailUseCase
 )

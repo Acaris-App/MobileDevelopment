@@ -35,6 +35,7 @@ import com.acaris.features.user_management.ui.components.MahasiswaTabSection
 fun UserDetailScreen(
     userId: String,
     onNavigateBack: () -> Unit,
+    onNavigateToChatbotDetail: (mahasiswaId: String, sessionId: String) -> Unit,
     viewModel: UserDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -206,9 +207,6 @@ fun UserDetailScreen(
             } else {
                 uiState.user?.let { user ->
                     Column(modifier = Modifier.fillMaxSize()) {
-
-                        // 🌟 FIX 1: HorizontalDivider() sudah dihapus dari sini
-
                         if (user.role.lowercase() == "mahasiswa") {
                             MahasiswaTabSection(
                                 uiState = uiState,
@@ -227,6 +225,10 @@ fun UserDetailScreen(
                                 },
                                 onDeleteDocument = { docId ->
                                     documentIdToDelete = docId
+                                },
+                                // 🌟 FIX: Kirim fungsi navigasinya ke dalam Tab
+                                onNavigateToChatbotDetail = { sessionId ->
+                                    onNavigateToChatbotDetail(user.id, sessionId)
                                 }
                             )
                         } else {

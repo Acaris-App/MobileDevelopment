@@ -139,20 +139,16 @@ fun MainNavHost(
             com.acaris.features.monitoring_mahasiswa.ui.screen.MonitoringDetailScreen(
                 mahasiswaId = mahasiswaId,
                 onNavigateBack = { navController.popBackStack() },
-                // 🌟 FIX: Menyesuaikan callback parameter navigasi ke halaman detail chatbot
                 onNavigateToChatbotDetail = { mId, sId ->
                     navController.navigate(Screen.MahasiswaChatbotDetail.createRoute(mId, sId))
                 }
             )
         }
 
-        // 🌟 HALAMAN BARU: DETAIL CHATBOT UNTUK DOSEN
         composable(Screen.MahasiswaChatbotDetail.route) { backStackEntry ->
             val mahasiswaId = backStackEntry.arguments?.getString("mahasiswaId") ?: ""
             val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
 
-            // 🌟 TRIK CERDAS: Menggunakan ViewModel dari halaman "DetailMahasiswa"
-            // Agar data list riwayat yang sudah di-fetch sebelumnya tidak hilang.
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry(Screen.DetailMahasiswa.route)
             }
@@ -184,11 +180,44 @@ fun MainNavHost(
             )
         }
 
+        composable(Screen.UserManagement.route) {
+            com.acaris.features.user_management.ui.screen.UserManagementScreen(
+                onNavigateToEdit = { userId ->
+                    navController.navigate(Screen.EditUser.createRoute(userId))
+                },
+                onNavigateToAddAdmin = {
+                    navController.navigate(Screen.AddAdmin.route)
+                },
+                onNavigateToDetail = { userId ->
+                    navController.navigate(Screen.UserDetail.createRoute(userId))
+                }
+            )
+        }
+
         composable(Screen.UserDetail.route) { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
             com.acaris.features.user_management.ui.screen.UserDetailScreen(
                 userId = userId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToChatbotDetail = { uId, sId ->
+                    navController.navigate(Screen.AdminMahasiswaChatbotDetail.createRoute(uId, sId))
+                }
+            )
+        }
+
+        composable(Screen.AdminMahasiswaChatbotDetail.route) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Screen.UserDetail.route)
+            }
+            val sharedViewModel: com.acaris.features.user_management.presentation.viewmodel.UserDetailViewModel = hiltViewModel(parentEntry)
+
+            com.acaris.features.user_management.ui.screen.AdminChatbotDetailScreen(
+                userId = userId,
+                sessionId = sessionId,
+                onNavigateBack = { navController.popBackStack() },
+                viewModel = sharedViewModel
             )
         }
 

@@ -8,6 +8,7 @@ import com.acaris.features.user_management.domain.model.BimbinganHistory
 import com.acaris.features.user_management.domain.model.ClassInfo
 import com.acaris.features.user_management.domain.model.MahasiswaDocument
 import com.acaris.features.user_management.domain.repository.UserManagementRepository
+import com.acaris.features.chatbot.data.mapper.toDomain
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -125,7 +126,6 @@ class UserManagementRepositoryImpl @Inject constructor(
             if (response.status == "success" || response.status == "200") {
                 val updatedUserDomain = response.data?.toDomain() ?: throw Exception("Data kosong")
 
-                // 🌟 FIX: Menggunakan currentUsersList dan me-trigger update ke UI
                 val index = currentUsersList.indexOfFirst { it.id == id }
                 if (index != -1) {
                     currentUsersList[index] = updatedUserDomain
@@ -145,7 +145,6 @@ class UserManagementRepositoryImpl @Inject constructor(
     override suspend fun getAllClasses(): Result<List<ClassInfo>> {
         return try {
             val response = apiService.getAllClasses()
-            // 🌟 Validasi sukses, lalu Map List<ClassInfoResponse> ke List<ClassInfo> (Domain)
             if (response.status == "success" || response.status == "200") {
                 val list = response.data?.map { it.toDomain() } ?: emptyList()
                 Result.success(list)
@@ -281,6 +280,34 @@ class UserManagementRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Result.failure(Exception("Gagal menghapus dokumen. Periksa koneksi internet Anda."))
+        }
+    }
+
+    override suspend fun getMahasiswaChatbotHistory(userId: String): Result<List<com.acaris.features.chatbot.domain.model.ChatHistoryDomain>> {
+        return try {
+            val response = apiService.getMahasiswaChatbotHistory(userId)
+            if (response.status == "success" || response.status == "200") {
+                val list = response.data?.map { it.toDomain() } ?: emptyList()
+                Result.success(list)
+            } else {
+                Result.failure(Exception(response.message ?: "Gagal mengambil riwayat chatbot"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Gagal mengambil riwayat chatbot. Periksa koneksi internet Anda."))
+        }
+    }
+
+    override suspend fun getMahasiswaChatbotDetail(userId: String, sessionId: String): Result<com.acaris.features.chatbot.domain.model.ChatSessionDomain> {
+        return try {
+            val response = apiService.getMahasiswaChatbotDetail(userId, sessionId)
+            if (response.status == "success" || response.status == "200") {
+                val detail = response.data?.toDomain() ?: throw Exception("Data kosong")
+                Result.success(detail)
+            } else {
+                Result.failure(Exception(response.message ?: "Gagal mengambil detail chatbot"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Gagal mengambil detail chatbot. Periksa koneksi internet Anda."))
         }
     }
 }
