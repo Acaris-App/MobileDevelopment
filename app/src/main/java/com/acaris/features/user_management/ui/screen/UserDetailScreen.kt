@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable // 🌟 IMPOR CLICKABLE
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -26,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPOR KOMPONEN ZOOM KITA
 import com.acaris.core.utils.FileUtils
 import com.acaris.features.user_management.presentation.viewmodel.UserDetailViewModel
 import com.acaris.features.user_management.ui.components.MahasiswaTabSection
@@ -48,6 +50,9 @@ fun UserDetailScreen(
 
     var showReplaceDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
+
+    // 🌟 STATE BARU: Untuk zoom foto profil di TopAppBar
+    var showZoomedImage by remember { mutableStateOf(false) }
 
     LaunchedEffect(userId) {
         viewModel.loadUserDetail(userId)
@@ -146,7 +151,13 @@ fun UserDetailScreen(
                 title = {
                     uiState.user?.let { user ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), modifier = Modifier.size(60.dp)) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clickable { showZoomedImage = true } // 🌟 AKSI KLIK FOTO
+                            ) {
                                 if (!user.profilePictureUrl.isNullOrEmpty()) {
                                     AsyncImage(model = user.profilePictureUrl, contentDescription = "Foto Profil", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                                 } else {
@@ -162,7 +173,6 @@ fun UserDetailScreen(
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
-                                // 🌟 FIX 2: Desain NPM lebih lengkung (CircleShape) dan background transparan dengan border
                                 Box(
                                     modifier = Modifier
                                         .clip(CircleShape)
@@ -226,7 +236,6 @@ fun UserDetailScreen(
                                 onDeleteDocument = { docId ->
                                     documentIdToDelete = docId
                                 },
-                                // 🌟 FIX: Kirim fungsi navigasinya ke dalam Tab
                                 onNavigateToChatbotDetail = { sessionId ->
                                     onNavigateToChatbotDetail(user.id, sessionId)
                                 }
@@ -240,5 +249,13 @@ fun UserDetailScreen(
                 }
             }
         }
+    }
+
+    // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
+    if (showZoomedImage) {
+        CustomImageZoomDialog(
+            imageUrl = uiState.user?.profilePictureUrl,
+            onDismissRequest = { showZoomedImage = false }
+        )
     }
 }

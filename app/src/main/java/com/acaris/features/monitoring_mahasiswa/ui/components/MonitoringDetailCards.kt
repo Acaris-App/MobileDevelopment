@@ -9,7 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM
 import com.acaris.features.monitoring_mahasiswa.presentation.model.DetailMahasiswaUiModel
 import com.acaris.features.monitoring_mahasiswa.presentation.model.DokumenBimbinganUiModel
 
@@ -28,6 +29,9 @@ fun DetailProfilMahasiswaCard(
     detail: DetailMahasiswaUiModel,
     modifier: Modifier = Modifier
 ) {
+    // 🌟 STATE BARU: Untuk melacak status Zoom Gambar
+    var showZoomedImage by remember { mutableStateOf(false) }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -42,9 +46,10 @@ fun DetailProfilMahasiswaCard(
                 // FOTO PROFIL
                 Box(
                     modifier = Modifier
-                        .size(100.dp)
+                        .size(150.dp)
                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
-                        .clip(CircleShape),
+                        .clip(CircleShape)
+                        .clickable { showZoomedImage = true }, // 🌟 AKSI KLIK FOTO
                     contentAlignment = Alignment.Center
                 ) {
                     if (detail.profilePictureUrl.isBlank()) {
@@ -76,6 +81,14 @@ fun DetailProfilMahasiswaCard(
             }
             // 🌟 Tombol Edit sengaja ditiadakan karena ini layar Dosen
         }
+    }
+
+    // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
+    if (showZoomedImage) {
+        CustomImageZoomDialog(
+            imageUrl = detail.profilePictureUrl,
+            onDismissRequest = { showZoomedImage = false }
+        )
     }
 }
 

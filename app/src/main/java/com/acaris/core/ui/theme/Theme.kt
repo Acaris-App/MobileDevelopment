@@ -64,11 +64,7 @@ fun AcarisTheme(
 
             window.statusBarColor = colorScheme.background.toArgb()
 
-            window.navigationBarColor = if (darkTheme) {
-                AcarisPrimary.toArgb()
-            } else {
-                AcarisTertiary.toArgb()
-            }
+            window.navigationBarColor = colorScheme.surface.toArgb()
 
             WindowCompat.getInsetsController(window, view).apply {
                 isAppearanceLightStatusBars = !darkTheme

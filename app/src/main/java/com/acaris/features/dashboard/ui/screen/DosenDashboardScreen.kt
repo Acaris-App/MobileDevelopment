@@ -30,11 +30,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
+import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.dashboard.presentation.viewmodel.DosenDashboardViewModel
 import com.acaris.features.dashboard.ui.components.DashboardStatCard
 import com.acaris.features.dashboard.ui.components.JadwalMingguIniCard
-// 🌟 IMPOR KOMPONEN LEADERBOARD
 import com.acaris.features.dashboard.ui.components.LeaderboardItemData
 import com.acaris.features.dashboard.ui.components.LeaderboardSection
 import com.acaris.features.schedule.ui.components.CustomCalendar
@@ -53,6 +53,9 @@ fun DosenDashboardScreen(
 
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
+
+    // 🌟 STATE BARU: Untuk melacak status Zoom Gambar
+    var showZoomedImage by remember { mutableStateOf(false) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -120,7 +123,11 @@ fun DosenDashboardScreen(
                                     model = data.fotoDosen.ifEmpty { null },
                                     contentDescription = "Foto Dosen",
                                     contentScale = ContentScale.Crop,
-                                    modifier = Modifier.size(64.dp).clip(CircleShape).background(Color.LightGray)
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.LightGray)
+                                        .clickable { showZoomedImage = true } // 🌟 AKSI KLIK FOTO
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
@@ -267,6 +274,14 @@ fun DosenDashboardScreen(
 
                     Spacer(modifier = Modifier.height(120.dp))
                 }
+            }
+
+            // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
+            if (showZoomedImage && uiState.dashboardData != null) {
+                CustomImageZoomDialog(
+                    imageUrl = uiState.dashboardData?.fotoDosen?.ifEmpty { null },
+                    onDismissRequest = { showZoomedImage = false }
+                )
             }
 
             if (uiState.isLoading) {

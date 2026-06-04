@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit // 🌟 IMPOR ICON EDIT
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,10 +26,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp // 🌟 IMPOR UNTUK FONT SIZE
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPOR KOMPONEN ZOOM DIALOG
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.utils.ImageUtils
@@ -47,14 +50,17 @@ fun StepDataDiri(
     onSubmitMahasiswa: (String, String, String, String, Int, Int, Double) -> Unit,
     onSubmitDosen: (String, String, String, String) -> Unit,
     onLoginClick: () -> Unit,
-    viewModel: RegisterViewModel = hiltViewModel() // 🌟 TARIK VIEWMODEL KE SINI
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState() // 🌟 AMBIL STATE DARI VIEWMODEL
+    val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
+
+    // 🌟 STATE BARU: Melacak status Zoom Gambar
+    var showZoomedImage by remember { mutableStateOf(false) }
 
     // State Dropdown
     var isAngkatanDropdownExpanded by remember { mutableStateOf(false) }
@@ -71,7 +77,6 @@ fun StepDataDiri(
         }
     }
 
-    // 🌟 VALIDASI MENGGUNAKAN UISTATE
     val isEmailError = uiState.email.isNotEmpty() && !ValidationUtils.isValidEmail(uiState.email)
     val isPasswordError = uiState.password.isNotEmpty() && !ValidationUtils.isValidPassword(uiState.password)
     val isConfirmPasswordError = uiState.confirmPassword.isNotEmpty() && uiState.password != uiState.confirmPassword
@@ -134,7 +139,14 @@ fun StepDataDiri(
             contentAlignment = Alignment.BottomEnd,
             modifier = Modifier
                 .size(110.dp)
-                .clickable { photoLauncher.launch("image/*") }
+                .clickable {
+                    // 🌟 LOGIKA PINTAR: Buka galeri jika kosong, Zoom jika sudah ada
+                    if (imageUri != null) {
+                        showZoomedImage = true
+                    } else {
+                        photoLauncher.launch("image/*")
+                    }
+                }
         ) {
             if (imageUri != null) {
                 AsyncImage(
@@ -164,18 +176,25 @@ fun StepDataDiri(
             }
 
             CustomCircularIconButton(
-                icon = Icons.Default.Add,
+                // 🌟 IKON DINAMIS: Add jika kosong, Edit jika sudah ada
+                icon = if (imageUri == null) Icons.Default.Add else Icons.Default.Edit,
                 contentDescription = "Pilih Foto",
-                color = MaterialTheme.colorScheme.primary, // Warna ikon/outline
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .offset(x = 4.dp, y = 4.dp)
                     .size(36.dp)
-                    // Background solid setara warna layar agar tidak tembus pandang
                     .background(MaterialTheme.colorScheme.background, CircleShape),
-                onClick = { photoLauncher.launch("image/*") }
+                onClick = { photoLauncher.launch("image/*") } // 🌟 Tombol pena selalu buka galeri
             )
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
+        // 🌟 TEKS INSTRUKSI DINAMIS
+        Text(
+            text = if (imageUri == null) "Foto Profil (Opsional)" else "Ketuk untuk memperbesar foto",
+            fontSize = 12.sp,
+            color = Color.Gray
+        )
         Spacer(modifier = Modifier.height(32.dp))
 
         if (role == "mahasiswa") {
@@ -225,7 +244,6 @@ fun StepDataDiri(
         )
 
         if (role == "mahasiswa") {
-            // 🌟 FIX: DIBUAT ALIGNMENT TOP DAN PAKAI OUTLINED TEXT FIELD SEMUA AGAR RATA
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -251,13 +269,13 @@ fun StepDataDiri(
                     ExposedDropdownMenu(
                         expanded = isAngkatanDropdownExpanded,
                         onDismissRequest = { isAngkatanDropdownExpanded = false },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface) // 🌟 Background Surface
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                     ) {
                         angkatanList.forEach { thn ->
                             DropdownMenuItem(
                                 text = { Text(thn) },
                                 onClick = {
-                                    viewModel.onAngkatanChanged(thn) // Serahkan ke ViewModel
+                                    viewModel.onAngkatanChanged(thn)
                                     isAngkatanDropdownExpanded = false
                                 }
                             )
@@ -312,6 +330,14 @@ fun StepDataDiri(
             Text("Masuk", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onLoginClick() })
         }
         Spacer(modifier = Modifier.height(24.dp))
+    }
+
+    // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
+    if (showZoomedImage && imageUri != null) {
+        CustomImageZoomDialog(
+            imageUrl = imageUri.toString(),
+            onDismissRequest = { showZoomedImage = false }
+        )
     }
 
     CustomLoadingOverlay(isLoading = isLoading)

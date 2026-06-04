@@ -2,42 +2,31 @@ package com.acaris.features.profile.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.acaris.core.ui.components.CustomCircularIconButton
-import com.acaris.core.ui.components.CustomFloatingDropdownMenu
+import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN BARU KITA
 import com.acaris.features.profile.domain.model.UserProfile
-
-enum class ProfileAction(val label: String, val icon: ImageVector) {
-    EDIT("Edit Profil", Icons.Default.Edit),
-    CHANGE_PASSWORD("Ganti Password", Icons.Default.Lock)
-}
 
 @Composable
 fun ProfileInfoCard(
     userProfile: UserProfile,
-    onEditClick: () -> Unit,
-    onChangePasswordClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var showZoomedImage by remember { mutableStateOf(false) }
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -50,11 +39,13 @@ fun ProfileInfoCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // FOTO PROFIL KECIL
                 Box(
                     modifier = Modifier
-                        .size(100.dp)
+                        .size(150.dp)
                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
-                        .clip(CircleShape),
+                        .clip(CircleShape)
+                        .clickable { showZoomedImage = true },
                     contentAlignment = Alignment.Center
                 ) {
                     if (userProfile.profilePictureUrl.isNullOrEmpty()) {
@@ -74,7 +65,7 @@ fun ProfileInfoCard(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 ProfileDataLine(label = "Nama", value = userProfile.name)
                 ProfileDataLine(label = "Email", value = userProfile.email)
@@ -91,38 +82,15 @@ fun ProfileInfoCard(
                     ProfileDataLine(label = "Dosen PA", value = userProfile.dosenPa ?: "-")
                 }
             }
-
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .offset(x = 12.dp, y = (-12).dp)
-            ) {
-                CustomCircularIconButton(
-                    icon = Icons.Default.MoreVert,
-                    contentDescription = "Opsi",
-                    color = MaterialTheme.colorScheme.primary,
-                    // 🌟 FIX 2: Kembalikan menjadi expanded = true saja.
-                    // Popup bawaan Compose akan otomatis menutup (onDismissRequest) jika kamu klik tombol ini lagi
-                    onClick = { expanded = true },
-                    modifier = Modifier.size(40.dp)
-                )
-
-                CustomFloatingDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    options = ProfileAction.values().toList(),
-                    selectedOption = null,
-                    optionLabelProvider = { it.label },
-                    optionIconProvider = { it.icon },
-                    onOptionSelected = { action ->
-                        when (action) {
-                            ProfileAction.EDIT -> onEditClick()
-                            ProfileAction.CHANGE_PASSWORD -> onChangePasswordClick()
-                        }
-                    }
-                )
-            }
         }
+    }
+
+    // 🌟 PANGGIL KOMPONEN INTI HANYA DENGAN 1 BARIS KODE INI
+    if (showZoomedImage) {
+        CustomImageZoomDialog(
+            imageUrl = userProfile.profilePictureUrl,
+            onDismissRequest = { showZoomedImage = false }
+        )
     }
 }
 

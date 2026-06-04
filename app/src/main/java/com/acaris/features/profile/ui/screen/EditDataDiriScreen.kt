@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable // 🌟 IMPORT CLICKABLE
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,8 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomBackButton
-import com.acaris.core.ui.components.CustomCircularIconButton // 🌟 IMPORT INI DITAMBAHKAN
+import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.utils.ImageUtils
@@ -50,6 +51,9 @@ fun EditDataDiriScreen(
     var selectedPhotoUri by remember { mutableStateOf<Uri?>(null) }
     var showConfirmDialog by remember { mutableStateOf(false) }
     var isAngkatanDropdownExpanded by remember { mutableStateOf(false) }
+
+    // 🌟 STATE BARU: Untuk melacak apakah foto sedang di-zoom
+    var showZoomedImage by remember { mutableStateOf(false) }
 
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val angkatanList = (currentYear downTo currentYear - 7).map { it.toString() }
@@ -161,7 +165,6 @@ fun EditDataDiriScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                // 🌟 FIX: Judul dipindahkan ke sini
                 title = {
                     Text(
                         text = "Edit Data Diri",
@@ -189,7 +192,7 @@ fun EditDataDiriScreen(
                         .verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(16.dp)) // Jarak ekstra dari TopAppBar
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
                         text = "Perbarui informasi pribadi dan foto profil Anda.",
@@ -201,12 +204,14 @@ fun EditDataDiriScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
+                    // 🌟 AREA FOTO PROFIL
                     Box(contentAlignment = Alignment.BottomEnd) {
                         Box(
                             modifier = Modifier
                                 .size(120.dp)
                                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
-                                .clip(CircleShape),
+                                .clip(CircleShape)
+                                .clickable { showZoomedImage = true }, // 🌟 KLIK UNTUK ZOOM FOTO
                             contentAlignment = Alignment.Center
                         ) {
                             val imageToLoad = selectedPhotoUri ?: state.userProfile?.profilePictureUrl
@@ -352,6 +357,17 @@ fun EditDataDiriScreen(
                         enabled = isDataChanged
                     )
                 }
+            }
+
+            // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
+            if (showZoomedImage) {
+                // Konversi foto ke string (baik dari URI HP atau URL dari API)
+                val imageToLoad = selectedPhotoUri ?: state.userProfile?.profilePictureUrl
+
+                CustomImageZoomDialog(
+                    imageUrl = imageToLoad?.toString(),
+                    onDismissRequest = { showZoomedImage = false }
+                )
             }
 
             if (state.isLoading || state.isUploadingPhoto || !state.isFormInitialized) {

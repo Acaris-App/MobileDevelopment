@@ -25,6 +25,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
+import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.dashboard.presentation.viewmodel.MahasiswaDashboardViewModel
 import com.acaris.features.dashboard.ui.components.DashboardStatCard
@@ -43,6 +44,10 @@ fun MahasiswaDashboardScreen(
     val uiState by viewModel.uiState.collectAsState()
     val currentMonth by viewModel.currentMonth.collectAsState()
     val scrollState = rememberScrollState()
+
+    // 🌟 STATE BARU: Untuk melacak gambar mana yang mau di-zoom (Mahasiswa atau Dosen)
+    var zoomedImageUrl by remember { mutableStateOf<String?>(null) }
+    var showZoomedImage by remember { mutableStateOf(false) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -118,7 +123,15 @@ fun MahasiswaDashboardScreen(
                                         model = data.fotoMahasiswa.ifEmpty { null },
                                         contentDescription = "Foto Mahasiswa",
                                         contentScale = ContentScale.Crop,
-                                        modifier = Modifier.size(48.dp).clip(CircleShape).background(Color.LightGray)
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.LightGray)
+                                            .clickable {
+                                                // 🌟 Tampilkan foto mahasiswa
+                                                zoomedImageUrl = data.fotoMahasiswa.ifEmpty { null }
+                                                showZoomedImage = true
+                                            }
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
@@ -154,7 +167,15 @@ fun MahasiswaDashboardScreen(
                                         model = data.fotoDosen.ifEmpty { null },
                                         contentDescription = "Foto Dosen",
                                         contentScale = ContentScale.Crop,
-                                        modifier = Modifier.size(48.dp).clip(CircleShape).background(Color.LightGray)
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.LightGray)
+                                            .clickable {
+                                                // 🌟 Tampilkan foto dosen
+                                                zoomedImageUrl = data.fotoDosen.ifEmpty { null }
+                                                showZoomedImage = true
+                                            }
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
@@ -264,7 +285,7 @@ fun MahasiswaDashboardScreen(
                             }
                         }
                     } else {
-                        // 🌟 TAMPILKAN DALAM BENTUK LIST COLUMN BERUNTUN
+                        // TAMPILKAN DALAM BENTUK LIST COLUMN BERUNTUN
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             data.jadwalTerdekat.forEach { bimbingan ->
                                 UpcomingBimbinganCard(
@@ -280,6 +301,17 @@ fun MahasiswaDashboardScreen(
 
                     Spacer(modifier = Modifier.height(120.dp))
                 }
+            }
+
+            // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
+            if (showZoomedImage) {
+                CustomImageZoomDialog(
+                    imageUrl = zoomedImageUrl,
+                    onDismissRequest = {
+                        showZoomedImage = false
+                        zoomedImageUrl = null
+                    }
+                )
             }
 
             if (uiState.isLoading) {

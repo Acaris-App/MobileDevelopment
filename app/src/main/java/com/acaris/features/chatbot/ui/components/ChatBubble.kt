@@ -3,7 +3,7 @@ package com.acaris.features.chatbot.ui.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Error // 🌟 IMPOR ICON ERROR
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -12,10 +12,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight // 🌟 IMPOR FONT WEIGHT
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.acaris.features.chatbot.presentation.model.ChatMessageUiModel
+
+// 🌟 IMPOR LIBRARY JEZIELLAGO YANG SUDAH BERHASIL DIUNDUH
+import dev.jeziellago.compose.markdowntext.MarkdownText
 
 @Composable
 fun ChatBubble(
@@ -58,22 +61,22 @@ fun ChatBubble(
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
-                Text(
-                    text = message.text,
+                // 🌟 ANTI MENGKERUT SAAT DI-SCROLL CEPAT!
+                MarkdownText(
+                    markdown = message.text,
+                    color = contentColor,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    lineHeight = 20.sp
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
             Spacer(modifier = Modifier.height(2.dp))
 
-            // 🌟 FIX: Row dinamis untuk menampung Jam Normal ATAU Peringatan Error
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = 4.dp)
             ) {
                 if (message.time == "Gagal kirim") {
-                    // Tampilan saat pesan gagal (Ikon + Teks Merah)
                     Icon(
                         imageVector = Icons.Default.Error,
                         contentDescription = "Gagal Mengirim",
@@ -84,11 +87,10 @@ fun ChatBubble(
                     Text(
                         text = message.time,
                         fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.error, // Warna Merah
-                        fontWeight = FontWeight.Bold // Dipertebal
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
                     )
                 } else {
-                    // Tampilan normal (Hanya Jam)
                     Text(
                         text = message.time,
                         fontSize = 10.sp,

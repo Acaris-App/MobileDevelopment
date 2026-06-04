@@ -226,13 +226,8 @@ fun ProfileScreen(
 
                     when (selectedTabIndex) {
                         0 -> {
-                            // TAB 1: DATA DIRI
                             profileState.userProfile?.let { user ->
-                                ProfileInfoCard(
-                                    userProfile = user,
-                                    onEditClick = onNavigateToEditDataDiri,
-                                    onChangePasswordClick = onNavigateToChangePassword
-                                )
+                                ProfileInfoCard(userProfile = user) // 🌟 Hapus onEditClick & onChangePasswordClick
                             }
                         }
                         1 -> {
@@ -261,14 +256,9 @@ fun ProfileScreen(
                         }
                     }
                 } else {
-                    // JIKA BUKAN MAHASISWA, TAMPILKAN LANGSUNG PROFIL (TANPA TAB)
                     Spacer(modifier = Modifier.height(8.dp))
                     profileState.userProfile?.let { user ->
-                        ProfileInfoCard(
-                            userProfile = user,
-                            onEditClick = onNavigateToEditDataDiri,
-                            onChangePasswordClick = onNavigateToChangePassword
-                        )
+                        ProfileInfoCard(userProfile = user) // 🌟 Hapus onEditClick & onChangePasswordClick juga di sini
                     }
                 }
 

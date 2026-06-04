@@ -1,6 +1,6 @@
 package com.acaris.features.user_management.ui.components
 
-import androidx.compose.foundation.border // 🌟 IMPOR BORDER
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,7 +10,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomCircularIconButton
+import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 KEMBALI KE ZOOM DIALOG!
 import com.acaris.features.user_management.presentation.model.UserUiModel
 
 @Composable
@@ -37,6 +38,9 @@ fun UserItemCard(
 ) {
     val isMahasiswa = user.role.lowercase() == "mahasiswa"
     val isAdmin = user.role.lowercase() == "admin"
+
+    // 🌟 STATE BARU: Untuk melacak apakah foto user sedang di-zoom
+    var showZoomedImage by remember { mutableStateOf(false) }
 
     Card(
         modifier = modifier
@@ -55,7 +59,9 @@ fun UserItemCard(
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                    modifier = Modifier.size(50.dp)
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clickable { showZoomedImage = true } // 🌟 KLIK FOTO UNTUK ZOOM
                 ) {
                     if (!user.profilePictureUrl.isNullOrEmpty()) {
                         AsyncImage(
@@ -187,6 +193,14 @@ fun UserItemCard(
                 }
             }
         }
+    }
+
+    // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
+    if (showZoomedImage) {
+        CustomImageZoomDialog(
+            imageUrl = user.profilePictureUrl,
+            onDismissRequest = { showZoomedImage = false }
+        )
     }
 }
 

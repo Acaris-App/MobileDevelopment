@@ -9,6 +9,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector // 🌟 Import untuk ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,10 +35,18 @@ import com.acaris.core.navigation.Screen
 import com.acaris.core.network.AuthEvent
 import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.core.ui.components.CustomFloatingDropdownMenu // 🌟 Import Custom Component Kapten
 import com.acaris.features.main.presentation.model.AdminMenus
 import com.acaris.features.main.presentation.model.DosenMenus
 import com.acaris.features.main.presentation.model.MahasiswaMenus
 import com.acaris.features.main.presentation.viewmodel.MainViewModel
+
+// 🌟 Enum Aksi Profil agar rapi saat dikirim ke CustomFloatingDropdownMenu
+enum class MainProfileAction(val label: String, val icon: ImageVector) {
+    EDIT("Edit Profil", Icons.Default.Edit),
+    CHANGE_PASSWORD("Ganti Password", Icons.Default.Lock),
+    LOGOUT("Logout", Icons.AutoMirrored.Filled.Logout)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +60,9 @@ fun MainScreen(
 
     val userRole by viewModel.userRole.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
+
+    // State untuk Menu Profil
+    var expandedProfileMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.authEventBus.events.collect { event ->
@@ -97,7 +112,6 @@ fun MainScreen(
     val isHomeTab = currentRoute == menus.firstOrNull()?.route
     val isProfileTab = currentRoute == Screen.Profile.route
     val isScheduleTab = currentRoute == Screen.Schedule.route
-    // Deteksi Tab Chatbot & Kondisi Menampilkan TopAppBar
     val isChatbotTab = currentMenuItem?.title?.contains("Chatbot", ignoreCase = true) == true
     val showMainTopAppBar = isMainMenu && !isChatbotTab
 
@@ -165,14 +179,38 @@ fun MainScreen(
                         }
                     }
 
+                    // 🌟 MENGGUNAKAN CUSTOM FLOATING DROPDOWN MENU KAPTEN
                     if (isProfileTab) {
                         Box(modifier = Modifier.padding(end = 16.dp)) {
                             CustomCircularIconButton(
-                                icon = Icons.AutoMirrored.Filled.Logout,
-                                contentDescription = "Logout",
+                                icon = Icons.Default.MoreVert,
+                                contentDescription = "Opsi Profil",
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(40.dp),
-                                onClick = { showLogoutDialog = true }
+                                onClick = { expandedProfileMenu = true }
+                            )
+
+                            // 🌟 Memanggil Custom Menu yang keren!
+                            CustomFloatingDropdownMenu(
+                                expanded = expandedProfileMenu,
+                                onDismissRequest = { expandedProfileMenu = false },
+                                options = MainProfileAction.values().toList(),
+                                selectedOption = null, // Tidak ada yang sedang "dipilih" secara aktif
+                                optionLabelProvider = { it.label },
+                                optionIconProvider = { it.icon },
+                                onOptionSelected = { action ->
+                                    when (action) {
+                                        MainProfileAction.EDIT -> {
+                                            bottomNavController.navigate(Screen.EditDataDiri.route)
+                                        }
+                                        MainProfileAction.CHANGE_PASSWORD -> {
+                                            bottomNavController.navigate(Screen.ChangePassword.route)
+                                        }
+                                        MainProfileAction.LOGOUT -> {
+                                            showLogoutDialog = true
+                                        }
+                                    }
+                                }
                             )
                         }
                     }

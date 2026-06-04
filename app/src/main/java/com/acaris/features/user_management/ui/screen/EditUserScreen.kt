@@ -33,6 +33,7 @@ import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM DIALOG
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.utils.ImageUtils
@@ -58,6 +59,9 @@ fun EditUserScreen(
     var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var isAngkatanDropdownExpanded by remember { mutableStateOf(false) }
+
+    // 🌟 STATE BARU: Melacak status Zoom Gambar
+    var showZoomedImage by remember { mutableStateOf(false) }
 
     // Daftar Angkatan (Generate dari tahun sekarang mundur 7 tahun)
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
@@ -188,7 +192,7 @@ fun EditUserScreen(
                         contentAlignment = Alignment.BottomEnd,
                         modifier = Modifier
                             .size(110.dp)
-                            .clickable { photoLauncher.launch("image/*") }
+                            .clickable { showZoomedImage = true } // 🌟 FIX 1: Klik area foto memicu Zoom Dialog
                     ) {
                         val displayImage = imageUri ?: uiState.initialUser?.profilePictureUrl
 
@@ -199,7 +203,7 @@ fun EditUserScreen(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clip(CircleShape)
-                                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                                    .border(2.2.dp, MaterialTheme.colorScheme.primary, CircleShape),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
@@ -222,12 +226,12 @@ fun EditUserScreen(
                                 .offset(x = 4.dp, y = 4.dp)
                                 .size(36.dp)
                                 .background(MaterialTheme.colorScheme.background, CircleShape),
-                            onClick = { photoLauncher.launch("image/*") }
+                            onClick = { photoLauncher.launch("image/*") } // 🌟 Tombol pena tetap untuk pilih file
                         )
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Ketuk untuk mengubah foto", fontSize = 12.sp, color = Color.Gray)
+                    Text("Ketuk untuk memperbesar foto", fontSize = 12.sp, color = Color.Gray)
                     Spacer(modifier = Modifier.height(32.dp))
 
                     AuthTextField(
@@ -265,7 +269,7 @@ fun EditUserScreen(
                             verticalAlignment = Alignment.Top
                         ) {
 
-                            // 🌟 ANGKATAN DROPDOWN
+                            // ANGKATAN DROPDOWN
                             ExposedDropdownMenuBox(
                                 expanded = isAngkatanDropdownExpanded,
                                 onExpandedChange = { isAngkatanDropdownExpanded = !isAngkatanDropdownExpanded },
@@ -299,7 +303,7 @@ fun EditUserScreen(
                                 }
                             }
 
-                            // 🌟 SEMESTER (READ-ONLY)
+                            // SEMESTER (READ-ONLY)
                             OutlinedTextField(
                                 value = uiState.semester,
                                 onValueChange = {},
@@ -313,7 +317,7 @@ fun EditUserScreen(
                                 )
                             )
 
-                            // 🌟 FIX: IPK SEKARANG PAKAI OUTLINEDTEXTFIELD MURNI BIAR RATA!
+                            // IPK SEKARANG PAKAI OUTLINEDTEXTFIELD MURNI BIAR RATA!
                             OutlinedTextField(
                                 value = uiState.ipk,
                                 onValueChange = { viewModel.onIpkChanged(it) },
@@ -375,6 +379,15 @@ fun EditUserScreen(
 
                     Spacer(modifier = Modifier.height(40.dp))
                 }
+            }
+
+            // 🌟 FIX 2: PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
+            if (showZoomedImage) {
+                val displayImage = imageUri ?: uiState.initialUser?.profilePictureUrl
+                CustomImageZoomDialog(
+                    imageUrl = displayImage?.toString(),
+                    onDismissRequest = { showZoomedImage = false }
+                )
             }
 
             if (uiState.isLoading || !uiState.isFormInitialized) {

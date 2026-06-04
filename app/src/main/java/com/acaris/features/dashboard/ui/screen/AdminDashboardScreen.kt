@@ -1,6 +1,7 @@
 package com.acaris.features.dashboard.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -23,6 +24,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
+import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM KITA
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.dashboard.presentation.viewmodel.AdminDashboardViewModel
 import com.acaris.features.dashboard.ui.components.DashboardStatCard
@@ -36,6 +38,9 @@ fun AdminDashboardScreen(
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    // 🌟 STATE BARU: Untuk melacak apakah foto admin sedang di-zoom
+    var showZoomedImage by remember { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -97,7 +102,11 @@ fun AdminDashboardScreen(
                                 model = data.fotoAdmin.ifEmpty { null },
                                 contentDescription = "Foto Admin",
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.size(56.dp).clip(CircleShape).background(Color.LightGray)
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.LightGray)
+                                    .clickable { showZoomedImage = true } // 🌟 TAMBAHKAN AKSI KLIK DI SINI
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
@@ -190,6 +199,14 @@ fun AdminDashboardScreen(
 
                     Spacer(modifier = Modifier.height(120.dp))
                 }
+            }
+
+            // 🌟 PANGGIL KOMPONEN ZOOM JIKA STATUS TRUE
+            if (showZoomedImage && uiState.dashboardData != null) {
+                CustomImageZoomDialog(
+                    imageUrl = uiState.dashboardData?.fotoAdmin?.ifEmpty { null },
+                    onDismissRequest = { showZoomedImage = false }
+                )
             }
 
             if (uiState.isLoading) {
