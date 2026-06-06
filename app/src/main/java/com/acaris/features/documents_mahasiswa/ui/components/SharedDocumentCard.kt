@@ -79,7 +79,7 @@ fun SharedDocumentCard(
                     CustomCircularIconButton(
                         icon = Icons.Outlined.Edit,
                         contentDescription = "Edit",
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.primary,
                         onClick = onEditClick,
                         modifier = Modifier.size(32.dp)
                     )

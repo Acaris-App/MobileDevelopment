@@ -83,4 +83,40 @@ object DateUtils {
             }
         }
     }
+
+    /**
+     * 🌟 HELPER PENYELAMAT: Menerjemahkan UI date ("05 Jun 2026" atau "Senin, 05 Jun 2026")
+     * kembali ke format API ("2026-06-05")
+     */
+    fun formatUiDateToApiDate(uiDate: String): String {
+        if (uiDate.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) return uiDate
+        try {
+            val cleanDate = uiDate.replace(Regex("[a-zA-Z]+,"), "").trim()
+            val parts = cleanDate.split(" ")
+            if (parts.size >= 3) {
+                val day = parts[0].padStart(2, '0')
+                val monthStr = parts[1].lowercase()
+                val month = when {
+                    monthStr.startsWith("jan") -> "01"
+                    monthStr.startsWith("feb") -> "02"
+                    monthStr.startsWith("mar") -> "03"
+                    monthStr.startsWith("apr") -> "04"
+                    monthStr.startsWith("mei") -> "05"
+                    monthStr.startsWith("jun") -> "06"
+                    monthStr.startsWith("jul") -> "07"
+                    monthStr.startsWith("agu") || monthStr.startsWith("ags") -> "08"
+                    monthStr.startsWith("sep") -> "09"
+                    monthStr.startsWith("okt") -> "10"
+                    monthStr.startsWith("nov") -> "11"
+                    monthStr.startsWith("des") -> "12"
+                    else -> "01"
+                }
+                val year = parts[2]
+                return "$year-$month-$day"
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return LocalDate.now().toString()
+    }
 }

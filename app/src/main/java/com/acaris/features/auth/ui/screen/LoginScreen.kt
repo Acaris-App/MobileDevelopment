@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -16,20 +17,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
-import com.acaris.core.ui.theme.AcarisTheme
+import com.acaris.core.ui.components.CustomTextField // 🌟 IMPORT KOMPONEN GLOBAL KITA
 import com.acaris.core.utils.ValidationUtils
 import com.acaris.features.auth.presentation.model.LoginState
 import com.acaris.features.auth.presentation.model.UserUiModel
 import com.acaris.features.auth.presentation.viewmodel.LoginViewModel
-import com.acaris.features.auth.ui.components.AuthTextField
 import com.acaris.features.auth.ui.components.RoleSelectionSheet
 
 @Composable
@@ -82,7 +82,7 @@ fun LoginScreenContent(
                 .padding(horizontal = 24.dp)
                 .verticalScroll(scrollState)
         ) {
-            Spacer(modifier = Modifier.height(56.dp)) // Disesuaikan karena tombol back hilang
+            Spacer(modifier = Modifier.height(56.dp))
 
             Text(
                 text = "Masuk",
@@ -104,16 +104,17 @@ fun LoginScreenContent(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            AuthTextField(
+            CustomTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = "Email",
                 placeholder = "Masukkan email Anda",
                 isError = isEmailError,
-                errorMessage = "Format email tidak valid"
+                errorMessage = "Format email tidak valid",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
 
-            AuthTextField(
+            CustomTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = "Password",

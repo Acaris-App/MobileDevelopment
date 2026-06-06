@@ -25,8 +25,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
-import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM
+import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
+import com.acaris.core.utils.DateUtils // 🌟 IMPORT DATEUTILS
 import com.acaris.features.dashboard.presentation.viewmodel.MahasiswaDashboardViewModel
 import com.acaris.features.dashboard.ui.components.DashboardStatCard
 import com.acaris.features.dashboard.ui.components.UpcomingBimbinganCard
@@ -45,7 +46,6 @@ fun MahasiswaDashboardScreen(
     val currentMonth by viewModel.currentMonth.collectAsState()
     val scrollState = rememberScrollState()
 
-    // 🌟 STATE BARU: Untuk melacak gambar mana yang mau di-zoom (Mahasiswa atau Dosen)
     var zoomedImageUrl by remember { mutableStateOf<String?>(null) }
     var showZoomedImage by remember { mutableStateOf(false) }
 
@@ -72,7 +72,6 @@ fun MahasiswaDashboardScreen(
                 ) {
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // ERROR BANNER
                     if (uiState.errorMessage != null) {
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
@@ -107,7 +106,6 @@ fun MahasiswaDashboardScreen(
                             modifier = Modifier.weight(1f).fillMaxHeight(),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // KARTU MAHASISWA
                             Card(
                                 modifier = Modifier.weight(1f).fillMaxWidth(),
                                 shape = RoundedCornerShape(16.dp),
@@ -128,7 +126,6 @@ fun MahasiswaDashboardScreen(
                                             .clip(CircleShape)
                                             .background(Color.LightGray)
                                             .clickable {
-                                                // 🌟 Tampilkan foto mahasiswa
                                                 zoomedImageUrl = data.fotoMahasiswa.ifEmpty { null }
                                                 showZoomedImage = true
                                             }
@@ -151,7 +148,6 @@ fun MahasiswaDashboardScreen(
                                 }
                             }
 
-                            // KARTU DOSEN PA
                             Card(
                                 modifier = Modifier.weight(1f).fillMaxWidth(),
                                 shape = RoundedCornerShape(16.dp),
@@ -172,7 +168,6 @@ fun MahasiswaDashboardScreen(
                                             .clip(CircleShape)
                                             .background(Color.LightGray)
                                             .clickable {
-                                                // 🌟 Tampilkan foto dosen
                                                 zoomedImageUrl = data.fotoDosen.ifEmpty { null }
                                                 showZoomedImage = true
                                             }
@@ -196,7 +191,6 @@ fun MahasiswaDashboardScreen(
                             }
                         }
 
-                        // KOLOM KANAN: 3 Kartu Statistik
                         Column(
                             modifier = Modifier.weight(1f).fillMaxHeight(),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -225,7 +219,6 @@ fun MahasiswaDashboardScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // KARTU STATISTIK BAWAH
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         DashboardStatCard(
                             modifier = Modifier.weight(1f),
@@ -246,7 +239,6 @@ fun MahasiswaDashboardScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // KALENDER
                     Text("Kalender Bimbingan", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
                     CustomCalendar(
@@ -270,7 +262,6 @@ fun MahasiswaDashboardScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // JADWAL TERDEKAT
                     Text("Jadwal Terdekat", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -285,7 +276,6 @@ fun MahasiswaDashboardScreen(
                             }
                         }
                     } else {
-                        // TAMPILKAN DALAM BENTUK LIST COLUMN BERUNTUN
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             data.jadwalTerdekat.forEach { bimbingan ->
                                 UpcomingBimbinganCard(
@@ -293,7 +283,11 @@ fun MahasiswaDashboardScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .clickable { onNavigateToSchedule(bimbingan.date) }
+                                        .clickable {
+                                            // 🌟 MENGGUNAKAN UTILS UNTUK PARSING
+                                            val targetApiDate = DateUtils.formatUiDateToApiDate(bimbingan.date)
+                                            onNavigateToSchedule(targetApiDate)
+                                        }
                                 )
                             }
                         }
@@ -303,7 +297,6 @@ fun MahasiswaDashboardScreen(
                 }
             }
 
-            // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
             if (showZoomedImage) {
                 CustomImageZoomDialog(
                     imageUrl = zoomedImageUrl,

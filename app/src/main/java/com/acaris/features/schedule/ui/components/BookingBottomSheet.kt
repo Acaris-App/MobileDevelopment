@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.acaris.core.ui.components.CustomOutlinedButton
 import com.acaris.core.ui.components.CustomPrimaryButton
+import com.acaris.core.ui.components.CustomTextField // 🌟 IMPORT CUSTOM TEXT FIELD
 import com.acaris.features.schedule.presentation.model.ScheduleUiModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,37 +83,35 @@ fun BookingBottomSheet(
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
+            CustomTextField(
                 value = agenda,
                 onValueChange = { agenda = it },
-                label = { Text("Agenda / Keperluan Bimbingan") },
-                placeholder = { Text("Contoh: validasi krs") },
-                modifier = Modifier.fillMaxWidth(),
+                label = "Agenda / Keperluan Bimbingan",
+                placeholder = "Contoh: validasi krs",
+                singleLine = false,
                 minLines = 3,
                 maxLines = 5,
-                shape = MaterialTheme.shapes.medium
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    CustomOutlinedButton(
-                        text = "Batal",
-                        onClick = onDismiss,
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp)
-                    )
-                    CustomPrimaryButton(
-                        text = "Booking",
-                        onClick = { onSubmit(agenda) },
-                        enabled = agenda.isNotBlank(),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp)
-                    )
-                }
+                CustomOutlinedButton(
+                    text = "Batal",
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
+                )
+                CustomPrimaryButton(
+                    text = "Booking",
+                    onClick = { onSubmit(agenda) },
+                    enabled = agenda.isNotBlank(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
+                )
             }
         }
     }

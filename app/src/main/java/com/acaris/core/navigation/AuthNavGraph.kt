@@ -22,7 +22,9 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
         LoginScreen(
             onLoginSuccess = { _ ->
                 navController.navigate(Screen.MainApp.route) {
-                    popUpTo(Screen.Welcome.route) { inclusive = true }
+                    popUpTo(navController.graph.id) {
+                        inclusive = true
+                    }
                 }
             },
             onNavigateToRegister = { role ->

@@ -4,14 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -21,6 +23,68 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 
+// REGULAR DROPDOWN FIELD
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun <T> CustomDropdownField(
+    value: String,
+    options: List<T>,
+    onOptionSelected: (T) -> Unit,
+    optionLabelProvider: (T) -> String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
+        )
+
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = {},
+                readOnly = true, // Selalu readOnly karena input dari dropdown
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                singleLine = true
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(optionLabelProvider(option)) },
+                        onClick = {
+                            onOptionSelected(option)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+// FLOATING DROPDOWN
 @Composable
 fun <T : Any> CustomFloatingDropdownMenu(
     expanded: Boolean,
@@ -33,20 +97,17 @@ fun <T : Any> CustomFloatingDropdownMenu(
     modifier: Modifier = Modifier
 ) {
     if (expanded) {
-        // 🌟 FIX 1: Mengambil kepadatan layar untuk menghitung posisi (offset)
         val density = LocalDensity.current
-        val yOffset = with(density) { 48.dp.roundToPx() } // Geser ke bawah 48dp
-        val xOffset = with(density) { (-4).dp.roundToPx() } // Geser ke kiri 4dp
+        val yOffset = with(density) { 48.dp.roundToPx() }
+        val xOffset = with(density) { (-4).dp.roundToPx() }
 
         Popup(
             alignment = Alignment.TopEnd,
-            // 🌟 FIX 2: Menggunakan offset alih-alih padding agar area sentuh tidak melar
             offset = IntOffset(xOffset, yOffset),
             onDismissRequest = onDismissRequest,
             properties = PopupProperties(focusable = true)
         ) {
             Column(
-                // 🌟 FIX 3: Padding di sini sudah Dihapus!
                 modifier = modifier,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 horizontalAlignment = Alignment.End

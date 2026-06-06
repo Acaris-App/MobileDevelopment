@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable // 🌟 IMPORT CLICKABLE
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -31,9 +31,11 @@ import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
-import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM
+import com.acaris.core.ui.components.CustomDropdownField // 🌟 IMPORT CUSTOM DROPDOWN
+import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
+import com.acaris.core.ui.components.CustomTextField // 🌟 IMPORT CUSTOM TEXT FIELD
 import com.acaris.core.utils.ImageUtils
 import com.acaris.features.profile.presentation.viewmodel.ProfileViewModel
 import java.util.Calendar
@@ -50,9 +52,7 @@ fun EditDataDiriScreen(
 
     var selectedPhotoUri by remember { mutableStateOf<Uri?>(null) }
     var showConfirmDialog by remember { mutableStateOf(false) }
-    var isAngkatanDropdownExpanded by remember { mutableStateOf(false) }
 
-    // 🌟 STATE BARU: Untuk melacak apakah foto sedang di-zoom
     var showZoomedImage by remember { mutableStateOf(false) }
 
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
@@ -204,14 +204,13 @@ fun EditDataDiriScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // 🌟 AREA FOTO PROFIL
                     Box(contentAlignment = Alignment.BottomEnd) {
                         Box(
                             modifier = Modifier
                                 .size(120.dp)
                                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
                                 .clip(CircleShape)
-                                .clickable { showZoomedImage = true }, // 🌟 KLIK UNTUK ZOOM FOTO
+                                .clickable { showZoomedImage = true },
                             contentAlignment = Alignment.Center
                         ) {
                             val imageToLoad = selectedPhotoUri ?: state.userProfile?.profilePictureUrl
@@ -242,37 +241,25 @@ fun EditDataDiriScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    OutlinedTextField(
+                    CustomTextField(
                         value = state.name,
                         onValueChange = { profileViewModel.onNameChanged(it) },
-                        label = { Text("Nama Lengkap") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium
+                        label = "Nama Lengkap",
+                        placeholder = "Masukkan nama lengkap"
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
 
-                    OutlinedTextField(
+                    CustomTextField(
                         value = state.email,
                         onValueChange = {},
-                        label = { Text("Email (Tidak dapat diubah)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium,
-                        readOnly = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = Color(0xFFB71C1C),
-                            focusedBorderColor = Color(0xFFB71C1C),
-                            unfocusedLabelColor = Color(0xFFB71C1C),
-                            focusedLabelColor = Color(0xFFB71C1C)
-                        )
+                        label = "Email (Tidak dapat diubah)",
+                        readOnly = true // Email tidak boleh diubah!
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
 
-                    OutlinedTextField(
+                    CustomTextField(
                         value = state.identifier,
                         onValueChange = { profileViewModel.onIdentifierChanged(it) },
-                        label = { Text(if (state.userProfile?.role == "mahasiswa") "NPM" else "NIP") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium,
+                        label = if (state.userProfile?.role == "mahasiswa") "NPM" else "NIP",
+                        placeholder = "Masukkan identitas Anda",
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
 
@@ -284,66 +271,33 @@ fun EditDataDiriScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.Top
                         ) {
-                            ExposedDropdownMenuBox(
-                                expanded = isAngkatanDropdownExpanded,
-                                onExpandedChange = { isAngkatanDropdownExpanded = !isAngkatanDropdownExpanded },
+                            CustomDropdownField(
+                                value = state.angkatan,
+                                options = angkatanList,
+                                onOptionSelected = { profileViewModel.onAngkatanChanged(it) },
+                                optionLabelProvider = { it },
+                                label = "Angkatan",
                                 modifier = Modifier.weight(1f)
-                            ) {
-                                OutlinedTextField(
-                                    value = state.angkatan,
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    label = { Text("Angkatan") },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isAngkatanDropdownExpanded) },
-                                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                                    singleLine = true,
-                                    shape = MaterialTheme.shapes.medium
-                                )
-
-                                ExposedDropdownMenu(
-                                    expanded = isAngkatanDropdownExpanded,
-                                    onDismissRequest = { isAngkatanDropdownExpanded = false },
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                                ) {
-                                    angkatanList.forEach { thn ->
-                                        DropdownMenuItem(
-                                            text = { Text(thn) },
-                                            onClick = {
-                                                profileViewModel.onAngkatanChanged(thn)
-                                                isAngkatanDropdownExpanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-
-                            OutlinedTextField(
-                                value = state.semester,
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text("Semester") },
-                                modifier = Modifier.weight(1f),
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                )
                             )
 
-                            OutlinedTextField(
+                            CustomTextField(
+                                value = state.semester,
+                                onValueChange = {},
+                                label = "Semester",
+                                readOnly = true,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            CustomTextField(
                                 value = state.ipk,
                                 onValueChange = { newValue ->
                                     if (newValue.all { it.isDigit() || it == '.' } && newValue.count { it == '.' } <= 1) {
                                         profileViewModel.onIpkChanged(newValue)
                                     }
                                 },
-                                label = { Text("IPK") },
-                                modifier = Modifier.weight(1f),
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                                label = "IPK",
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }
@@ -359,9 +313,7 @@ fun EditDataDiriScreen(
                 }
             }
 
-            // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
             if (showZoomedImage) {
-                // Konversi foto ke string (baik dari URI HP atau URL dari API)
                 val imageToLoad = selectedPhotoUri ?: state.userProfile?.profilePictureUrl
 
                 CustomImageZoomDialog(

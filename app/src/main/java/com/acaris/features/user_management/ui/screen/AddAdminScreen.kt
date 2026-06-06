@@ -9,11 +9,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit // 🌟 TAMBAH IMPORT EDIT
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.*
@@ -26,20 +27,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomBackButton
-import com.acaris.core.ui.components.CustomCircularIconButton // 🌟 IMPORT CIRCULAR ICON BUTTON
+import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
-import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT ZOOM DIALOG
+import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
+import com.acaris.core.ui.components.CustomTextField // 🌟 IMPORT CUSTOM TEXT FIELD
 import com.acaris.core.utils.ImageUtils
 import com.acaris.core.utils.ValidationUtils
-import com.acaris.features.auth.ui.components.AuthTextField
 import com.acaris.features.user_management.presentation.viewmodel.AddAdminViewModel
 import java.io.File
 
@@ -53,7 +55,6 @@ fun AddAdminScreen(
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
-    // State Formulir
     var name by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var nip by rememberSaveable { mutableStateOf("") }
@@ -62,11 +63,9 @@ fun AddAdminScreen(
 
     var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
 
-    // State Foto Profil
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     var selectedImageFile by remember { mutableStateOf<File?>(null) }
 
-    // 🌟 STATE BARU: Melacak status Zoom Gambar
     var showZoomedImage by remember { mutableStateOf(false) }
 
     val photoLauncher = rememberLauncherForActivityResult(
@@ -188,7 +187,6 @@ fun AddAdminScreen(
                     modifier = Modifier
                         .size(110.dp)
                         .clickable {
-                            // 🌟 LOGIKA PINTAR: Jika belum ada foto, buka galeri. Jika sudah ada, zoom foto.
                             if (imageUri != null) {
                                 showZoomedImage = true
                             } else {
@@ -218,9 +216,7 @@ fun AddAdminScreen(
                         }
                     }
 
-                    // 🌟 MENGGUNAKAN CUSTOM CIRCULAR ICON BUTTON KAPTEN
                     CustomCircularIconButton(
-                        // Ikon berubah otomatis, Add jika kosong, Edit jika sudah ada foto
                         icon = if (imageUri == null) Icons.Default.Add else Icons.Default.Edit,
                         contentDescription = "Pilih Foto",
                         color = MaterialTheme.colorScheme.primary,
@@ -233,7 +229,6 @@ fun AddAdminScreen(
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-                // 🌟 Teks instruksi menyesuaikan keadaan
                 Text(
                     text = if (imageUri == null) "Foto Profil (Opsional)" else "Ketuk untuk memperbesar foto",
                     fontSize = 12.sp,
@@ -241,41 +236,48 @@ fun AddAdminScreen(
                 )
                 Spacer(modifier = Modifier.height(32.dp))
 
-                AuthTextField(
+                CustomTextField(
                     value = nip,
                     onValueChange = { nip = it },
                     label = "NIP",
+                    placeholder = "Nomor Induk Pegawai",
                     isError = isNipError,
-                    errorMessage = "NIP harus berupa angka"
+                    errorMessage = "NIP harus berupa angka",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
 
-                AuthTextField(
+                CustomTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = "Nama Lengkap"
+                    label = "Nama Lengkap",
+                    placeholder = "Masukkan nama lengkap admin"
                 )
 
-                AuthTextField(
+                CustomTextField(
                     value = email,
                     onValueChange = { email = it },
                     label = "Email",
+                    placeholder = "Masukkan email valid",
                     isError = isEmailError,
-                    errorMessage = "Format email tidak valid"
+                    errorMessage = "Format email tidak valid",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )
 
-                AuthTextField(
+                CustomTextField(
                     value = password,
                     onValueChange = { password = it },
                     label = "Password",
+                    placeholder = "Minimal 8 karakter",
                     isPassword = true,
                     isError = isPasswordError,
                     errorMessage = "Password minimal 8 karakter"
                 )
 
-                AuthTextField(
+                CustomTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
                     label = "Konfirmasi Password",
+                    placeholder = "Masukkan konfirmasi password",
                     isPassword = true,
                     isError = isConfirmPasswordError,
                     errorMessage = "Password tidak cocok"
@@ -293,7 +295,6 @@ fun AddAdminScreen(
                 Spacer(modifier = Modifier.height(40.dp))
             }
 
-            // 🌟 PANGGIL KOMPONEN DIALOG ZOOM JIKA STATUS TRUE
             if (showZoomedImage && imageUri != null) {
                 CustomImageZoomDialog(
                     imageUrl = imageUri.toString(),

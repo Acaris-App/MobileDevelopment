@@ -72,7 +72,7 @@ fun DocumentItemRow(
             CustomCircularIconButton(
                 icon = Icons.Outlined.Edit,
                 contentDescription = "Edit",
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.primary,
                 onClick = onEditClick
             )
 
@@ -81,7 +81,7 @@ fun DocumentItemRow(
             CustomCircularIconButton(
                 icon = Icons.Outlined.Delete,
                 contentDescription = "Hapus",
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.error,
                 onClick = onDeleteClick
             )
         }

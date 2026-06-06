@@ -30,8 +30,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
-import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM
+import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
+import com.acaris.core.utils.DateUtils // 🌟 IMPORT DATEUTILS
 import com.acaris.features.dashboard.presentation.viewmodel.DosenDashboardViewModel
 import com.acaris.features.dashboard.ui.components.DashboardStatCard
 import com.acaris.features.dashboard.ui.components.JadwalMingguIniCard
@@ -54,7 +55,6 @@ fun DosenDashboardScreen(
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
 
-    // 🌟 STATE BARU: Untuk melacak status Zoom Gambar
     var showZoomedImage by remember { mutableStateOf(false) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -127,7 +127,7 @@ fun DosenDashboardScreen(
                                         .size(64.dp)
                                         .clip(CircleShape)
                                         .background(Color.LightGray)
-                                        .clickable { showZoomedImage = true } // 🌟 AKSI KLIK FOTO
+                                        .clickable { showZoomedImage = true }
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
@@ -245,7 +245,9 @@ fun DosenDashboardScreen(
                                 JadwalMingguIniCard(
                                     jadwal = jadwal,
                                     onClick = {
-                                        onNavigateToSchedule(jadwal.date)
+                                        // 🌟 MENGGUNAKAN UTILS UNTUK PARSING
+                                        val apiDate = DateUtils.formatUiDateToApiDate(jadwal.date)
+                                        onNavigateToSchedule(apiDate)
                                     }
                                 )
                             }
@@ -276,7 +278,6 @@ fun DosenDashboardScreen(
                 }
             }
 
-            // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
             if (showZoomedImage && uiState.dashboardData != null) {
                 CustomImageZoomDialog(
                     imageUrl = uiState.dashboardData?.fotoDosen?.ifEmpty { null },

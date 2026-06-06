@@ -9,10 +9,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit // 🌟 IMPOR ICON EDIT
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,24 +25,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp // 🌟 IMPOR UNTUK FONT SIZE
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
-import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPOR KOMPONEN ZOOM DIALOG
+import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.ui.components.CustomLoadingOverlay
+import com.acaris.core.ui.components.CustomTextField
+import com.acaris.core.ui.components.CustomDropdownField
 import com.acaris.core.utils.ImageUtils
 import com.acaris.core.utils.ValidationUtils
 import com.acaris.features.auth.presentation.viewmodel.RegisterViewModel
-import com.acaris.features.auth.ui.components.AuthTextField
 import java.io.File
 import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StepDataDiri(
     role: String,
@@ -58,12 +60,8 @@ fun StepDataDiri(
 
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
-
-    // 🌟 STATE BARU: Melacak status Zoom Gambar
     var showZoomedImage by remember { mutableStateOf(false) }
 
-    // State Dropdown
-    var isAngkatanDropdownExpanded by remember { mutableStateOf(false) }
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val angkatanList = (currentYear downTo currentYear - 7).map { it.toString() }
 
@@ -140,7 +138,6 @@ fun StepDataDiri(
             modifier = Modifier
                 .size(110.dp)
                 .clickable {
-                    // 🌟 LOGIKA PINTAR: Buka galeri jika kosong, Zoom jika sudah ada
                     if (imageUri != null) {
                         showZoomedImage = true
                     } else {
@@ -176,7 +173,6 @@ fun StepDataDiri(
             }
 
             CustomCircularIconButton(
-                // 🌟 IKON DINAMIS: Add jika kosong, Edit jika sudah ada
                 icon = if (imageUri == null) Icons.Default.Add else Icons.Default.Edit,
                 contentDescription = "Pilih Foto",
                 color = MaterialTheme.colorScheme.primary,
@@ -184,12 +180,11 @@ fun StepDataDiri(
                     .offset(x = 4.dp, y = 4.dp)
                     .size(36.dp)
                     .background(MaterialTheme.colorScheme.background, CircleShape),
-                onClick = { photoLauncher.launch("image/*") } // 🌟 Tombol pena selalu buka galeri
+                onClick = { photoLauncher.launch("image/*") }
             )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-        // 🌟 TEKS INSTRUKSI DINAMIS
         Text(
             text = if (imageUri == null) "Foto Profil (Opsional)" else "Ketuk untuk memperbesar foto",
             fontSize = 12.sp,
@@ -198,46 +193,59 @@ fun StepDataDiri(
         Spacer(modifier = Modifier.height(32.dp))
 
         if (role == "mahasiswa") {
-            AuthTextField(
+            CustomTextField(
                 value = uiState.npm,
                 onValueChange = { viewModel.onNpmChanged(it) },
                 label = "NPM",
+                placeholder = "Nomor Pokok Mahasiswa",
                 isError = isNpmError,
-                errorMessage = "NPM harus berupa angka"
+                errorMessage = "NPM harus berupa angka",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
         } else {
-            AuthTextField(
+            CustomTextField(
                 value = uiState.nip,
                 onValueChange = { viewModel.onNipChanged(it) },
                 label = "NIP",
+                placeholder = "Nomor Induk Pegawai",
                 isError = isNipError,
-                errorMessage = "NIP harus berupa angka"
+                errorMessage = "NIP harus berupa angka",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
         }
 
-        AuthTextField(value = uiState.name, onValueChange = { viewModel.onNameChanged(it) }, label = "Nama Lengkap")
+        CustomTextField(
+            value = uiState.name,
+            onValueChange = { viewModel.onNameChanged(it) },
+            label = "Nama Lengkap",
+            placeholder = "Masukkan nama lengkap Anda"
+        )
 
-        AuthTextField(
+        CustomTextField(
             value = uiState.email,
             onValueChange = { viewModel.onEmailChanged(it) },
             label = "Email",
+            placeholder = "Masukkan email valid Anda",
             isError = isEmailError,
-            errorMessage = "Format email tidak valid"
+            errorMessage = "Format email tidak valid",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
 
-        AuthTextField(
+        CustomTextField(
             value = uiState.password,
             onValueChange = { viewModel.onPasswordChanged(it) },
             label = "Password",
+            placeholder = "Minimal 8 karakter",
             isPassword = true,
             isError = isPasswordError,
             errorMessage = "Password minimal 8 karakter"
         )
 
-        AuthTextField(
+        CustomTextField(
             value = uiState.confirmPassword,
             onValueChange = { viewModel.onConfirmPasswordChanged(it) },
             label = "Konfirmasi Password",
+            placeholder = "Masukkan ulang password",
             isPassword = true,
             isError = isConfirmPasswordError,
             errorMessage = "Password tidak cocok"
@@ -249,67 +257,35 @@ fun StepDataDiri(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.Top
             ) {
-                // DROPDOWN ANGKATAN
-                ExposedDropdownMenuBox(
-                    expanded = isAngkatanDropdownExpanded,
-                    onExpandedChange = { isAngkatanDropdownExpanded = !isAngkatanDropdownExpanded },
+                CustomDropdownField(
+                    value = uiState.angkatan,
+                    options = angkatanList,
+                    onOptionSelected = { viewModel.onAngkatanChanged(it) },
+                    optionLabelProvider = { it },
+                    label = "Angkatan",
                     modifier = Modifier.weight(1f)
-                ) {
-                    OutlinedTextField(
-                        value = uiState.angkatan,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Angkatan") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isAngkatanDropdownExpanded) },
-                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
-                        singleLine = true
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = isAngkatanDropdownExpanded,
-                        onDismissRequest = { isAngkatanDropdownExpanded = false },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                    ) {
-                        angkatanList.forEach { thn ->
-                            DropdownMenuItem(
-                                text = { Text(thn) },
-                                onClick = {
-                                    viewModel.onAngkatanChanged(thn)
-                                    isAngkatanDropdownExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // SEMESTER (READ-ONLY)
-                OutlinedTextField(
-                    value = uiState.semester,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Semester") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
                 )
 
-                // IPK
-                OutlinedTextField(
+                CustomTextField(
+                    value = uiState.semester,
+                    onValueChange = {},
+                    label = "Semester",
+                    readOnly = true,
+                    modifier = Modifier.weight(1f)
+                )
+
+                CustomTextField(
                     value = uiState.ipk,
                     onValueChange = { newValue ->
                         if (newValue.all { it.isDigit() || it == '.' } && newValue.count { it == '.' } <= 1) {
                             viewModel.onIpkChanged(newValue)
                         }
                     },
-                    label = { Text("IPK") },
+                    label = "IPK",
                     isError = isIpkError,
-                    supportingText = { if (isIpkError) Text("Maks 4.00", color = MaterialTheme.colorScheme.error) },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true
+                    errorMessage = "Maks 4.00",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -332,7 +308,6 @@ fun StepDataDiri(
         Spacer(modifier = Modifier.height(24.dp))
     }
 
-    // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
     if (showZoomedImage && imageUri != null) {
         CustomImageZoomDialog(
             imageUrl = imageUri.toString(),

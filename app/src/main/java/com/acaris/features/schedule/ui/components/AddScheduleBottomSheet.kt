@@ -7,8 +7,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -18,6 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.acaris.core.ui.components.CustomPrimaryButton
+import com.acaris.core.ui.components.CustomTextField // 🌟 IMPORT CUSTOM TEXT FIELD GLOBAL
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,14 +72,14 @@ fun AddScheduleBottomSheet(
                     .padding(bottom = 24.dp)
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
+                    CustomTextField(
                         value = startTime,
                         onValueChange = {},
-                        label = { Text("Mulai") },
+                        label = "Mulai",
+                        placeholder = "00:00",
                         readOnly = true,
-                        trailingIcon = { Icon(Icons.Default.Schedule, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Box(
@@ -94,12 +93,12 @@ fun AddScheduleBottomSheet(
                 }
 
                 Box(modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
+                    CustomTextField(
                         value = endTime,
                         onValueChange = {},
-                        label = { Text("Selesai") },
+                        label = "Selesai",
+                        placeholder = "00:00",
                         readOnly = true,
-                        trailingIcon = { Icon(Icons.Default.Schedule, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Box(
@@ -113,24 +112,28 @@ fun AddScheduleBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
+            CustomTextField(
                 value = quota,
                 onValueChange = { quota = it },
-                label = { Text("Kuota Mahasiswa") },
+                label = "Kuota Mahasiswa",
+                placeholder = "Contoh: 5",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
+            CustomTextField(
                 value = keterangan,
                 onValueChange = { keterangan = it },
-                label = { Text("Keterangan (Opsional)") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3
+                label = "Keterangan (Opsional)",
+                placeholder = "contoh: ruangan x, bawa laptop ...",
+                singleLine = false,
+                minLines = 3,
+                maxLines = 5,
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(32.dp))

@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
-import com.acaris.features.auth.ui.components.AuthTextField
+import com.acaris.core.ui.components.CustomTextField
 
 @Composable
 fun StepKodeKelas(isLoading: Boolean, onSubmit: (String) -> Unit) {
@@ -24,11 +24,11 @@ fun StepKodeKelas(isLoading: Boolean, onSubmit: (String) -> Unit) {
         Spacer(modifier = Modifier.height(24.dp))
         SectionHeader( "Masukkan kode unik yang diberikan oleh Dosen Pembimbing Akademik Anda.")
 
-        AuthTextField(
+        CustomTextField(
             value = kode,
             onValueChange = { kode = it },
             label = "Kode Kelas",
-            placeholder = "Masukkan Kode"
+            placeholder = "Masukkan Kode kelas"
         )
 
         Spacer(modifier = Modifier.height(48.dp))

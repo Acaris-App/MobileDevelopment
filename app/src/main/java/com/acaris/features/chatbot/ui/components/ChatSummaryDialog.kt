@@ -1,7 +1,6 @@
 package com.acaris.features.chatbot.ui.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,6 +10,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.core.ui.components.CustomTextField
 
 @Composable
 fun ChatSummaryDialog(
@@ -23,7 +23,6 @@ fun ChatSummaryDialog(
 
     var editedSummary by remember { mutableStateOf(draftSummary) }
 
-    // 🌟 REVISI: Sesuaikan langsung dengan parameter CustomDialog Core milik Kapten
     CustomDialog(
         showDialog = showDialog,
         onDismissRequest = onDismiss,
@@ -32,8 +31,6 @@ fun ChatSummaryDialog(
         dismissText = "Batal",
         onDismiss = onDismiss,
         content = {
-            // Content di sini fokus ke teks informasi dan kolom edit saja,
-            // karena tombol aksi & padding luar sudah diurus otomatis oleh core dialog kita!
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
@@ -57,18 +54,15 @@ fun ChatSummaryDialog(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                OutlinedTextField(
+                CustomTextField(
                     value = editedSummary,
                     onValueChange = { editedSummary = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(140.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    placeholder = { Text("Tuliskan kesimpulan bimbingan di sini...") },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                    )
+                    label = "Ringkasan",
+                    placeholder = "Tuliskan kesimpulan bimbingan di sini...",
+                    singleLine = false,
+                    minLines = 4,
+                    maxLines = 6,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }

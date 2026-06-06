@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
+import com.acaris.core.ui.components.CustomTextField // 🌟 IMPORT CUSTOM TEXT FIELD
 import com.acaris.core.utils.FileUtils
 import com.acaris.features.knowledge_base.presentation.model.KnowledgeUiModel
 import com.acaris.features.knowledge_base.presentation.viewmodel.KnowledgeViewModel
@@ -42,7 +43,6 @@ fun KnowledgeBaseScreen(
 
     var showUploadDialog by remember { mutableStateOf(false) }
 
-    // 🌟 State Baru untuk membedakan Mode Edit atau Tambah Baru
     var isEditMode by remember { mutableStateOf(false) }
     var editDocumentId by remember { mutableStateOf<String?>(null) }
 
@@ -88,7 +88,6 @@ fun KnowledgeBaseScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 item {
-                    // 🌟 FIX: Judul dihapus, diganti menjadi teks keterangan yang lebih kecil
                     Text(
                         text = "Dokumen knowledge base chatbot Aca",
                         style = MaterialTheme.typography.bodyMedium,
@@ -143,9 +142,7 @@ fun KnowledgeBaseScreen(
         }
     }
 
-    // ==========================================
     // DIALOG UPLOAD & UPDATE
-    // ==========================================
     CustomDialog(
         showDialog = showUploadDialog,
         onDismissRequest = { showUploadDialog = false },
@@ -169,13 +166,12 @@ fun KnowledgeBaseScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedTextField(
+                CustomTextField(
                     value = uploadTitle,
                     onValueChange = { uploadTitle = it },
-                    label = { Text("Judul Dokumen") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    label = "Judul Dokumen",
+                    placeholder = "Masukkan judul dokumen",
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -231,9 +227,7 @@ fun KnowledgeBaseScreen(
         onDismiss = { showUploadDialog = false }
     )
 
-    // ==========================================
     // DIALOG HAPUS
-    // ==========================================
     CustomDialog(
         showDialog = showDeleteDialog,
         onDismissRequest = { showDeleteDialog = false },

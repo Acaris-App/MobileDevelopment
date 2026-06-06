@@ -2,21 +2,14 @@ package com.acaris.features.auth.ui.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable // 🌟 IMPORT INI UNTUK ORIENTASI
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -24,6 +17,7 @@ import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
+import com.acaris.core.ui.components.CustomTextField // 🌟 IMPORT CUSTOM TEXT FIELD GLOBAL KITA
 import com.acaris.features.auth.presentation.viewmodel.ChangePasswordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,14 +29,9 @@ fun ChangePasswordScreen(
     val state by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
 
-    // 🌟 FIX 1: Gunakan rememberSaveable agar data tidak hilang saat layar diputar
     var oldPassword by rememberSaveable { mutableStateOf("") }
     var newPassword by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
-
-    var oldPasswordVisible by rememberSaveable { mutableStateOf(false) }
-    var newPasswordVisible by rememberSaveable { mutableStateOf(false) }
-    var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
 
     val isNewPasswordError = newPassword.isNotEmpty() && newPassword.length < 8
     val isConfirmPasswordError = confirmPassword.isNotEmpty() && confirmPassword != newPassword
@@ -94,7 +83,6 @@ fun ChangePasswordScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                // 🌟 FIX 2: Pindahkan judul ke sini
                 title = {
                     Text(
                         text = "Ganti Password",
@@ -121,7 +109,7 @@ fun ChangePasswordScreen(
                     .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(16.dp)) // Beri sedikit jarak dari TopAppBar
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = "Buat password baru yang kuat dan unik untuk mengamankan akun Anda.",
@@ -133,74 +121,38 @@ fun ChangePasswordScreen(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                OutlinedTextField(
+                CustomTextField(
                     value = oldPassword,
                     onValueChange = { oldPassword = it },
-                    label = { Text("Password Saat Ini") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    singleLine = true,
-                    visualTransformation = if (oldPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    trailingIcon = {
-                        IconButton(onClick = { oldPasswordVisible = !oldPasswordVisible }) {
-                            Icon(
-                                imageVector = if (oldPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = "Toggle Password Visibility"
-                            )
-                        }
-                    }
+                    label = "Password Saat Ini",
+                    placeholder = "Masukkan password saat ini",
+                    isPassword = true
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                val newPasswordErrorMessage = when {
+                    isNewPasswordError -> "Password minimal terdiri dari 8 karakter."
+                    isSameAsOldError -> "Password baru tidak boleh sama dengan password saat ini."
+                    else -> ""
+                }
 
-                OutlinedTextField(
+                CustomTextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
-                    label = { Text("Password Baru") },
+                    label = "Password Baru",
+                    placeholder = "Masukan password baru",
+                    isPassword = true,
                     isError = isNewPasswordError || isSameAsOldError,
-                    supportingText = {
-                        if (isNewPasswordError) Text("Password minimal terdiri dari 8 karakter.")
-                        else if (isSameAsOldError) Text("Password baru tidak boleh sama dengan password saat ini.")
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    singleLine = true,
-                    visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    trailingIcon = {
-                        IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
-                            Icon(
-                                imageVector = if (newPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = "Toggle Password Visibility"
-                            )
-                        }
-                    }
+                    errorMessage = newPasswordErrorMessage
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedTextField(
+                CustomTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    label = { Text("Konfirmasi Password Baru") },
+                    label = "Konfirmasi Password Baru",
+                    placeholder = "Masukkan konfirmasi password baru",
+                    isPassword = true,
                     isError = isConfirmPasswordError,
-                    supportingText = {
-                        if (isConfirmPasswordError) Text("Password tidak cocok.")
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    singleLine = true,
-                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    trailingIcon = {
-                        IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                            Icon(
-                                imageVector = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = "Toggle Password Visibility"
-                            )
-                        }
-                    }
+                    errorMessage = "Password tidak cocok."
                 )
 
                 Spacer(modifier = Modifier.height(48.dp))
