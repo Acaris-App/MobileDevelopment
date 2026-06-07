@@ -10,36 +10,71 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = AcarisPrimary,         // Biru Tua
-    onPrimary = CardBackgroundLight,           // Teks putih di atas tombol biru
-    secondary = AcarisSecondary,     // Biru Sedang
-    onSecondary = CardBackgroundLight,         // Teks putih di atas elemen sekunder
-    tertiary = AcarisTertiary,       // Biru Muda
-    onTertiary = AppBackgroundDark,           // Teks gelap di atas elemen biru muda
+    primary = AcarisPrimary,
+    onPrimary = CardBackgroundLight,
+    secondary = Acarispink,
+    onSecondary = CardBackgroundLight,
+    tertiary = AcarisTertiary,
+    onTertiary = AppBackgroundDark,
     background = AppBackgroundDark,
-    onBackground = CardBackgroundLight, // Teks utama di atas background gelap layar
-    surface = CardBackgroundDark,       // Background Card Dark (606060)
-    onSurface = CardBackgroundLight     // Teks di atas Card Dark (f3f3f3)
+    onBackground = CardBackgroundLight,
+    surface = CardBackgroundDark,
+    onSurface = CardBackgroundLight,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = AcarisPrimary,         // Biru Tua
-    onPrimary = CardBackgroundLight,           // Teks putih di atas tombol biru
-    secondary = AcarisSecondary,     // Biru Sedang
-    onSecondary = CardBackgroundLight,         // Teks putih di atas elemen sekunder
-    tertiary = AcarisTertiary,       // Biru Muda
-    onTertiary = AppBackgroundDark,           // Teks gelap di atas elemen biru muda
+    primary = AcarisPrimary,
+    onPrimary = CardBackgroundLight,
+    secondary = Acarispink,
+    onSecondary = CardBackgroundLight,
+    tertiary = AcarisTertiary,
+    onTertiary = AppBackgroundDark,
     background = AppBackgroundLight,
-    onBackground = AppBackgroundDark,   // Teks utama di atas background terang layar
-    surface = CardBackgroundLight,      // Background Card Light (f3f3f3)
-    onSurface = AppBackgroundDark       // Teks di atas Card Light (0c0c0c)
+    onBackground = AppBackgroundDark,
+    surface = CardBackgroundLight,
+    onSurface = AppBackgroundDark
 )
+
+val PrimaryGradient: Brush
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Brush.linearGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f)
+            )
+        )
+    } else {
+        Brush.linearGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primary,
+                MaterialTheme.colorScheme.secondary
+            )
+        )
+    }
+
+val DisabledPrimaryGradient: Brush
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Brush.linearGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+            )
+        )
+    } else {
+        Brush.linearGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
+            )
+        )
+    }
 
 @Composable
 fun AcarisTheme(

@@ -1,29 +1,40 @@
 package com.acaris.core.ui.components
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn // 🌟 IMPORT BARU
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown // 🌟 IMPORT BARU
+import androidx.compose.material.icons.filled.KeyboardArrowUp // 🌟 IMPORT BARU
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onGloballyPositioned // 🌟 IMPORT BARU
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize // 🌟 IMPORT BARU
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import com.acaris.core.ui.theme.PrimaryGradient
 
-// REGULAR DROPDOWN FIELD
+// ==========================================
+// 1. REGULAR DROPDOWN FIELD (HACKED VERSION)
+// ==========================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> CustomDropdownField(
@@ -36,6 +47,9 @@ fun <T> CustomDropdownField(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
+    // State untuk menyimpan lebar OutlinedTextField agar Popup ukurannya sama persis
+    var textFieldSize by remember { mutableStateOf(androidx.compose.ui.geometry.Size.Zero) }
+
     Column(modifier = modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Text(
             text = label,
@@ -44,16 +58,17 @@ fun <T> CustomDropdownField(
             modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
         )
 
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded },
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = value,
                 onValueChange = {},
-                readOnly = true, // Selalu readOnly karena input dari dropdown
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                readOnly = true,
+                trailingIcon = {
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Dropdown Icon"
+                    )
+                },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
@@ -61,30 +76,74 @@ fun <T> CustomDropdownField(
                     unfocusedContainerColor = Color.Transparent
                 ),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // 🌟 Mengambil ukuran lebar TextField secara dinamis
+                    .onGloballyPositioned { coordinates ->
+                        textFieldSize = coordinates.size.toSize()
+                    },
                 singleLine = true
             )
 
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-            ) {
-                options.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(optionLabelProvider(option)) },
-                        onClick = {
-                            onOptionSelected(option)
-                            expanded = false
-                        }
+            // Kotak transparan untuk mendeteksi klik di seluruh area field
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(Color.Transparent)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { expanded = !expanded }
                     )
+            )
+        }
+
+        if (expanded) {
+            Popup(
+                alignment = Alignment.TopStart,
+                offset = IntOffset(0, 16), // Memberi sedikit jarak turun
+                onDismissRequest = { expanded = false },
+                properties = PopupProperties(
+                    focusable = true,
+                    clippingEnabled = false // 🌟 JURUS PAMUNGKAS: Matikan pemotong bayangan Android!
+                )
+            ) {
+                Box(
+                    modifier = Modifier
+                        // Menyamakan lebar kotak menu dengan input field di atasnya
+                        .width(with(LocalDensity.current) { textFieldSize.width.toDp() })
+                        // 🌟 GLOW SHADOW SEKARANG BISA BEBAS BERNAFAS!
+                        .glowShadow(
+                            color = MaterialTheme.colorScheme.primary,
+                            alpha = 0.35f,
+                            blurRadius = 16.dp,
+                            borderRadius = 12.dp
+                        )
+                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(12.dp))
+                        .heightIn(max = 240.dp) // Otomatis scroll maksimal 5 item
+                ) {
+                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                        items(options.size) { index ->
+                            val option = options[index]
+                            DropdownMenuItem(
+                                text = { Text(optionLabelProvider(option)) },
+                                onClick = {
+                                    onOptionSelected(option)
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-// FLOATING DROPDOWN
+// ==========================================
+// 2. FLOATING DROPDOWN
+// ==========================================
 @Composable
 fun <T : Any> CustomFloatingDropdownMenu(
     expanded: Boolean,
@@ -105,7 +164,7 @@ fun <T : Any> CustomFloatingDropdownMenu(
             alignment = Alignment.TopEnd,
             offset = IntOffset(xOffset, yOffset),
             onDismissRequest = onDismissRequest,
-            properties = PopupProperties(focusable = true)
+            properties = PopupProperties(focusable = true, clippingEnabled = false) // 🌟 Mencegah kepotong juga di sini
         ) {
             Column(
                 modifier = modifier,
@@ -115,18 +174,37 @@ fun <T : Any> CustomFloatingDropdownMenu(
                 options.forEach { option ->
                     val isSelected = option == selectedOption
 
-                    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.surface
-                    val contentColor = if (isSelected) MaterialTheme.colorScheme.onTertiary else MaterialTheme.colorScheme.onSurface
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val isPressed by interactionSource.collectIsPressedAsState()
+
+                    val backgroundBrush = when {
+                        isPressed || isSelected -> PrimaryGradient
+                        else -> SolidColor(MaterialTheme.colorScheme.surface)
+                    }
+
+                    val contentColor = when {
+                        isSelected || isPressed -> MaterialTheme.colorScheme.background
+                        else -> MaterialTheme.colorScheme.onSurface
+                    }
 
                     Box(
                         modifier = Modifier
-                            .shadow(elevation = 6.dp, shape = CircleShape)
+                            .glowShadow(
+                                color = MaterialTheme.colorScheme.primary,
+                                alpha = 0.35f,
+                                blurRadius = 12.dp,
+                                borderRadius = 50.dp
+                            )
                             .clip(CircleShape)
-                            .background(backgroundColor)
-                            .clickable {
-                                onOptionSelected(option)
-                                onDismissRequest()
-                            }
+                            .background(backgroundBrush)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = LocalIndication.current,
+                                onClick = {
+                                    onOptionSelected(option)
+                                    onDismissRequest()
+                                }
+                            )
                             .padding(horizontal = 14.dp, vertical = 8.dp)
                     ) {
                         Row(

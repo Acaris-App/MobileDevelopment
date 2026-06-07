@@ -18,7 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN BARU KITA
+import com.acaris.core.ui.components.CustomImageZoomDialog
+import com.acaris.core.ui.components.glowShadow // 🌟 IMPORT GLOW SHADOW
 import com.acaris.features.profile.domain.model.UserProfile
 
 @Composable
@@ -29,63 +30,69 @@ fun ProfileInfoCard(
     var showZoomedImage by remember { mutableStateOf(false) }
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .glowShadow(
+                color = MaterialTheme.colorScheme.primary,
+                alpha = 0.35f,
+                blurRadius = 8.dp,
+                borderRadius = 16.dp
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
     ) {
-        Box(modifier = Modifier.padding(24.dp)) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // FOTO PROFIL KECIL (Sudah dibersihkan dari bayangan)
+            Box(
+                modifier = Modifier
+                    .size(150.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                    .clickable { showZoomedImage = true },
+                contentAlignment = Alignment.Center
             ) {
-                // FOTO PROFIL KECIL
-                Box(
-                    modifier = Modifier
-                        .size(150.dp)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
-                        .clip(CircleShape)
-                        .clickable { showZoomedImage = true },
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (userProfile.profilePictureUrl.isNullOrEmpty()) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Avatar",
-                            modifier = Modifier.size(60.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    } else {
-                        AsyncImage(
-                            model = userProfile.profilePictureUrl,
-                            contentDescription = "Foto Profil",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
+                if (userProfile.profilePictureUrl.isNullOrEmpty()) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Avatar",
+                        modifier = Modifier.size(60.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    AsyncImage(
+                        model = userProfile.profilePictureUrl,
+                        contentDescription = "Foto Profil",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
                 }
+            }
 
-                Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-                ProfileDataLine(label = "Nama", value = userProfile.name)
-                ProfileDataLine(label = "Email", value = userProfile.email)
-                ProfileDataLine(
-                    label = if (userProfile.role == "mahasiswa") "NPM" else "NIP",
-                    value = userProfile.identifier
-                )
-                ProfileDataLine(label = "Peran", value = userProfile.role.replaceFirstChar { it.uppercase() })
+            ProfileDataLine(label = "Nama", value = userProfile.name)
+            ProfileDataLine(label = "Email", value = userProfile.email)
+            ProfileDataLine(
+                label = if (userProfile.role == "mahasiswa") "NPM" else "NIP",
+                value = userProfile.identifier
+            )
+            ProfileDataLine(label = "Peran", value = userProfile.role.replaceFirstChar { it.uppercase() })
 
-                if (userProfile.role == "mahasiswa") {
-                    ProfileDataLine(label = "Angkatan", value = userProfile.angkatan?.toString() ?: "-")
-                    ProfileDataLine(label = "Semester Saat Ini", value = userProfile.currentSemester?.toString() ?: "-")
-                    ProfileDataLine(label = "IPK", value = userProfile.ipk?.toString() ?: "-")
-                    ProfileDataLine(label = "Dosen PA", value = userProfile.dosenPa ?: "-")
-                }
+            if (userProfile.role == "mahasiswa") {
+                ProfileDataLine(label = "Angkatan", value = userProfile.angkatan?.toString() ?: "-")
+                ProfileDataLine(label = "Semester Saat Ini", value = userProfile.currentSemester?.toString() ?: "-")
+                ProfileDataLine(label = "IPK", value = userProfile.ipk?.toString() ?: "-")
+                ProfileDataLine(label = "Dosen PA", value = userProfile.dosenPa ?: "-")
             }
         }
     }
 
-    // 🌟 PANGGIL KOMPONEN INTI HANYA DENGAN 1 BARIS KODE INI
     if (showZoomedImage) {
         CustomImageZoomDialog(
             imageUrl = userProfile.profilePictureUrl,
