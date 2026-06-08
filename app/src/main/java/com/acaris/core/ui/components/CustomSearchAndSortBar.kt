@@ -1,12 +1,13 @@
-package com.acaris.features.user_management.ui.components
+package com.acaris.core.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Sort
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,57 +15,47 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.acaris.core.ui.components.CustomCircularIconButton
-import com.acaris.core.ui.components.CustomFloatingDropdownMenu
 
+// Pastikan SortItem diletakkan di tempat yang bisa diakses (misal di file ini juga)
 data class SortItem(val id: String, val label: String)
 
 @Composable
-fun UserSearchAndSortBar(
+fun CustomSearchAndSortBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    currentRole: String,
-    currentSort: String, // 🌟 FIX 1: Menambahkan parameter untuk menerima status urutan aktif
+    searchPlaceholder: String = "Cari...",
+    sortOptions: List<SortItem>,
+    currentSort: String,
     onSortSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expandedSortMenu by remember { mutableStateOf(false) }
-
-    val sortOptions = remember(currentRole) {
-        val baseOptions = listOf(
-            SortItem("name_asc", "Nama (A-Z)"),
-            SortItem("name_desc", "Nama (Z-A)"),
-            SortItem("identifier_asc", "NPM/NIP (Kecil ke Besar)")
-        )
-        if (currentRole == "mahasiswa") {
-            baseOptions + listOf(
-                SortItem("angkatan_asc", "Angkatan (Tua ke Muda)"),
-                SortItem("angkatan_desc", "Angkatan (Muda ke Tua)"),
-                SortItem("semester_asc", "Semester (Kecil ke Besar)"),
-                SortItem("semester_desc", "Semester (Besar ke Kecil)")
-            )
-        } else {
-            baseOptions
-        }
-    }
-
-    // 🌟 FIX 2: Mencari objek SortItem yang cocok dengan currentSort String
     val activeSortOption = sortOptions.find { it.id == currentSort }
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Search Bar
+        // Search Bar dengan Glow Shadow (Persis seperti yang kita perbaiki tadi)
         Row(
             modifier = Modifier
                 .weight(1f)
                 .height(40.dp)
+                .glowShadow(
+                    color = MaterialTheme.colorScheme.secondary,
+                    alpha = 0.35f,
+                    blurRadius = 6.dp,
+                    borderRadius = 20.dp
+                )
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(50)
+                )
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.secondary,
                     shape = RoundedCornerShape(50)
                 )
                 .padding(horizontal = 16.dp),
@@ -74,7 +65,7 @@ fun UserSearchAndSortBar(
             Spacer(modifier = Modifier.width(8.dp))
             Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                 if (searchQuery.isEmpty()) {
-                    Text("Search", color = Color.Gray, fontSize = 14.sp)
+                    Text(searchPlaceholder, color = Color.Gray, fontSize = 14.sp)
                 }
                 BasicTextField(
                     value = searchQuery,
@@ -88,9 +79,10 @@ fun UserSearchAndSortBar(
 
         Spacer(modifier = Modifier.width(12.dp))
 
+        // Sort Button
         Box {
             CustomCircularIconButton(
-                icon = Icons.Outlined.Sort,
+                icon = Icons.Outlined.FilterList, // 🌟 Diubah jadi FilterList agar konsisten
                 contentDescription = "Urutkan",
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(40.dp),
@@ -101,7 +93,6 @@ fun UserSearchAndSortBar(
                 expanded = expandedSortMenu,
                 onDismissRequest = { expandedSortMenu = false },
                 options = sortOptions,
-                // 🌟 FIX 3: Masukkan objek SortItem yang aktif ke sini!
                 selectedOption = activeSortOption,
                 optionLabelProvider = { it.label },
                 onOptionSelected = { selectedItem ->

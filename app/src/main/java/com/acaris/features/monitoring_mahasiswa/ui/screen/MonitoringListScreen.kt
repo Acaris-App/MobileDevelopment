@@ -1,27 +1,18 @@
 package com.acaris.features.monitoring_mahasiswa.ui.screen
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FilterList
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.acaris.core.ui.components.CustomCircularIconButton
-import com.acaris.core.ui.components.CustomFloatingDropdownMenu // 🌟 FIX: IMPORT CUSTOM FLOATING DROPDOWN KITA
 import com.acaris.core.ui.components.CustomLoadingOverlay
+import com.acaris.core.ui.components.CustomSearchAndSortBar // 🌟 MENGGUNAKAN KOMPONEN GLOBAL
+import com.acaris.core.ui.components.SortItem // 🌟 MENGGUNAKAN KOMPONEN GLOBAL
 import com.acaris.features.monitoring_mahasiswa.presentation.model.SortOption
 import com.acaris.features.monitoring_mahasiswa.presentation.viewmodel.MonitoringViewModel
 import com.acaris.features.monitoring_mahasiswa.ui.components.MahasiswaItemCard
@@ -33,8 +24,6 @@ fun MonitoringListScreen(
     onNavigateToDetail: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    var isDropdownExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchDaftarMahasiswa()
@@ -48,82 +37,24 @@ fun MonitoringListScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Spacer(modifier = Modifier.height(8.dp)) // Memberi sedikit jarak dari TopBar utama
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp)
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            shape = RoundedCornerShape(50)
-                        )
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        contentDescription = "Search Icon",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(20.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Box(
-                        modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        if (uiState.searchQuery.isEmpty()) {
-                            Text(
-                                text = "Cari Nama atau NPM...",
-                                color = Color.Gray,
-                                fontSize = 14.sp
-                            )
-                        }
-                        BasicTextField(
-                            value = uiState.searchQuery,
-                            onValueChange = { viewModel.onSearchQueryChanged(it) },
-                            singleLine = true,
-                            textStyle = LocalTextStyle.current.copy(
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Box {
-                    CustomCircularIconButton(
-                        icon = Icons.Outlined.FilterList,
-                        contentDescription = "Urutkan",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(40.dp),
-                        // 🌟 FIX 2: Sama seperti di profil, cukup set true
-                        onClick = { isDropdownExpanded = true }
-                    )
-
-                    CustomFloatingDropdownMenu(
-                        expanded = isDropdownExpanded,
-                        onDismissRequest = { isDropdownExpanded = false },
-                        options = SortOption.values().toList(),
-                        selectedOption = uiState.sortOption,
-                        optionLabelProvider = { it.label },
-                        onOptionSelected = { viewModel.onSortOptionChanged(it) }
-                    )
-                }
+            val sortItems = remember {
+                SortOption.values().map { SortItem(id = it.name, label = it.label) }
             }
+
+            CustomSearchAndSortBar(
+                searchQuery = uiState.searchQuery,
+                onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
+                searchPlaceholder = "Cari Nama atau NPM...",
+                sortOptions = sortItems,
+                currentSort = uiState.sortOption.name,
+                onSortSelected = { selectedId ->
+                    val selectedEnum = SortOption.valueOf(selectedId)
+                    viewModel.onSortOptionChanged(selectedEnum)
+                },
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
 
             Box(modifier = Modifier.fillMaxSize()) {
                 if (uiState.filteredListMahasiswa.isEmpty() && !uiState.isLoading && uiState.errorMessage == null) {
@@ -139,7 +70,7 @@ fun MonitoringListScreen(
                         contentPadding = PaddingValues(
                             start = 24.dp,
                             end = 24.dp,
-                            top = 16.dp,
+                            top = 8.dp,
                             bottom = 100.dp
                         ),
                         verticalArrangement = Arrangement.spacedBy(12.dp)

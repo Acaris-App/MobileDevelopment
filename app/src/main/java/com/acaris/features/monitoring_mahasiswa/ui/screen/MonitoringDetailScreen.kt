@@ -37,7 +37,6 @@ import com.acaris.features.monitoring_mahasiswa.ui.components.RiwayatBimbinganCa
 fun MonitoringDetailScreen(
     mahasiswaId: String,
     onNavigateBack: () -> Unit,
-    // 🌟 FIX 1: Ubah Navigasi untuk menerima ID Mahasiswa dan ID Sesi
     onNavigateToChatbotDetail: (mahasiswaId: String, sessionId: String) -> Unit,
     viewModel: MonitoringViewModel = hiltViewModel()
 ) {
@@ -51,7 +50,6 @@ fun MonitoringDetailScreen(
     LaunchedEffect(mahasiswaId) {
         viewModel.fetchDetailMahasiswa(mahasiswaId)
         viewModel.fetchHistoryBimbingan(mahasiswaId)
-        // 🌟 FIX 2: Otomatis memuat riwayat chatbot saat halaman dibuka
         viewModel.fetchChatbotHistory(mahasiswaId)
     }
 
@@ -77,7 +75,7 @@ fun MonitoringDetailScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding), // Padding dasar dari Scaffold
+                        .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -89,7 +87,7 @@ fun MonitoringDetailScreen(
                         onTabSelected = { selectedTabIndex = it },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 24.dp) // Pastikan sejajar dengan konten di bawah
+                            .padding(horizontal = 24.dp)
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -99,7 +97,7 @@ fun MonitoringDetailScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(scrollState)
-                            .padding(horizontal = 24.dp), // Padding konten dipertahankan
+                            .padding(horizontal = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         when (selectedTabIndex) {
@@ -127,8 +125,7 @@ fun MonitoringDetailScreen(
                                     )
                                 }
 
-                                val currentSemesterMatch = Regex("Semester\\s+(\\d+)", RegexOption.IGNORE_CASE).find(detail.infoAkademik)
-                                val currentSemester = currentSemesterMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                                val currentSemester = detail.semester.toIntOrNull() ?: 1
 
                                 SharedDocumentManager(
                                     documents = mappedDocuments,
@@ -163,7 +160,6 @@ fun MonitoringDetailScreen(
                                 }
                             }
                             3 -> {
-                                // 🌟 FIX 3: TAB 4 LANGSUNG MENAMPILKAN DAFTAR RIWAYAT CHATBOT
                                 if (uiState.historyChatbotList.isEmpty() && !uiState.isLoading) {
                                     Column(
                                         modifier = Modifier
@@ -196,7 +192,6 @@ fun MonitoringDetailScreen(
                                                     .fillMaxWidth()
                                                     .clip(RoundedCornerShape(16.dp))
                                                     .clickable {
-                                                        // Buka halaman detail khusus dosen
                                                         onNavigateToChatbotDetail(detail.id, item.sessionId)
                                                     },
                                                 shape = RoundedCornerShape(16.dp),

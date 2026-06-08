@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM
+import com.acaris.core.ui.components.glowShadow
 import com.acaris.features.monitoring_mahasiswa.presentation.model.MahasiswaBimbinganUiModel
 
 @Composable
@@ -33,10 +34,16 @@ fun MahasiswaItemCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .glowShadow(
+                color = MaterialTheme.colorScheme.primary,
+                alpha = 0.5f,
+                blurRadius = 4.dp,
+                borderRadius = 16.dp
+            )
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier
@@ -87,17 +94,12 @@ fun MahasiswaItemCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Surface(
-                    shape = RoundedCornerShape(4.dp),
-                    color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
-                ) {
-                    Text(
-                        text = mahasiswa.infoAkademik,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
-                }
+                Text(
+                    text = mahasiswa.infoAkademik,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                )
             }
         }
     }

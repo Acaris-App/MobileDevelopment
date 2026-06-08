@@ -1,5 +1,6 @@
 package com.acaris.features.monitoring_mahasiswa.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM
+import com.acaris.core.ui.components.glowShadow
 import com.acaris.features.monitoring_mahasiswa.presentation.model.DetailMahasiswaUiModel
 import com.acaris.features.monitoring_mahasiswa.presentation.model.DokumenBimbinganUiModel
 
@@ -29,14 +31,20 @@ fun DetailProfilMahasiswaCard(
     detail: DetailMahasiswaUiModel,
     modifier: Modifier = Modifier
 ) {
-    // 🌟 STATE BARU: Untuk melacak status Zoom Gambar
     var showZoomedImage by remember { mutableStateOf(false) }
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .glowShadow(
+                color = MaterialTheme.colorScheme.primary,
+                alpha = 0.35f,
+                blurRadius = 8.dp,
+                borderRadius = 16.dp
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
     ) {
         Box(modifier = Modifier.padding(24.dp)) {
             Column(
@@ -49,7 +57,7 @@ fun DetailProfilMahasiswaCard(
                         .size(150.dp)
                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
                         .clip(CircleShape)
-                        .clickable { showZoomedImage = true }, // 🌟 AKSI KLIK FOTO
+                        .clickable { showZoomedImage = true },
                     contentAlignment = Alignment.Center
                 ) {
                     if (detail.profilePictureUrl.isBlank()) {
@@ -69,21 +77,23 @@ fun DetailProfilMahasiswaCard(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 // DATA DIRI
                 MonitoringDataLine(label = "Nama", value = detail.name)
                 MonitoringDataLine(label = "NPM", value = detail.npm)
                 MonitoringDataLine(label = "Email", value = detail.email)
-                MonitoringDataLine(label = "Informasi Akademik", value = detail.infoAkademik)
+
+                // 🌟 FIX: Angkatan & Semester sekarang dipisah persis seperti di profil
+                MonitoringDataLine(label = "Angkatan", value = detail.angkatan)
+                MonitoringDataLine(label = "Semester Saat Ini", value = detail.semester)
+
                 MonitoringDataLine(label = "IPK", value = detail.ipk)
                 MonitoringDataLine(label = "Kode Kelas", value = detail.kodeKelas)
             }
-            // 🌟 Tombol Edit sengaja ditiadakan karena ini layar Dosen
         }
     }
 
-    // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
     if (showZoomedImage) {
         CustomImageZoomDialog(
             imageUrl = detail.profilePictureUrl,
@@ -106,58 +116,5 @@ private fun MonitoringDataLine(label: String, value: String) {
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.outlineVariant
         )
-    }
-}
-
-@Composable
-fun DokumenMahasiswaCard(
-    dokumen: DokumenBimbinganUiModel,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(2.dp, RoundedCornerShape(16.dp), clip = false)
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                modifier = Modifier.size(48.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Description,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = dokumen.title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Diunggah: ${dokumen.uploadedAt}",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-            }
-            // 🌟 Tombol Delete sengaja ditiadakan
-        }
     }
 }

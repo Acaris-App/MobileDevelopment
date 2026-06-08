@@ -13,7 +13,7 @@ fun MahasiswaBimbingan.toUiModel(): MahasiswaBimbinganUiModel {
         name = this.name,
         npm = this.npm,
         profilePictureUrl = this.profilePictureUrl.orEmpty(),
-        infoAkademik = "Angkatan ${this.angkatan ?: "-"} • Semester ${this.currentSemester ?: "-"}"
+        infoAkademik = "Angkatan ${this.angkatan ?: "-"} | Semester ${this.currentSemester ?: "-"}"
     )
 }
 
@@ -35,7 +35,8 @@ fun DetailMahasiswa.toUiModel(): DetailMahasiswaUiModel {
         email = this.email.ifBlank { "Email belum diatur" },
         profilePictureUrl = this.profilePictureUrl.orEmpty(),
         ipk = this.ipk ?: "0.00",
-        infoAkademik = "Angkatan ${this.angkatan ?: "-"} • Semester ${this.currentSemester ?: "-"}",
+        angkatan = this.angkatan?.toString() ?: "-",
+        semester = this.currentSemester?.toString() ?: "-",
         kodeKelas = this.kodeKelas ?: "Belum masuk kelas",
         dokumen = this.dokumen.map { it.toUiModel() }
     )

@@ -22,7 +22,8 @@ data class DetailMahasiswaUiModel(
     val email: String,
     val profilePictureUrl: String,
     val ipk: String,
-    val infoAkademik: String,
+    val angkatan: String, // 🌟 Menggantikan infoAkademik
+    val semester: String, // 🌟 Menggantikan infoAkademik
     val kodeKelas: String,
     val dokumen: List<DokumenBimbinganUiModel>
 )

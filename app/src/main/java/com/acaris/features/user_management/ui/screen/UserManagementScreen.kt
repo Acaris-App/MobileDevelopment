@@ -27,10 +27,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomChipTabRow
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
+import com.acaris.core.ui.components.CustomSearchAndSortBar // 🌟 MENGGUNAKAN KOMPONEN GLOBAL
+import com.acaris.core.ui.components.SortItem // 🌟 MENGGUNAKAN KOMPONEN GLOBAL
 import com.acaris.features.user_management.presentation.model.UserUiModel
 import com.acaris.features.user_management.presentation.viewmodel.UserManagementViewModel
 import com.acaris.features.user_management.ui.components.UserItemCard
-import com.acaris.features.user_management.ui.components.UserSearchAndSortBar
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -209,12 +210,30 @@ fun UserManagementScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column {
-                            // 🌟 FIX 4: Melempar state urutan aktif (currentSortBy) ke komponen
-                            UserSearchAndSortBar(
+                            val sortOptions = remember(state.currentRole) {
+                                val baseOptions = listOf(
+                                    SortItem("name_asc", "Nama (A-Z)"),
+                                    SortItem("name_desc", "Nama (Z-A)"),
+                                    SortItem("identifier_asc", "NPM/NIP (Kecil ke Besar)")
+                                )
+                                if (state.currentRole == "mahasiswa") {
+                                    baseOptions + listOf(
+                                        SortItem("angkatan_asc", "Angkatan (Tua ke Muda)"),
+                                        SortItem("angkatan_desc", "Angkatan (Muda ke Tua)"),
+                                        SortItem("semester_asc", "Semester (Kecil ke Besar)"),
+                                        SortItem("semester_desc", "Semester (Besar ke Kecil)")
+                                    )
+                                } else {
+                                    baseOptions
+                                }
+                            }
+
+                            CustomSearchAndSortBar(
                                 searchQuery = searchQuery,
                                 onSearchQueryChange = { searchQuery = it },
-                                currentRole = state.currentRole,
-                                currentSort = state.currentSortBy, // <--- INI TAMBAHANNYA
+                                searchPlaceholder = "Cari Nama, Email, atau NPM/NIP...",
+                                sortOptions = sortOptions,
+                                currentSort = state.currentSortBy,
                                 onSortSelected = { viewModel.setSortByAndLoad(it) }
                             )
 
