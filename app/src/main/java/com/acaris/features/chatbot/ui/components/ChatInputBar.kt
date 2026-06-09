@@ -3,7 +3,6 @@ package com.acaris.features.chatbot.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -17,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.acaris.core.ui.components.CustomCircularIconButton
+import com.acaris.core.ui.components.glowShadow
 
 @Composable
 fun ChatInputBar(
@@ -42,14 +42,20 @@ fun ChatInputBar(
                 modifier = Modifier
                     .weight(1f)
                     .heightIn(min = 48.dp, max = 120.dp)
-                    // 🌟 FIX 1: Berikan background solid pada Text Field
+                    // 🌟 FIX 1: URUTAN YANG BENAR (Glow dulu, baru Background)
+                    .glowShadow(
+                        color = MaterialTheme.colorScheme.secondary,
+                        alpha = 0.4f,
+                        blurRadius = 6.dp,
+                        borderRadius = 24.dp
+                    )
                     .background(
-                        color = MaterialTheme.colorScheme.background,
+                        color = MaterialTheme.colorScheme.surface,
                         shape = RoundedCornerShape(24.dp)
                     )
                     .border(
                         width = 1.dp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        color = MaterialTheme.colorScheme.secondary,
                         shape = RoundedCornerShape(24.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -79,14 +85,10 @@ fun ChatInputBar(
             CustomCircularIconButton(
                 icon = Icons.Default.Send,
                 contentDescription = "Kirim",
-                color = if (isButtonEnabled) MaterialTheme.colorScheme.primary else Color.Gray.copy(alpha = 0.5f),
-                modifier = Modifier
-                    .size(48.dp)
-                    // 🌟 FIX 2: Berikan background solid pada Ikon Send
-                    .background(
-                        color = MaterialTheme.colorScheme.background,
-                        shape = CircleShape
-                    ),
+                color = if (isButtonEnabled) MaterialTheme.colorScheme.secondary else Color.Gray.copy(alpha = 0.5f),
+                buttonSize = 48.dp,
+                iconSize = 24.dp,
+                showGlow = isButtonEnabled,
                 onClick = {
                     if (isButtonEnabled) {
                         onSendMessage(textState)

@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector // 🌟 Import ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
+import com.acaris.core.ui.components.CustomFloatingDropdownMenu // 🌟 Import Custom Component Dropdown
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.chatbot.presentation.viewmodel.ChatbotViewModel
 import com.acaris.features.chatbot.ui.components.ChatBubble
@@ -33,21 +35,26 @@ import com.acaris.features.chatbot.ui.components.ChatInputBar
 import com.acaris.features.chatbot.ui.components.ChatSummaryDialog
 import com.acaris.features.chatbot.ui.components.TypingIndicator
 
+// 🌟 Enum Opsi Menu Chatbot
+enum class ChatbotMenuOption(val label: String, val icon: ImageVector) {
+    END_SESSION("Akhiri Sesi", Icons.Default.CheckCircle),
+    CHAT_HISTORY("Riwayat Chat", Icons.Default.History)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatbotScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToHistory: () -> Unit, // 🌟 Callback ke halaman riwayat
+    onNavigateToHistory: () -> Unit,
     viewModel: ChatbotViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
     val isKeyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     var showEndSessionDialog by remember { mutableStateOf(false) }
-    var expandedMenu by remember { mutableStateOf(false) } // 🌟 State Dropdown Menu
+    var expandedMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        // 🌟 FIX: Ubah jadi memanggil fungsi validasi dokumen terlebih dahulu
         viewModel.checkDocumentAndLoadSession()
     }
 
@@ -57,13 +64,12 @@ fun ChatbotScreen(
         }
     }
 
-    // 🌟 POP-UP BLOKIR DOKUMEN BELUM LENGKAP
     if (uiState.isDocumentIncomplete) {
         CustomDialog(
             showDialog = true,
-            onDismissRequest = { onNavigateBack() }, // Paksa kembali jika klik di luar
+            onDismissRequest = { onNavigateBack() },
             confirmText = "Mengerti",
-            onConfirm = { onNavigateBack() }, // Paksa kembali jika klik tombol
+            onConfirm = { onNavigateBack() },
             content = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
@@ -173,59 +179,28 @@ fun ChatbotScreen(
                             icon = Icons.Default.MoreVert,
                             contentDescription = "Opsi Chatbot",
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(40.dp),
                             onClick = { expandedMenu = true }
                         )
 
-                        // 🌟 FIX LENGKUNGAN DROPDOWN ALA PROFILE CARD
-                        MaterialTheme(
-                            shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
-                        ) {
-                            DropdownMenu(
-                                expanded = expandedMenu,
-                                onDismissRequest = { expandedMenu = false },
-                                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("Akhiri Sesi") },
-                                    onClick = {
-                                        expandedMenu = false
+                        // 🌟 FIX: MENGGUNAKAN CUSTOM FLOATING DROPDOWN MENU
+                        CustomFloatingDropdownMenu(
+                            expanded = expandedMenu,
+                            onDismissRequest = { expandedMenu = false },
+                            options = ChatbotMenuOption.values().toList(),
+                            selectedOption = null,
+                            optionLabelProvider = { it.label },
+                            optionIconProvider = { it.icon },
+                            onOptionSelected = { action ->
+                                when (action) {
+                                    ChatbotMenuOption.END_SESSION -> {
                                         showEndSessionDialog = true
-                                    },
-                                    leadingIcon = {
-                                        CustomCircularIconButton(
-                                            icon = Icons.Default.CheckCircle, // Ikon untuk Akhiri
-                                            contentDescription = "Akhiri Sesi",
-                                            color = MaterialTheme.colorScheme.primary,
-                                            onClick = {
-                                                expandedMenu = false
-                                                showEndSessionDialog = true
-                                            },
-                                            modifier = Modifier.size(40.dp)
-                                        )
                                     }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Riwayat Chat") },
-                                    onClick = {
-                                        expandedMenu = false
+                                    ChatbotMenuOption.CHAT_HISTORY -> {
                                         onNavigateToHistory()
-                                    },
-                                    leadingIcon = {
-                                        CustomCircularIconButton(
-                                            icon = Icons.Default.History, // Ikon untuk Riwayat
-                                            contentDescription = "Riwayat Chat",
-                                            color = MaterialTheme.colorScheme.primary,
-                                            onClick = {
-                                                expandedMenu = false
-                                                onNavigateToHistory()
-                                            },
-                                            modifier = Modifier.size(40.dp)
-                                        )
                                     }
-                                )
+                                }
                             }
-                        }
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -234,8 +209,6 @@ fun ChatbotScreen(
     ) { innerPadding ->
 
         Box(modifier = Modifier.fillMaxSize()) {
-
-            // --- 1. KONTEN CHAT (Di Belakang) ---
             if (uiState.messages.isEmpty() && !uiState.isLoading) {
                 Column(
                     modifier = Modifier
@@ -303,7 +276,6 @@ fun ChatbotScreen(
                 }
             }
 
-            // --- 2. INPUT BAR MENGAMBANG (Di Depan) ---
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)

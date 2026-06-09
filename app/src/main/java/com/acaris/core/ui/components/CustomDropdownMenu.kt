@@ -215,7 +215,9 @@ fun <T : Any> CustomFloatingDropdownMenu(
                                     icon = icon,
                                     contentDescription = "",
                                     color = contentColor,
-                                    modifier = Modifier.size(28.dp),
+                                    buttonSize = 28.dp,
+                                    iconSize = 16.dp,
+                                    showGlow = false,
                                     onClick = {
                                         onOptionSelected(option)
                                         onDismissRequest()

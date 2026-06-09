@@ -1,26 +1,27 @@
 package com.acaris.features.chatbot.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.filled.Notes // 🌟 FIX 3: Gunakan Default.Notes agar tidak error
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel // Pastikan ini terimport
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
+import com.acaris.core.ui.components.glowShadow
 import com.acaris.features.chatbot.presentation.viewmodel.ChatbotHistoryViewModel
 import com.acaris.features.chatbot.ui.components.ChatBubble
 
@@ -28,19 +29,17 @@ import com.acaris.features.chatbot.ui.components.ChatBubble
 @Composable
 fun ChatbotHistoryDetailScreen(
     onNavigateBack: () -> Unit,
-    viewModel: ChatbotHistoryViewModel
+    viewModel: ChatbotHistoryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
 
-    // Otomatis scroll ke bawah agar pesan terakhir terlihat
     LaunchedEffect(uiState.selectedSessionMessages.size) {
         if (uiState.selectedSessionMessages.isNotEmpty()) {
             listState.animateScrollToItem(uiState.selectedSessionMessages.size - 1)
         }
     }
 
-    // 🌟 POP UP UNTUK MELIHAT RINGKASAN
     if (uiState.showSummaryDialog) {
         CustomDialog(
             showDialog = true,
@@ -49,21 +48,20 @@ fun ChatbotHistoryDetailScreen(
             onConfirm = { viewModel.toggleSummaryDialog(false) },
             content = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Notes,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(48.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
                     Text("Ringkasan Bimbingan", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // Box agar teks ringkasan terlihat rapi
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                            .glowShadow(
+                                color = MaterialTheme.colorScheme.secondary,
+                                alpha = 0.8f,
+                                blurRadius = 6.dp,
+                                borderRadius = 12.dp
+                            )
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
+                            .border(1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(12.dp))
                             .padding(16.dp)
                     ) {
                         Text(
@@ -82,8 +80,7 @@ fun ChatbotHistoryDetailScreen(
             TopAppBar(
                 title = { Text("Detail Obrolan", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    // 🌟 FIX: Menggunakan CustomBackButton dari Acaris
-                    Box(modifier = Modifier.padding(start = 16.dp, end = 8.dp)) {
+                    Box(modifier = Modifier.padding(start = 16.dp)) {
                         CustomBackButton(
                             onClick = {
                                 viewModel.clearDetailState()
@@ -95,10 +92,12 @@ fun ChatbotHistoryDetailScreen(
                 actions = {
                     Box(modifier = Modifier.padding(end = 16.dp)) {
                         CustomCircularIconButton(
-                            icon = Icons.AutoMirrored.Filled.Notes,
+                            icon = Icons.Default.Notes, // 🌟 Mengikuti perbaikan ikon di atas
                             contentDescription = "Lihat Ringkasan",
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(40.dp),
+                            buttonSize = 40.dp,
+                            iconSize = 20.dp,
+                            glowColor = MaterialTheme.colorScheme.primary,
                             onClick = { viewModel.toggleSummaryDialog(true) }
                         )
                     }
@@ -116,11 +115,10 @@ fun ChatbotHistoryDetailScreen(
                     start = 16.dp,
                     end = 16.dp,
                     top = innerPadding.calculateTopPadding() + 8.dp,
-                    bottom = 32.dp // Tidak butuh ruang besar karena tidak ada input text di bawah
+                    bottom = 32.dp
                 )
             ) {
                 items(uiState.selectedSessionMessages, key = { it.id }) { message ->
-                    // 🌟 MENGGUNAKAN ULANG CHAT BUBBLE DARI FITUR SEBELUMNYA!
                     ChatBubble(message = message)
                 }
             }

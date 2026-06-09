@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector // 🌟 Import untuk ImageVector
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,7 +37,7 @@ import com.acaris.core.navigation.Screen
 import com.acaris.core.network.AuthEvent
 import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
-import com.acaris.core.ui.components.CustomFloatingDropdownMenu // 🌟 Import Custom Component Kapten
+import com.acaris.core.ui.components.CustomFloatingDropdownMenu
 import com.acaris.features.main.presentation.model.AdminMenus
 import com.acaris.features.main.presentation.model.DosenMenus
 import com.acaris.features.main.presentation.model.MahasiswaMenus
@@ -166,10 +168,12 @@ fun MainScreen(
                     if (isScheduleTab && userRole?.lowercase() == "mahasiswa") {
                         Box(modifier = Modifier.padding(end = 16.dp)) {
                             CustomCircularIconButton(
-                                icon = Icons.Default.History,
-                                contentDescription = "Riwayat Booking",
+                                icon = Icons.Outlined.History,
+                                contentDescription = "Riwayat booking",
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(40.dp),
+                                buttonSize = 40.dp,
+                                iconSize = 20.dp,
+                                glowColor = MaterialTheme.colorScheme.primary,
                                 onClick = {
                                     bottomNavController.navigate(Screen.BookingHistory.route) {
                                         launchSingleTop = true
@@ -179,23 +183,21 @@ fun MainScreen(
                         }
                     }
 
-                    // 🌟 MENGGUNAKAN CUSTOM FLOATING DROPDOWN MENU KAPTEN
                     if (isProfileTab) {
                         Box(modifier = Modifier.padding(end = 16.dp)) {
                             CustomCircularIconButton(
-                                icon = Icons.Default.MoreVert,
-                                contentDescription = "Opsi Profil",
+                                icon = Icons.Outlined.MoreVert,
+                                contentDescription = "More",
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(40.dp),
+                                glowColor = MaterialTheme.colorScheme.primary,
                                 onClick = { expandedProfileMenu = true }
                             )
 
-                            // 🌟 Memanggil Custom Menu yang keren!
                             CustomFloatingDropdownMenu(
                                 expanded = expandedProfileMenu,
                                 onDismissRequest = { expandedProfileMenu = false },
                                 options = MainProfileAction.values().toList(),
-                                selectedOption = null, // Tidak ada yang sedang "dipilih" secara aktif
+                                selectedOption = null,
                                 optionLabelProvider = { it.label },
                                 optionIconProvider = { it.icon },
                                 onOptionSelected = { action ->
@@ -273,12 +275,5 @@ fun MainScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun ScreenPlaceholder(title: String) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = title, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
     }
 }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues // 🌟 Tambahan import PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize // 🌟 Tambahan import fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.acaris.core.ui.theme.DisabledPrimaryGradient // 🌟 Import Gradient Global
@@ -134,9 +136,21 @@ fun CustomBackButton(
 ) {
     Box(
         modifier = modifier
+            // margin kanan
+            .padding(end = 12.dp)
             .size(40.dp)
-            .clip(CircleShape)
+            .glowShadow(
+                color = MaterialTheme.colorScheme.onBackground,
+                alpha = 0.8f,
+                blurRadius = 2.dp,
+                borderRadius = 20.dp
+            )
+            .background(
+                color = MaterialTheme.colorScheme.background,
+                shape = CircleShape
+            )
             .border(1.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
+            .clip(CircleShape)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -144,7 +158,7 @@ fun CustomBackButton(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = "Kembali",
             tint = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(20.dp)
         )
     }
 }
@@ -155,13 +169,33 @@ fun CustomCircularIconButton(
     contentDescription: String,
     color: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    buttonSize: Dp = 40.dp,
+    iconSize: Dp = 20.dp,
+    glowColor: Color = color,
+    showGlow: Boolean = true
 ) {
     Box(
         modifier = modifier
-            .size(32.dp)
-            .clip(CircleShape)
+            .size(buttonSize)
+            .then(
+                if (showGlow) {
+                    Modifier.glowShadow(
+                        color = glowColor,
+                        alpha = 0.8f,
+                        blurRadius = 2.dp,
+                        borderRadius = (buttonSize.value / 2).dp
+                    )
+                } else {
+                    Modifier
+                }
+            )
+            .background(
+                color = MaterialTheme.colorScheme.surface,
+                shape = CircleShape
+            )
             .border(1.dp, color, CircleShape)
+            .clip(CircleShape)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -169,7 +203,7 @@ fun CustomCircularIconButton(
             imageVector = icon,
             contentDescription = contentDescription,
             tint = color,
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(iconSize)
         )
     }
 }

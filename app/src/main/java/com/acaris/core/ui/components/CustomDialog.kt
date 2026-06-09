@@ -24,6 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+// 🌟 Pastikan import glowShadow tetap ada jika file ini berada di package yang sama
+// import com.acaris.core.ui.components.glowShadow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +51,14 @@ fun CustomDialog(
                 shape = RoundedCornerShape(20.dp),
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 6.dp,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .glowShadow(
+                        color = MaterialTheme.colorScheme.primary,
+                        alpha = 0.4f,
+                        blurRadius = 16.dp,
+                        borderRadius = 20.dp
+                    )
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,

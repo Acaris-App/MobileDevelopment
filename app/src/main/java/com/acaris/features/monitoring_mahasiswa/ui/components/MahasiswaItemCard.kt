@@ -2,6 +2,7 @@ package com.acaris.features.monitoring_mahasiswa.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -93,12 +94,21 @@ fun MahasiswaItemCard(
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp)) // Sedikit dilebarkan jarak atasnya
+
+                // 🌟 FIX: Info Akademik sekarang menggunakan border
                 Text(
                     text = mahasiswa.infoAkademik,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp, // Dikecilkan sedikit agar lebih pas sebagai badge
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(50) // Membuatnya melengkung seperti kapsul
+                        )
+                        .padding(horizontal = 10.dp, vertical = 4.dp) // Jarak dalam teks ke garis border
                 )
             }
         }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Pastikan SortItem diletakkan di tempat yang bisa diakses (misal di file ini juga)
 data class SortItem(val id: String, val label: String)
 
 @Composable
@@ -38,7 +38,7 @@ fun CustomSearchAndSortBar(
             .padding(horizontal = 24.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Search Bar dengan Glow Shadow (Persis seperti yang kita perbaiki tadi)
+        // Search Bar
         Row(
             modifier = Modifier
                 .weight(1f)
@@ -61,7 +61,7 @@ fun CustomSearchAndSortBar(
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Outlined.Search, contentDescription = "Search", tint = Color.Gray, modifier = Modifier.size(20.dp))
+            Icon(Icons.Outlined.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
             Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                 if (searchQuery.isEmpty()) {
@@ -79,13 +79,14 @@ fun CustomSearchAndSortBar(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // Sort Button
         Box {
             CustomCircularIconButton(
-                icon = Icons.Outlined.FilterList, // 🌟 Diubah jadi FilterList agar konsisten
-                contentDescription = "Urutkan",
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(40.dp),
+                icon = Icons.Outlined.FilterList,
+                contentDescription = "Cari",
+                color = MaterialTheme.colorScheme.secondary,
+                buttonSize = 40.dp,
+                iconSize = 20.dp,
+                glowColor = MaterialTheme.colorScheme.secondary,
                 onClick = { expandedSortMenu = true }
             )
 
