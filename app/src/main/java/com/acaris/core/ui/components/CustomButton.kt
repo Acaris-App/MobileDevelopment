@@ -12,7 +12,9 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues // 🌟 Tambahan import PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize // 🌟 Tambahan import fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -30,6 +32,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
@@ -37,6 +41,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.acaris.core.ui.components.glowShadow
 import com.acaris.core.ui.theme.DisabledPrimaryGradient // 🌟 Import Gradient Global
 import com.acaris.core.ui.theme.PrimaryGradient // 🌟 Import Gradient Global
 
@@ -61,19 +66,30 @@ fun CustomPrimaryButton(
 
     Button(
         onClick = onClick,
-        modifier = modifier.scale(scale).height(60.dp),
-        shape = RoundedCornerShape(30.dp),
+        modifier = modifier
+            .scale(scale)
+            .height(60.dp)
+            .then(
+                if (enabled) {
+                    Modifier.glowShadow(
+                        color = MaterialTheme.colorScheme.primary,
+                        alpha = 0.4f,
+                        blurRadius = 6.dp,
+                        borderRadius = 12.dp
+                    )
+                } else Modifier
+            ),
+        shape = RoundedCornerShape(12.dp),
         interactionSource = interactionSource,
         enabled = enabled,
-        contentPadding = PaddingValues(), // 🌟 Hilangkan padding bawaan Button
+        contentPadding = PaddingValues(),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent, // 🌟 Dibuat transparan agar Box di dalamnya terlihat
+            containerColor = Color.Transparent,
             contentColor = MaterialTheme.colorScheme.background,
             disabledContainerColor = Color.Transparent,
             disabledContentColor = MaterialTheme.colorScheme.background
         )
     ) {
-        // 🌟 Box ini yang akan memberikan warna Gradient secara penuh
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -110,14 +126,19 @@ fun CustomOutlinedButton(
 
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier.scale(scale).height(60.dp),
-        shape = RoundedCornerShape(30.dp),
+        modifier = modifier.scale(scale).height(60.dp).glowShadow(
+            color = MaterialTheme.colorScheme.primary,
+            alpha = 0.4f,
+            blurRadius = 6.dp,
+            borderRadius = 12.dp
+        ),
+        shape = RoundedCornerShape(12.dp),
         interactionSource = interactionSource,
         enabled = enabled,
-        border = BorderStroke(2.dp, if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+        border = BorderStroke(1.dp, if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.primary,
-            containerColor = Color.Transparent,
+            containerColor = MaterialTheme.colorScheme.surface,
             disabledContentColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         )
     ) {

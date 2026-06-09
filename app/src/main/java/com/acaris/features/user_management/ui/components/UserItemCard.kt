@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 KEMBALI KE ZOOM DIALOG!
+import com.acaris.core.ui.components.glowShadow
 import com.acaris.features.user_management.presentation.model.UserUiModel
 
 @Composable
@@ -39,13 +40,18 @@ fun UserItemCard(
     val isMahasiswa = user.role.lowercase() == "mahasiswa"
     val isAdmin = user.role.lowercase() == "admin"
 
-    // 🌟 STATE BARU: Untuk melacak apakah foto user sedang di-zoom
     var showZoomedImage by remember { mutableStateOf(false) }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(2.dp, RoundedCornerShape(16.dp), clip = false)
+            .glowShadow(
+                color = MaterialTheme.colorScheme.tertiary,
+                alpha = 0.4f,
+                blurRadius = 6.dp,
+                borderRadius = 16.dp
+            )
+            .border(1.dp, MaterialTheme.colorScheme.tertiary, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
             .clickable(
                 enabled = isMahasiswa,
@@ -61,7 +67,7 @@ fun UserItemCard(
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                     modifier = Modifier
                         .size(50.dp)
-                        .clickable { showZoomedImage = true } // 🌟 KLIK FOTO UNTUK ZOOM
+                        .clickable { showZoomedImage = true }
                 ) {
                     if (!user.profilePictureUrl.isNullOrEmpty()) {
                         AsyncImage(
@@ -178,6 +184,8 @@ fun UserItemCard(
                     CustomCircularIconButton(
                         icon = Icons.Outlined.Edit,
                         contentDescription = "Edit",
+                        buttonSize = 32.dp,
+                        iconSize = 16.dp,
                         color = MaterialTheme.colorScheme.primary,
                         onClick = { onEditClick(user) }
                     )
@@ -187,6 +195,8 @@ fun UserItemCard(
                     CustomCircularIconButton(
                         icon = Icons.Outlined.Delete,
                         contentDescription = "Delete",
+                        buttonSize = 32.dp,
+                        iconSize = 16.dp,
                         color = MaterialTheme.colorScheme.error,
                         onClick = { onDeleteClick(user) }
                     )
@@ -212,14 +222,6 @@ fun UserDetailRow(label: String, value: String) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(text = label, fontSize = 13.sp, color = Color.Gray)
-        Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-    }
-}
-
-@Composable
-fun UserDetailItem(label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(text = "$label: ", fontSize = 13.sp, color = Color.Gray)
         Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
     }
 }

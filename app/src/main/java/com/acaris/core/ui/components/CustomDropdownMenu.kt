@@ -6,13 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn // 🌟 IMPORT BARU
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.KeyboardArrowDown // 🌟 IMPORT BARU
-import androidx.compose.material.icons.filled.KeyboardArrowUp // 🌟 IMPORT BARU
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,20 +22,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.onGloballyPositioned // 🌟 IMPORT BARU
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize // 🌟 IMPORT BARU
+import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.acaris.core.ui.theme.PrimaryGradient
 
-// ==========================================
-// 1. REGULAR DROPDOWN FIELD (HACKED VERSION)
-// ==========================================
+// 1. REGULAR DROPDOWN FIELD
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> CustomDropdownField(
@@ -47,8 +47,9 @@ fun <T> CustomDropdownField(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // State untuk menyimpan lebar OutlinedTextField agar Popup ukurannya sama persis
     var textFieldSize by remember { mutableStateOf(androidx.compose.ui.geometry.Size.Zero) }
+
+    val interactionSource = remember { MutableInteractionSource() }
 
     Column(modifier = modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Text(
@@ -59,33 +60,60 @@ fun <T> CustomDropdownField(
         )
 
         Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
+
+            val colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
+            )
+
+            BasicTextField(
                 value = value,
                 onValueChange = {},
                 readOnly = true,
-                trailingIcon = {
-                    Icon(
-                        imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = "Dropdown Icon"
-                    )
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent
-                ),
-                shape = RoundedCornerShape(12.dp),
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                interactionSource = interactionSource,
                 modifier = Modifier
                     .fillMaxWidth()
-                    // 🌟 Mengambil ukuran lebar TextField secara dinamis
                     .onGloballyPositioned { coordinates ->
                         textFieldSize = coordinates.size.toSize()
                     },
-                singleLine = true
+                decorationBox = { innerTextField ->
+                    OutlinedTextFieldDefaults.DecorationBox(
+                        value = value,
+                        innerTextField = innerTextField,
+                        enabled = true,
+                        singleLine = true,
+                        visualTransformation = VisualTransformation.None,
+                        interactionSource = interactionSource,
+                        trailingIcon = {
+                            Icon(
+                                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Dropdown Icon"
+                            )
+                        },
+                        colors = colors,
+
+                        contentPadding = PaddingValues(
+                            horizontal = 16.dp,
+                            vertical = 12.dp
+                        ),
+
+                        container = {
+                            OutlinedTextFieldDefaults.ContainerBox(
+                                enabled = true,
+                                isError = false,
+                                interactionSource = interactionSource,
+                                colors = colors,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+                    )
+                }
             )
 
-            // Kotak transparan untuk mendeteksi klik di seluruh area field
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -101,18 +129,16 @@ fun <T> CustomDropdownField(
         if (expanded) {
             Popup(
                 alignment = Alignment.TopStart,
-                offset = IntOffset(0, 16), // Memberi sedikit jarak turun
+                offset = IntOffset(0, 16),
                 onDismissRequest = { expanded = false },
                 properties = PopupProperties(
                     focusable = true,
-                    clippingEnabled = false // 🌟 JURUS PAMUNGKAS: Matikan pemotong bayangan Android!
+                    clippingEnabled = false
                 )
             ) {
                 Box(
                     modifier = Modifier
-                        // Menyamakan lebar kotak menu dengan input field di atasnya
                         .width(with(LocalDensity.current) { textFieldSize.width.toDp() })
-                        // 🌟 GLOW SHADOW SEKARANG BISA BEBAS BERNAFAS!
                         .glowShadow(
                             color = MaterialTheme.colorScheme.primary,
                             alpha = 0.35f,
@@ -121,7 +147,7 @@ fun <T> CustomDropdownField(
                         )
                         .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
                         .clip(RoundedCornerShape(12.dp))
-                        .heightIn(max = 240.dp) // Otomatis scroll maksimal 5 item
+                        .heightIn(max = 240.dp)
                 ) {
                     LazyColumn(modifier = Modifier.fillMaxWidth()) {
                         items(options.size) { index ->
@@ -141,9 +167,7 @@ fun <T> CustomDropdownField(
     }
 }
 
-// ==========================================
 // 2. FLOATING DROPDOWN
-// ==========================================
 @Composable
 fun <T : Any> CustomFloatingDropdownMenu(
     expanded: Boolean,
@@ -164,7 +188,7 @@ fun <T : Any> CustomFloatingDropdownMenu(
             alignment = Alignment.TopEnd,
             offset = IntOffset(xOffset, yOffset),
             onDismissRequest = onDismissRequest,
-            properties = PopupProperties(focusable = true, clippingEnabled = false) // 🌟 Mencegah kepotong juga di sini
+            properties = PopupProperties(focusable = true, clippingEnabled = false)
         ) {
             Column(
                 modifier = modifier,

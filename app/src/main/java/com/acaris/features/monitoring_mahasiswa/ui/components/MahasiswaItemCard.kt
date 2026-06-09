@@ -36,15 +36,15 @@ fun MahasiswaItemCard(
         modifier = Modifier
             .fillMaxWidth()
             .glowShadow(
-                color = MaterialTheme.colorScheme.primary,
-                alpha = 0.5f,
-                blurRadius = 4.dp,
+                color = MaterialTheme.colorScheme.tertiary,
+                alpha = 0.4f,
+                blurRadius = 6.dp,
                 borderRadius = 16.dp
             )
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier
@@ -104,7 +104,7 @@ fun MahasiswaItemCard(
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .border(
-                            width = 1.dp,
+                            width = 0.5.dp,
                             color = MaterialTheme.colorScheme.primary,
                             shape = RoundedCornerShape(50) // Membuatnya melengkung seperti kapsul
                         )

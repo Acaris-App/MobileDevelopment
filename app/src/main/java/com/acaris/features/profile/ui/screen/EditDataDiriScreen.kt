@@ -264,7 +264,6 @@ fun EditDataDiriScreen(
                     )
 
                     if (state.userProfile?.role == "mahasiswa") {
-                        Spacer(modifier = Modifier.height(16.dp))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
