@@ -98,7 +98,7 @@ fun <T> CustomDropdownField(
 
                         contentPadding = PaddingValues(
                             horizontal = 16.dp,
-                            vertical = 12.dp
+                            vertical = 16.dp
                         ),
 
                         container = {

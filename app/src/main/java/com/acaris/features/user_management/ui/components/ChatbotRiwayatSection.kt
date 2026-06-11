@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.acaris.features.chatbot.presentation.model.ChatHistoryItemUiModel
-import com.acaris.features.chatbot.ui.components.ChatbotHistoryItemCard // 🌟 IMPORT KOMPONEN KITA
+import com.acaris.features.chatbot.ui.components.ChatbotHistoryItemCard
 
 @Composable
 fun ChatbotRiwayatSection(
@@ -51,7 +51,6 @@ fun ChatbotRiwayatSection(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             historyList.forEach { item ->
-                // 🌟 MENGGUNAKAN KOMPONEN REUSABLE! Kode panjang langsung lenyap.
                 ChatbotHistoryItemCard(
                     title = item.title,
                     date = item.date,

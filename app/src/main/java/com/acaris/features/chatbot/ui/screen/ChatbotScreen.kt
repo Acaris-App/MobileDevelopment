@@ -18,7 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector // 🌟 Import ImageVector
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,15 +27,14 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
-import com.acaris.core.ui.components.CustomFloatingDropdownMenu // 🌟 Import Custom Component Dropdown
+import com.acaris.core.ui.components.CustomFloatingDropdownMenu
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.chatbot.presentation.viewmodel.ChatbotViewModel
 import com.acaris.features.chatbot.ui.components.ChatBubble
 import com.acaris.features.chatbot.ui.components.ChatInputBar
-import com.acaris.features.chatbot.ui.components.ChatSummaryDialog
+import com.acaris.features.chatbot.ui.components.ChatSummaryDialog // 🌟 PANGGIL KOMPONEN KITA
 import com.acaris.features.chatbot.ui.components.TypingIndicator
 
-// 🌟 Enum Opsi Menu Chatbot
 enum class ChatbotMenuOption(val label: String, val icon: ImageVector) {
     END_SESSION("Akhiri Sesi", Icons.Default.CheckCircle),
     CHAT_HISTORY("Riwayat Chat", Icons.Default.History)
@@ -182,7 +181,6 @@ fun ChatbotScreen(
                             onClick = { expandedMenu = true }
                         )
 
-                        // 🌟 FIX: MENGGUNAKAN CUSTOM FLOATING DROPDOWN MENU
                         CustomFloatingDropdownMenu(
                             expanded = expandedMenu,
                             onDismissRequest = { expandedMenu = false },
@@ -303,7 +301,8 @@ fun ChatbotScreen(
 
     ChatSummaryDialog(
         showDialog = uiState.showSummaryDialog,
-        draftSummary = uiState.draftSummary,
+        summaryText = uiState.draftSummary,
+        isReadOnly = false,
         onDismiss = { viewModel.dismissDialogs() },
         onConfirm = { finalText -> viewModel.submitFinalSummary(finalText) }
     )

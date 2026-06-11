@@ -39,7 +39,7 @@ fun KnowledgeBaseScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    val categories = listOf("Peraturan Akademik", "Jadwal", "Kurikulum", "Peraturan Rektor", "KKNI")
+    val categories = listOf("Peraturan Akademik", "Jadwal", "Kurikulum", "Peraturan Rektor", "Kalender Akademik")
 
     var showUploadDialog by remember { mutableStateOf(false) }
 

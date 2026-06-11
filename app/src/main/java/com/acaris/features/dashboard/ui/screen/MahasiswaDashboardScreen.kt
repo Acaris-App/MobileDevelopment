@@ -1,6 +1,7 @@
 package com.acaris.features.dashboard.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -143,7 +144,15 @@ fun MahasiswaDashboardScreen(
                                         text = data.npmMahasiswa,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .border(
+                                                width = 0.5.dp,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                shape = RoundedCornerShape(50)
+                                            )
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(50))
+                                            .padding(horizontal = 10.dp, vertical = 1.dp)
                                     )
                                 }
                             }

@@ -1,5 +1,6 @@
 package com.acaris.features.monitoring_mahasiswa.presentation.mapper
 
+import com.acaris.core.utils.DateUtils
 import com.acaris.features.monitoring_mahasiswa.domain.model.DetailMahasiswa
 import com.acaris.features.monitoring_mahasiswa.domain.model.DokumenBimbingan
 import com.acaris.features.monitoring_mahasiswa.domain.model.MahasiswaBimbingan
@@ -23,7 +24,7 @@ fun DokumenBimbingan.toUiModel(): DokumenBimbinganUiModel {
         id = this.id,
         title = "${this.type.uppercase()} $semesterText".trim(),
         fileUrl = this.fileUrl,
-        uploadedAt = this.uploadedAt
+        uploadedAt = DateUtils.formatIsoToIndo(this.uploadedAt)
     )
 }
 

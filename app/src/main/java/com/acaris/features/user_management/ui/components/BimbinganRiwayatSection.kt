@@ -1,4 +1,3 @@
-// File: ui/components/BimbinganRiwayatSection.kt
 package com.acaris.features.user_management.ui.components
 
 import androidx.compose.foundation.border

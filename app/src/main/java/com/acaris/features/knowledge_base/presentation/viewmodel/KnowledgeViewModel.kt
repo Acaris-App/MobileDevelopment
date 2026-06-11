@@ -126,20 +126,6 @@ class KnowledgeViewModel @Inject constructor(
         }
     }
 
-    // ==========================================
-    // FUNGSI INTERAKSI UI (Search, Tab, Clear Message)
-    // ==========================================
-
-    fun onCategorySelected(category: String) {
-        _uiState.update { it.copy(selectedCategory = category) }
-        fetchDocuments(category = category, search = _uiState.value.searchQuery)
-    }
-
-    fun onSearchQueryChanged(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
-        fetchDocuments(category = _uiState.value.selectedCategory, search = query)
-    }
-
     fun clearMessage() {
         _uiState.update { it.copy(successMessage = null, errorMessage = null) }
     }

@@ -72,8 +72,10 @@ fun DocumentItemRow(
             CustomCircularIconButton(
                 icon = Icons.Outlined.Edit,
                 contentDescription = "Edit",
+                iconSize = 16.dp,
                 color = MaterialTheme.colorScheme.primary,
-                onClick = onEditClick
+                onClick = onEditClick,
+                modifier = Modifier.size(32.dp)
             )
 
             Spacer(modifier = Modifier.width(4.dp))
@@ -81,8 +83,10 @@ fun DocumentItemRow(
             CustomCircularIconButton(
                 icon = Icons.Outlined.Delete,
                 contentDescription = "Hapus",
+                iconSize = 16.dp,
                 color = MaterialTheme.colorScheme.error,
-                onClick = onDeleteClick
+                onClick = onDeleteClick,
+                modifier = Modifier.size(32.dp)
             )
         }
     }

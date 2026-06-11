@@ -5,7 +5,7 @@ data class KnowledgeDocument(
     val title: String,
     val fileName: String,
     val fileUrl: String,
-    val category: String, // "Peraturan Akademik", "Jadwal", "Kurikulum", "Peraturan Rektor", "KKNI"
+    val category: String, // "Peraturan Akademik", "Jadwal", "Kurikulum", "Peraturan Rektor", "Kalender Akademik"
     val uploadedAt: String,
     val updatedAt: String
 )

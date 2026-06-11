@@ -21,6 +21,7 @@ import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.user_management.presentation.viewmodel.UserDetailViewModel
 import com.acaris.features.chatbot.ui.components.ChatBubble // 🌟 REUSE KOMPONEN BUBBLE
+import com.acaris.features.chatbot.ui.components.ChatSummaryDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,37 +49,11 @@ fun AdminChatbotDetailScreen(
 
     // POP UP UNTUK MELIHAT RINGKASAN
     if (showSummaryDialog) {
-        CustomDialog(
-            showDialog = true,
-            onDismissRequest = { showSummaryDialog = false },
-            confirmText = "Tutup",
-            onConfirm = { showSummaryDialog = false },
-            content = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Notes,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(48.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("Ringkasan Bimbingan", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = uiState.chatbotDetailSummary,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
+        ChatSummaryDialog(
+            showDialog = showSummaryDialog,
+            summaryText = uiState.chatbotDetailSummary,
+            isReadOnly = true,
+            onDismiss = { showSummaryDialog = false }
         )
     }
 

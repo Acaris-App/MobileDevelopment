@@ -17,23 +17,21 @@ import javax.inject.Inject
 @HiltViewModel
 class UserManagementViewModel @Inject constructor(
     private val useCases: UserManagementUseCases,
-    private val repository: UserManagementRepository // 🌟 KITA SUNTIK INI untuk mendengarkan perubahan langsung dari sumbernya
+    private val repository: UserManagementRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UserManagementState())
     val uiState: StateFlow<UserManagementState> = _uiState.asStateFlow()
 
     init {
-        observeUsers() // 🌟 Pasang telinga (Observer) sebelum memuat data
+        observeUsers()
         loadUsers()
     }
 
-    // 🌟 FUNGSI BARU: Mendengarkan aliran data (Flow) dari Repository secara Real-Time!
     private fun observeUsers() {
         viewModelScope.launch {
             repository.usersFlow.collect { updatedList ->
                 _uiState.update { state ->
-                    // Setiap kali ada Edit/Hapus/Tambah, UI otomatis me-render ulang!
                     state.copy(users = updatedList.map { it.toUiModel() })
                 }
             }
@@ -46,7 +44,6 @@ class UserManagementViewModel @Inject constructor(
         if (isRefresh) {
             _uiState.update { it.copy(isLoading = true, isAppending = false, currentPage = 1, isLastPage = false, errorMessage = null) }
         } else {
-            // Jika sedang muat halaman bawah atau sudah halaman terakhir, batalkan!
             if (currentState.isLastPage || currentState.isAppending) return
             _uiState.update { it.copy(isAppending = true, errorMessage = null) }
         }
@@ -63,9 +60,6 @@ class UserManagementViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { usersDomain ->
-                    // 🌟 KITA TIDAK PERLU LAGI MENGGABUNGKAN LIST SECARA MANUAL DI SINI.
-                    // Repository sudah melakukannya dan menembakkannya lewat `observeUsers()`!
-                    // Di sini kita cukup atur state loading & paginasi saja.
                     _uiState.update { state ->
                         state.copy(
                             isLoading = false,
@@ -109,8 +103,6 @@ class UserManagementViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(isActionLoading = false, successMessage = "Status pengguna berhasil diperbarui.")
                     }
-                    // 🌟 SUPER EFISIEN: Dulu kita panggil loadUsers() di sini yang boros kuota API.
-                    // Sekarang dihapus! Karena aliran usersFlow akan otomatis memperbarui tampilan di UI.
                 },
                 onFailure = { error ->
                     _uiState.update { it.copy(isActionLoading = false, errorMessage = error.message) }
@@ -128,7 +120,6 @@ class UserManagementViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(isActionLoading = false, successMessage = "Pengguna berhasil dihapus permanen.")
                     }
-                    // 🌟 SUPER EFISIEN: Dihapus juga dari sini!
                 },
                 onFailure = { error ->
                     _uiState.update { it.copy(isActionLoading = false, errorMessage = error.message) }

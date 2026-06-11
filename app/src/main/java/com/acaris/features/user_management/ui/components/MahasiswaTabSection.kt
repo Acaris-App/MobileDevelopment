@@ -67,7 +67,6 @@ fun MahasiswaTabSection(
             }
             1 -> BimbinganRiwayatSection(bimbinganHistory = uiState.bimbinganHistory)
 
-            // 🌟 FIX 2: Panggil komponen baru dengan mengirim data list & kliknya
             2 -> ChatbotRiwayatSection(
                 historyList = uiState.chatbotHistoryList,
                 onItemClick = onNavigateToChatbotDetail
