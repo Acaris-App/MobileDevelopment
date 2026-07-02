@@ -2,10 +2,11 @@ package com.acaris.features.profile.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.acaris.core.domain.usecase.CalculateSemesterUseCase // 🌟 IMPORT DARI CORE
+import com.acaris.core.domain.usecase.CalculateSemesterUseCase
 import com.acaris.features.profile.domain.usecase.GetProfileUseCase
 import com.acaris.features.profile.domain.usecase.UpdatePhotoUseCase
 import com.acaris.features.profile.domain.usecase.UpdateProfileUseCase
+import com.acaris.features.profile.presentation.mapper.toUiModel // 🌟 IMPORT MAPPER
 import com.acaris.features.profile.presentation.model.ProfileState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,26 +44,23 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    // ==========================================
-    // 🌟 FUNGSI DATA
-    // ==========================================
     fun loadProfile() {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
             val result = getProfileUseCase()
             result.fold(
                 onSuccess = { profile ->
+                    val uiModel = profile.toUiModel() // 🌟 PANGGIL MAPPER DI SINI
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            userProfile = profile,
-                            // 🌟 LANGSUNG TUANGKAN KE FORM STATE
-                            name = profile.name,
-                            email = profile.email,
-                            identifier = profile.identifier,
-                            angkatan = profile.angkatan?.toString() ?: "",
-                            semester = profile.currentSemester?.toString() ?: "",
-                            ipk = profile.ipk?.toString() ?: "",
+                            profileData = uiModel,
+                            name = uiModel.name,
+                            email = uiModel.email,
+                            identifier = uiModel.identifier,
+                            angkatan = uiModel.rawAngkatan,
+                            semester = uiModel.rawSemester,
+                            ipk = uiModel.rawIpk,
                             isFormInitialized = true
                         )
                     }
@@ -74,7 +72,6 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    // 🌟 UPDATE PROFIL TANPA PARAMETER, LANGSUNG BACA DARI STATE
     fun updateProfile() {
         val currentState = _uiState.value
         _uiState.update { it.copy(isLoading = true, errorMessage = null, successMessage = null) }

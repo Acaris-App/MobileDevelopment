@@ -21,7 +21,7 @@ import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.chatbot.presentation.viewmodel.ChatbotHistoryViewModel
-import com.acaris.features.chatbot.ui.components.ChatbotHistoryItemCard // 🌟 IMPORT KOMPONEN BARU KITA
+import com.acaris.features.chatbot.ui.components.ChatbotHistoryItemCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,7 +109,6 @@ fun ChatbotHistoryScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(uiState.historyList) { item ->
-                        // 🌟 MENGGUNAKAN KOMPONEN BARU!
                         ChatbotHistoryItemCard(
                             title = item.title,
                             date = item.date,

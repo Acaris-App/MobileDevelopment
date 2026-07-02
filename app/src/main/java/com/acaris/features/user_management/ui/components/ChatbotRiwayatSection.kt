@@ -29,13 +29,6 @@ fun ChatbotRiwayatSection(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = Icons.Default.History,
-                contentDescription = null,
-                modifier = Modifier.size(80.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Belum ada riwayat bimbingan dengan Aca.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

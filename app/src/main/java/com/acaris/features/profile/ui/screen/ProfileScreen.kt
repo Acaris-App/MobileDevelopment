@@ -36,9 +36,6 @@ import com.acaris.features.profile.ui.components.ProfileInfoCard
 @Composable
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToEditDataDiri: () -> Unit,
-    // onNavigateToEditDokumen dihapus karena sudah tidak pindah halaman!
-    onNavigateToChangePassword: () -> Unit,
     profileViewModel: ProfileViewModel = hiltViewModel(),
     documentViewModel: DocumentViewModel = hiltViewModel()
 ) {
@@ -51,7 +48,6 @@ fun ProfileScreen(
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Data Diri", "Dokumen Akademik")
 
-    // --- STATE UNTUK EDIT DOKUMEN ---
     var pendingUploadType by remember { mutableStateOf("") }
     var pendingUploadSemester by remember { mutableStateOf<Int?>(null) }
     var documentIdToUpdate by remember { mutableStateOf<String?>(null) }
@@ -71,14 +67,13 @@ fun ProfileScreen(
         }
     }
 
-    val isMahasiswa = profileState.userProfile?.role == "mahasiswa"
+    val isMahasiswa = profileState.profileData?.isMahasiswa == true
     LaunchedEffect(isMahasiswa) {
         if (isMahasiswa) {
             documentViewModel.loadDocuments()
         }
     }
 
-    // --- LAUNCHER PEMILIHAN FILE ---
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             val file = FileUtils.uriToFile(context, uri)
@@ -102,7 +97,6 @@ fun ProfileScreen(
         pendingUploadType = ""
     }
 
-    // --- DIALOG BOXES (Ganti, Hapus, Sukses, Error) ---
     if (showReplaceDialog) {
         CustomDialog(
             showDialog = true,
@@ -226,15 +220,14 @@ fun ProfileScreen(
 
                     when (selectedTabIndex) {
                         0 -> {
-                            profileState.userProfile?.let { user ->
-                                ProfileInfoCard(userProfile = user) // 🌟 Hapus onEditClick & onChangePasswordClick
+                            profileState.profileData?.let { user ->
+                                ProfileInfoCard(profileData = user)
                             }
                         }
                         1 -> {
-                            // TAB 2: DOKUMEN
                             SharedDocumentManager(
                                 documents = documentState.documents,
-                                currentSemester = profileState.userProfile?.currentSemester ?: 1,
+                                currentSemester = profileState.profileData?.rawSemester?.toIntOrNull() ?: 1,
                                 isReadOnly = false,
                                 onViewDocument = { url ->
                                     if (url.isNotBlank()) uriHandler.openUri(url)
@@ -257,8 +250,8 @@ fun ProfileScreen(
                     }
                 } else {
                     Spacer(modifier = Modifier.height(8.dp))
-                    profileState.userProfile?.let { user ->
-                        ProfileInfoCard(userProfile = user) // 🌟 Hapus onEditClick & onChangePasswordClick juga di sini
+                    profileState.profileData?.let { user ->
+                        ProfileInfoCard(profileData = user)
                     }
                 }
 

@@ -5,12 +5,12 @@ data class MahasiswaBimbinganUiModel(
     val name: String,
     val npm: String,
     val profilePictureUrl: String,
-    val infoAkademik: String // 🌟 Hasil gabungan Angkatan & Semester
+    val infoAkademik: String
 )
 
 data class DokumenBimbinganUiModel(
     val id: String,
-    val title: String, // 🌟 Contoh: "KRS Semester 6"
+    val title: String,
     val fileUrl: String,
     val uploadedAt: String
 )
@@ -22,8 +22,18 @@ data class DetailMahasiswaUiModel(
     val email: String,
     val profilePictureUrl: String,
     val ipk: String,
-    val angkatan: String, // 🌟 Menggantikan infoAkademik
-    val semester: String, // 🌟 Menggantikan infoAkademik
+    val angkatan: String,
+    val semester: String,
     val kodeKelas: String,
     val dokumen: List<DokumenBimbinganUiModel>
+)
+
+data class RiwayatBimbinganUiModel(
+    val id: String,
+    val displayDate: String,
+    val displayTime: String,
+    val agenda: String,
+    val rawStatus: String,
+    val statusLabel: String,
+    val keteranganDosen: String
 )

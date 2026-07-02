@@ -16,7 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.acaris.core.ui.components.CustomPrimaryButton
-import com.acaris.core.ui.components.CustomTextField // 🌟 IMPORT CUSTOM TEXT FIELD GLOBAL
+import com.acaris.core.ui.components.CustomTextField
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)

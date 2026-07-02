@@ -5,9 +5,9 @@ import com.acaris.features.dashboard.domain.model.*
 import com.acaris.features.dashboard.presentation.model.*
 import com.acaris.features.schedule.presentation.model.ScheduleStatus
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.Locale
 
-// TRANSLATOR STATUS API KE ENUM (DASAR)
 fun getRawMahasiswaStatus(dateString: String, apiStatus: String): ScheduleStatus {
     return try {
         val date = LocalDate.parse(dateString)
@@ -68,12 +68,30 @@ fun DashboardMahasiswa.toPresentation(): DashboardMahasiswaUiModel {
 }
 
 fun JadwalSingkatDomain.toPresentation(): JadwalSingkatUiModel {
+    val isPast = try {
+        val scheduleDate = LocalDate.parse(this.date)
+        val today = LocalDate.now()
+        val cleanEndTime = this.endTime.take(5)
+        val scheduleEndTime = LocalTime.parse(cleanEndTime)
+        val currentTime = LocalTime.now()
+
+        scheduleDate.isBefore(today) || (scheduleDate.isEqual(today) && scheduleEndTime.isBefore(currentTime))
+    } catch (e: Exception) {
+        false
+    }
+
+    val finalStatus = if (isPast) {
+        ScheduleStatus.SELESAI
+    } else {
+        getRawMahasiswaStatus(this.date, this.status)
+    }
+
     return JadwalSingkatUiModel(
         id = this.id,
         date = DateUtils.formatShortDateToIndo(this.date),
-        waktu = "${this.startTime} - ${this.endTime} WIB",
+        waktu = "${this.startTime.take(5)} - ${this.endTime.take(5)} WIB",
         agenda = this.mahasiswaAgenda,
-        status = getRawMahasiswaStatus(this.date, this.status),
+        status = finalStatus,
         keterangan = this.keterangan
     )
 }
@@ -104,11 +122,29 @@ fun DashboardDosen.toPresentation(): DashboardDosenUiModel {
 }
 
 fun JadwalMingguIniDosenDomain.toPresentation(): JadwalMingguIniUiModel {
+    val isPast = try {
+        val scheduleDate = LocalDate.parse(this.date)
+        val today = LocalDate.now()
+        val cleanEndTime = this.endTime.take(5)
+        val scheduleEndTime = LocalTime.parse(cleanEndTime)
+        val currentTime = LocalTime.now()
+
+        scheduleDate.isBefore(today) || (scheduleDate.isEqual(today) && scheduleEndTime.isBefore(currentTime))
+    } catch (e: Exception) {
+        false
+    }
+
+    val finalStatus = if (isPast) {
+        ScheduleStatus.SELESAI
+    } else {
+        getRawDosenStatus(this.date, this.status)
+    }
+
     return JadwalMingguIniUiModel(
         id = this.id,
         date = DateUtils.formatShortDateToIndo(this.date),
-        waktu = "${this.startTime} - ${this.endTime} WIB",
-        status = getRawDosenStatus(this.date, this.status),
+        waktu = "${this.startTime.take(5)} - ${this.endTime.take(5)} WIB",
+        status = finalStatus,
         keterangan = this.keterangan,
         listMahasiswa = this.listMahasiswa.map { it.toPresentation() }
     )

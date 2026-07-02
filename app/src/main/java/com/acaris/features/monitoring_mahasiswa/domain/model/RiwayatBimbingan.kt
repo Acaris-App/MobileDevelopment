@@ -21,7 +21,6 @@ data class RiwayatBimbingan(
             when {
                 scheduleDate.isBefore(today) -> true
                 scheduleDate.isEqual(today) -> {
-                    // Ambil jam selesai dari range "19:27 - 19:28"
                     val endTimeStr = time.split(" - ").lastOrNull() ?: return false
                     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
                     val endLocalTime = LocalTime.parse(endTimeStr, timeFormatter)

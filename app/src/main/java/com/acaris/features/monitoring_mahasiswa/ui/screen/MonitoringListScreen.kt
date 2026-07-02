@@ -8,11 +8,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
-import com.acaris.core.ui.components.CustomSearchAndSortBar // 🌟 MENGGUNAKAN KOMPONEN GLOBAL
-import com.acaris.core.ui.components.SortItem // 🌟 MENGGUNAKAN KOMPONEN GLOBAL
+import com.acaris.core.ui.components.CustomSearchAndSortBar
+import com.acaris.core.ui.components.SortItem
 import com.acaris.features.monitoring_mahasiswa.presentation.model.SortOption
 import com.acaris.features.monitoring_mahasiswa.presentation.viewmodel.MonitoringViewModel
 import com.acaris.features.monitoring_mahasiswa.ui.components.MahasiswaItemCard
@@ -85,18 +88,24 @@ fun MonitoringListScreen(
                 }
 
                 if (uiState.errorMessage != null && uiState.listMahasiswa.isEmpty()) {
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(bottom = 90.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = uiState.errorMessage ?: "Terjadi kesalahan", color = MaterialTheme.colorScheme.error)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.fetchDaftarMahasiswa() }) {
-                            Text("Coba Lagi")
+                    CustomDialog(
+                        showDialog = true,
+                        onDismissRequest = {
+                            viewModel.resetError()
+                        },
+                        content = {
+                            Text(
+                                text = uiState.errorMessage ?: "Tidak ada koneksi internet atau terjadi kesalahan.",
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        },
+                        confirmText = "Coba Lagi",
+                        onConfirm = {
+                            viewModel.fetchDaftarMahasiswa()
                         }
-                    }
+                    )
                 }
 
                 if (uiState.isLoading) {

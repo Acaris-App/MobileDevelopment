@@ -194,7 +194,15 @@ fun MahasiswaDashboardScreen(
                                         text = data.nipDosen,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .border(
+                                                width = 0.5.dp,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                shape = RoundedCornerShape(50)
+                                            )
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(50))
+                                            .padding(horizontal = 10.dp, vertical = 1.dp)
                                     )
                                 }
                             }
@@ -277,7 +285,7 @@ fun MahasiswaDashboardScreen(
                     if (data.jadwalTerdekat.isEmpty()) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
@@ -293,7 +301,6 @@ fun MahasiswaDashboardScreen(
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
                                         .clickable {
-                                            // 🌟 MENGGUNAKAN UTILS UNTUK PARSING
                                             val targetApiDate = DateUtils.formatUiDateToApiDate(bimbingan.date)
                                             onNavigateToSchedule(targetApiDate)
                                         }

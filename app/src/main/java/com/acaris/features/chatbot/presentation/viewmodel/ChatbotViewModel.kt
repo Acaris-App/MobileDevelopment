@@ -9,7 +9,7 @@ import com.acaris.features.chatbot.domain.usecase.SendChatMessageUseCase
 import com.acaris.features.chatbot.presentation.mapper.toPresentation
 import com.acaris.features.chatbot.presentation.model.ChatMessageUiModel
 import com.acaris.features.chatbot.presentation.model.ChatbotUiState
-import com.acaris.features.profile.domain.usecase.GetProfileUseCase // 🌟 Tambahan import UseCase Profile
+import com.acaris.features.profile.domain.usecase.GetProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +28,7 @@ class ChatbotViewModel @Inject constructor(
     private val sendChatMessageUseCase: SendChatMessageUseCase,
     private val generateSummaryUseCase: GenerateChatSummaryUseCase,
     private val closeSessionUseCase: CloseChatSessionUseCase,
-    private val getProfileUseCase: GetProfileUseCase // 🌟 INJECT USE CASE PROFIL DI SINI
+    private val getProfileUseCase: GetProfileUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatbotUiState())
@@ -39,7 +39,6 @@ class ChatbotViewModel @Inject constructor(
         return sdf.format(Date())
     }
 
-    // 🌟 FUNGSI BARU: Cek Dokumen Dulu Sebelum Load Chat!
     fun checkDocumentAndLoadSession() {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
@@ -49,10 +48,8 @@ class ChatbotViewModel @Inject constructor(
             profileResult.fold(
                 onSuccess = { profile ->
                     if (!profile.isDokumenLengkap) {
-                        // 🛑 DOKUMEN BELUM LENGKAP: Nyalakan saklar Pop-Up!
                         _uiState.update { it.copy(isLoading = false, isDocumentIncomplete = true) }
                     } else {
-                        // ✅ DOKUMEN AMAN: Lanjut muat obrolan!
                         loadActiveSession()
                     }
                 },
@@ -63,7 +60,6 @@ class ChatbotViewModel @Inject constructor(
         }
     }
 
-    // Ubah jadi private karena sekarang UI hanya akan memanggil checkDocumentAndLoadSession()
     private fun loadActiveSession() {
         viewModelScope.launch {
             val result = getActiveSessionUseCase()

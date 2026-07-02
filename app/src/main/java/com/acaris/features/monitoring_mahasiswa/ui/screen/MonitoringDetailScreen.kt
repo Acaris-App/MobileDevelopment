@@ -18,7 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomChipTabRow
-import com.acaris.features.chatbot.ui.components.ChatbotHistoryItemCard // 🌟 IMPORT KOMPONEN KITA
+import com.acaris.features.chatbot.ui.components.ChatbotHistoryItemCard
 import com.acaris.features.documents_mahasiswa.presentation.model.SharedDocumentUiModel
 import com.acaris.features.documents_mahasiswa.ui.components.SharedDocumentManager
 import com.acaris.features.monitoring_mahasiswa.presentation.viewmodel.MonitoringViewModel
@@ -137,7 +137,7 @@ fun MonitoringDetailScreen(
                                     ) {
                                         Text(
                                             text = "Belum ada riwayat bimbingan.",
-                                            color = Color.Gray,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             style = MaterialTheme.typography.bodyLarge
                                         )
                                     }
@@ -159,13 +159,6 @@ fun MonitoringDetailScreen(
                                         verticalArrangement = Arrangement.Center,
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.History,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(80.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                        )
-                                        Spacer(modifier = Modifier.height(16.dp))
                                         Text(
                                             text = "Belum ada riwayat bimbingan dengan Aca.",
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -178,7 +171,6 @@ fun MonitoringDetailScreen(
                                         verticalArrangement = Arrangement.spacedBy(12.dp)
                                     ) {
                                         uiState.historyChatbotList.forEach { item ->
-                                            // 🌟 MENGGUNAKAN KOMPONEN REUSABLE! (Sangat Bersih)
                                             ChatbotHistoryItemCard(
                                                 title = item.title,
                                                 date = item.date,

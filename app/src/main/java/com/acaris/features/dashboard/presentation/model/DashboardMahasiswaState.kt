@@ -18,7 +18,6 @@ data class DashboardMahasiswaUiModel(
     val jadwalTerdekat: List<JadwalSingkatUiModel>,
     val kalenderBimbinganMap: Map<LocalDate, ScheduleStatus>,
 ) {
-    // 🌟 TEMPLATE DATA KOSONG
     companion object {
         fun empty() = DashboardMahasiswaUiModel(
             namaMahasiswa = "Mahasiswa",

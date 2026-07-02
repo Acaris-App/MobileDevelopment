@@ -51,7 +51,6 @@ fun UserDetailScreen(
     var showReplaceDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
-    // 🌟 STATE BARU: Untuk zoom foto profil di TopAppBar
     var showZoomedImage by remember { mutableStateOf(false) }
 
     LaunchedEffect(userId) {
@@ -155,7 +154,7 @@ fun UserDetailScreen(
                                 shape = CircleShape,
                                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                                 modifier = Modifier
-                                    .size(60.dp)
+                                    .size(48.dp)
                                     .clickable { showZoomedImage = true } // 🌟 AKSI KLIK FOTO
                             ) {
                                 if (!user.profilePictureUrl.isNullOrEmpty()) {

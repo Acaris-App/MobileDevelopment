@@ -1,6 +1,8 @@
 package com.acaris.features.chatbot.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
@@ -12,12 +14,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.acaris.R
 import com.acaris.features.chatbot.presentation.model.ChatMessageUiModel
-
-// 🌟 IMPOR LIBRARY JEZIELLAGO YANG SUDAH BERHASIL DIUNDUH
 import dev.jeziellago.compose.markdowntext.MarkdownText
 
 @Composable
@@ -29,12 +34,12 @@ fun ChatBubble(
     val containerColor = if (message.isFromUser) {
         MaterialTheme.colorScheme.primary
     } else {
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+        MaterialTheme.colorScheme.secondary.copy(0.8f)
     }
     val contentColor = if (message.isFromUser) {
         MaterialTheme.colorScheme.onPrimary
     } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
+        Color.Black
     }
 
     val shape = if (message.isFromUser) {
@@ -49,53 +54,69 @@ fun ChatBubble(
             .padding(vertical = 4.dp),
         contentAlignment = alignment
     ) {
-        Column(
-            horizontalAlignment = if (message.isFromUser) Alignment.End else Alignment.Start,
-            modifier = Modifier.widthIn(max = 280.dp)
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = if (message.isFromUser) Arrangement.End else Arrangement.Start
         ) {
-            Card(
-                shape = shape,
-                colors = CardDefaults.cardColors(
-                    containerColor = containerColor,
-                    contentColor = contentColor
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-            ) {
-                // 🌟 ANTI MENGKERUT SAAT DI-SCROLL CEPAT!
-                MarkdownText(
-                    markdown = message.text,
-                    color = contentColor,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.bodyMedium
+            if (!message.isFromUser) {
+                Image(
+                    painter = painterResource(id = R.drawable.ekspresi2),
+                    contentDescription = "Avatar Aca",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
                 )
+                Spacer(modifier = Modifier.width(8.dp))
             }
-            Spacer(modifier = Modifier.height(2.dp))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 4.dp)
+            Column(
+                horizontalAlignment = if (message.isFromUser) Alignment.End else Alignment.Start,
+                modifier = Modifier.widthIn(max = 260.dp)
             ) {
-                if (message.time == "Gagal kirim") {
-                    Icon(
-                        imageVector = Icons.Default.Error,
-                        contentDescription = "Gagal Mengirim",
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(12.dp)
+                Card(
+                    shape = shape,
+                    colors = CardDefaults.cardColors(
+                        containerColor = containerColor,
+                        contentColor = contentColor
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    MarkdownText(
+                        markdown = message.text,
+                        color = contentColor,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        style = MaterialTheme.typography.bodyMedium
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = message.time,
-                        fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Bold
-                    )
-                } else {
-                    Text(
-                        text = message.time,
-                        fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                    )
+                }
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                ) {
+                    if (message.time == "Gagal kirim") {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = "Gagal Mengirim",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = message.time,
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        Text(
+                            text = message.time,
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                        )
+                    }
                 }
             }
         }

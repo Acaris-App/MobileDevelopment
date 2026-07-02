@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
+import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.features.schedule.presentation.model.ScheduleUiModel
 import com.acaris.features.schedule.presentation.viewmodel.ScheduleViewModel
 import com.acaris.features.schedule.ui.components.ScheduleDetailCard
@@ -28,10 +29,11 @@ import com.acaris.features.schedule.ui.components.CustomCalendar
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun DosenScheduleScreen(
-    initialSelectedDate: String? = null, // 🌟 FIX 1: Tambahkan penangkap parameter
+    initialSelectedDate: String? = null,
     viewModel: ScheduleViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -40,13 +42,12 @@ fun DosenScheduleScreen(
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     var isEditMode by rememberSaveable { mutableStateOf(false) }
 
-    // 🌟 FIX 2: Set nilai awal string tanggal dari parameter navigasi (jika ada)
     var selectedDateStr by rememberSaveable {
         mutableStateOf(
             try {
                 if (initialSelectedDate != null) LocalDate.parse(initialSelectedDate).toString() else LocalDate.now().toString()
             } catch (e: Exception) {
-                LocalDate.now().toString() // Fallback kalau format hancur
+                LocalDate.now().toString()
             }
         )
     }
@@ -59,7 +60,6 @@ fun DosenScheduleScreen(
     var showErrorDialog by rememberSaveable { mutableStateOf(false) }
     var activeSchedule by remember { mutableStateOf<ScheduleUiModel?>(null) }
 
-    // 🌟 FIX 3: Reaksi otomatis jika ada kiriman tanggal baru dari navigasi
     LaunchedEffect(initialSelectedDate) {
         if (initialSelectedDate != null) {
             try {
@@ -122,8 +122,13 @@ fun DosenScheduleScreen(
 
                 item {
                     Spacer(modifier = Modifier.height(8.dp))
+
+                    val displayDate = selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy",
+                        Locale("id", "ID")
+                    ))
+
                     Text(
-                        text = "Jadwal Tanggal ${selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))}",
+                        text = "Jadwal Tanggal $displayDate",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -174,16 +179,14 @@ fun DosenScheduleScreen(
 
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(
+                    CustomPrimaryButton(
+                        text = "Tambah Jadwal Baru",
                         onClick = {
                             activeSchedule = null
                             isEditMode = false
                             showBottomSheet = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("+ Tambah Jadwal Baru")
-                    }
+                        }
+                    )
                 }
             }
 

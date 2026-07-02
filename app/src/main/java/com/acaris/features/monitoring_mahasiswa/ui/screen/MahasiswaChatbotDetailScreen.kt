@@ -5,22 +5,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomCircularIconButton
-import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.monitoring_mahasiswa.presentation.viewmodel.MonitoringViewModel
-import com.acaris.features.chatbot.ui.components.ChatBubble // 🌟 REUSE KOMPONEN CHATBOT
+import com.acaris.features.chatbot.ui.components.ChatBubble
 import com.acaris.features.chatbot.ui.components.ChatSummaryDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,19 +32,16 @@ fun MahasiswaChatbotDetailScreen(
     val listState = rememberLazyListState()
     var showSummaryDialog by remember { mutableStateOf(false) }
 
-    // Otomatis fetch data saat halaman dibuka
     LaunchedEffect(sessionId) {
         viewModel.fetchChatbotDetail(mahasiswaId, sessionId)
     }
 
-    // Otomatis scroll ke bawah agar pesan terakhir terlihat
     LaunchedEffect(uiState.chatbotDetailSessionMessages.size) {
         if (uiState.chatbotDetailSessionMessages.isNotEmpty()) {
             listState.animateScrollToItem(uiState.chatbotDetailSessionMessages.size - 1)
         }
     }
 
-    // 🌟 POP UP UNTUK MELIHAT RINGKASAN
     if (showSummaryDialog) {
         ChatSummaryDialog(
             showDialog = showSummaryDialog,
@@ -99,7 +93,6 @@ fun MahasiswaChatbotDetailScreen(
                 )
             ) {
                 items(uiState.chatbotDetailSessionMessages, key = { it.id }) { message ->
-                    // 🌟 MENGGUNAKAN ULANG CHAT BUBBLE DARI FITUR SEBELUMNYA!
                     ChatBubble(message = message)
                 }
             }

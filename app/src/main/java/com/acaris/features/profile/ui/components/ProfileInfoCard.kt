@@ -19,12 +19,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomImageZoomDialog
-import com.acaris.core.ui.components.glowShadow // 🌟 IMPORT GLOW SHADOW
-import com.acaris.features.profile.domain.model.UserProfile
+import com.acaris.core.ui.components.glowShadow
+import com.acaris.features.profile.presentation.model.ProfileUiModel
 
 @Composable
 fun ProfileInfoCard(
-    userProfile: UserProfile,
+    profileData: ProfileUiModel,
     modifier: Modifier = Modifier
 ) {
     var showZoomedImage by remember { mutableStateOf(false) }
@@ -48,7 +48,6 @@ fun ProfileInfoCard(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // FOTO PROFIL KECIL (Sudah dibersihkan dari bayangan)
             Box(
                 modifier = Modifier
                     .size(150.dp)
@@ -57,7 +56,7 @@ fun ProfileInfoCard(
                     .clickable { showZoomedImage = true },
                 contentAlignment = Alignment.Center
             ) {
-                if (userProfile.profilePictureUrl.isNullOrEmpty()) {
+                if (profileData.profilePictureUrl.isEmpty()) {
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Avatar",
@@ -66,7 +65,7 @@ fun ProfileInfoCard(
                     )
                 } else {
                     AsyncImage(
-                        model = userProfile.profilePictureUrl,
+                        model = profileData.profilePictureUrl,
                         contentDescription = "Foto Profil",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
@@ -76,26 +75,23 @@ fun ProfileInfoCard(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            ProfileDataLine(label = "Nama", value = userProfile.name)
-            ProfileDataLine(label = "Email", value = userProfile.email)
-            ProfileDataLine(
-                label = if (userProfile.role == "mahasiswa") "NPM" else "NIP",
-                value = userProfile.identifier
-            )
-            ProfileDataLine(label = "Peran", value = userProfile.role.replaceFirstChar { it.uppercase() })
+            ProfileDataLine(label = "Nama", value = profileData.name)
+            ProfileDataLine(label = "Email", value = profileData.email)
+            ProfileDataLine(label = profileData.identifierLabel, value = profileData.identifier)
+            ProfileDataLine(label = "Peran", value = profileData.displayRole)
 
-            if (userProfile.role == "mahasiswa") {
-                ProfileDataLine(label = "Angkatan", value = userProfile.angkatan?.toString() ?: "-")
-                ProfileDataLine(label = "Semester Saat Ini", value = userProfile.currentSemester?.toString() ?: "-")
-                ProfileDataLine(label = "IPK", value = userProfile.ipk?.toString() ?: "-")
-                ProfileDataLine(label = "Dosen PA", value = userProfile.dosenPa ?: "-")
+            if (profileData.isMahasiswa) {
+                ProfileDataLine(label = "Angkatan", value = profileData.angkatan)
+                ProfileDataLine(label = "Semester Saat Ini", value = profileData.currentSemester)
+                ProfileDataLine(label = "IPK", value = profileData.ipk)
+                ProfileDataLine(label = "Dosen PA", value = profileData.dosenPa)
             }
         }
     }
 
     if (showZoomedImage) {
         CustomImageZoomDialog(
-            imageUrl = userProfile.profilePictureUrl,
+            imageUrl = profileData.profilePictureUrl,
             onDismissRequest = { showZoomedImage = false }
         )
     }

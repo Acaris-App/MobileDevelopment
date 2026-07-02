@@ -26,6 +26,8 @@ import com.acaris.features.schedule.ui.components.CustomCalendar
 import com.acaris.features.schedule.ui.components.MahasiswaScheduleCard
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,11 +38,9 @@ fun MahasiswaScheduleScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    // Default hari ini
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
-    // Reaksi Cerdas! Jika ada kiriman tanggal baru dari Dashboard
     LaunchedEffect(initialSelectedDate) {
         if (initialSelectedDate != null) {
             try {
@@ -48,7 +48,7 @@ fun MahasiswaScheduleScreen(
                 selectedDate = parsedDate
                 currentMonth = YearMonth.from(parsedDate)
             } catch (e: Exception) {
-                // Abaikan jika format salah
+                // Abaikan
             }
         }
     }
@@ -125,7 +125,6 @@ fun MahasiswaScheduleScreen(
         )
     }
 
-    // 🌟 FIX: TopAppBar dan modifier nestedScroll dibuang sepenuhnya
     Scaffold { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
 
@@ -133,7 +132,7 @@ fun MahasiswaScheduleScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding() + 16.dp,
-                    bottom = 120.dp, // Jarak aman untuk Bottom Nav
+                    bottom = 120.dp,
                     start = 24.dp,
                     end = 24.dp
                 ),
@@ -151,8 +150,9 @@ fun MahasiswaScheduleScreen(
 
                 item {
                     Spacer(modifier = Modifier.height(8.dp))
+                    val displayDate = selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("id", "ID")))
                     Text(
-                        text = "Jadwal Tersedia (${selectedDate})",
+                        text = "Jadwal Tersedia ($displayDate)",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )

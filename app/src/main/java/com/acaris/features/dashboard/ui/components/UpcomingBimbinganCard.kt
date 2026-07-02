@@ -17,34 +17,49 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.acaris.core.ui.components.glowShadow
+import com.acaris.core.ui.theme.StatusAvailableText
 import com.acaris.core.ui.theme.StatusBookedText
+import com.acaris.core.ui.theme.StatusFullText
 import com.acaris.core.ui.theme.StatusSelesaiText
 import com.acaris.features.dashboard.presentation.model.JadwalSingkatUiModel
 import com.acaris.features.schedule.presentation.model.ScheduleStatus
 
 @Composable
 fun UpcomingBimbinganCard(
-    jadwal: JadwalSingkatUiModel, // 🌟 SEKARANG NON-NULL (MURNI SATU KARTU)
+    jadwal: JadwalSingkatUiModel,
     modifier: Modifier = Modifier
 ) {
-    val statusColor = if (jadwal.status == ScheduleStatus.SELESAI) StatusSelesaiText else StatusBookedText
-    val statusText = if (jadwal.status == ScheduleStatus.SELESAI) "SELESAI" else "DIPESAN"
+    val (statusText, statusColor) = when (jadwal.status) {
+        ScheduleStatus.SELESAI -> "SELESAI" to StatusSelesaiText
+        ScheduleStatus.BOOKED_BY_ME -> "DIPESAN" to StatusBookedText
+        ScheduleStatus.FULL -> "PENUH" to StatusFullText
+        ScheduleStatus.AVAILABLE -> "TERSEDIA" to StatusAvailableText
+        else -> "DIPESAN" to StatusBookedText
+    }
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .glowShadow(
+                color = statusColor,
+                alpha = 0.4f,
+                blurRadius = 4.dp,
+                borderRadius = 16.dp
+            )
+            .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(2.5.dp, statusColor.copy(alpha = 0.8f))
+        border = BorderStroke(1.dp, statusColor.copy(alpha = 0.8f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // HEADER
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Bimbingan Akademik",
+                    text = jadwal.date,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface
@@ -67,12 +82,11 @@ fun UpcomingBimbinganCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // WAKTU
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.AccessTime, contentDescription = null, tint = statusColor, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "${jadwal.date} • ${jadwal.waktu}",
+                    text = jadwal.waktu,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -81,7 +95,6 @@ fun UpcomingBimbinganCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // CATATAN DOSEN
             Row(verticalAlignment = Alignment.Top) {
                 Icon(Icons.Default.Info, contentDescription = null, tint = statusColor, modifier = Modifier.size(16.dp).padding(top = 2.dp))
                 Spacer(modifier = Modifier.width(8.dp))
@@ -98,13 +111,35 @@ fun UpcomingBimbinganCard(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(12.dp))
 
-            // AGENDA
-            Row(verticalAlignment = Alignment.Top) {
-                Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = statusColor, modifier = Modifier.size(16.dp).padding(top = 2.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                    Text(text = "Agenda Anda:", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = statusColor)
-                    Text(text = jadwal.agenda.ifBlank { "Belum ada agenda." }, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                text = "Agenda Anda:",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = statusColor.copy(alpha = 0.1f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.CheckCircle,
+                        contentDescription = null,
+                        tint = statusColor,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = jadwal.agenda,
+                        fontSize = 12.sp,
+                        color = statusColor,
+                        fontStyle = FontStyle.Normal
+                    )
                 }
             }
         }

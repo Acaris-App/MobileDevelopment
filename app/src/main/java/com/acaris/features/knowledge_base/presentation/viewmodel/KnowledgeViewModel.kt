@@ -32,9 +32,6 @@ class KnowledgeViewModel @Inject constructor(
         fetchDocuments()
     }
 
-    // ==========================================
-    // 1. GET (AMBIL DATA DOKUMEN)
-    // ==========================================
     fun fetchDocuments(category: String? = null, search: String? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -55,9 +52,6 @@ class KnowledgeViewModel @Inject constructor(
         }
     }
 
-    // ==========================================
-    // 2. CREATE (UPLOAD DOKUMEN BARU)
-    // ==========================================
     fun uploadDocument(title: String, category: String, file: File) {
         viewModelScope.launch {
             _uiState.update { it.copy(isUploading = true, errorMessage = null, successMessage = null) }
@@ -78,9 +72,6 @@ class KnowledgeViewModel @Inject constructor(
         }
     }
 
-    // ==========================================
-    // 3. UPDATE (EDIT DOKUMEN)
-    // ==========================================
     fun updateDocument(id: String, title: String?, category: String?, file: File?) {
         viewModelScope.launch {
             _uiState.update { it.copy(isUploading = true, errorMessage = null, successMessage = null) }
@@ -102,9 +93,6 @@ class KnowledgeViewModel @Inject constructor(
         }
     }
 
-    // ==========================================
-    // 4. DELETE (HAPUS DOKUMEN)
-    // ==========================================
     fun deleteDocument(id: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isUploading = true, errorMessage = null, successMessage = null) }

@@ -13,14 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-// 🌟 FIX: Import CustomCircularIconButton
 import com.acaris.core.ui.components.CustomCircularIconButton
+import com.acaris.core.ui.components.glowShadow
 import com.acaris.core.ui.theme.StatusAvailableText
 import com.acaris.core.ui.theme.StatusFullText
 import com.acaris.core.ui.theme.StatusSelesaiText
@@ -46,7 +45,12 @@ fun ScheduleDetailCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(2.dp, RoundedCornerShape(16.dp), clip = false)
+            .glowShadow(
+                color = statusColor,
+                alpha = 0.4f,
+                blurRadius = 4.dp,
+                borderRadius = 16.dp
+            )
             .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -83,18 +87,17 @@ fun ScheduleDetailCard(
 
                     if (!isSelesai) {
                         Spacer(modifier = Modifier.width(8.dp))
-                        // 🌟 FIX: Memakai CustomCircularIconButton dengan icon Outlined
                         CustomCircularIconButton(
                             icon = Icons.Outlined.Edit,
                             contentDescription = "Edit",
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = MaterialTheme.colorScheme.primary,
                             onClick = onEditClick
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         CustomCircularIconButton(
                             icon = Icons.Outlined.Delete,
                             contentDescription = "Hapus",
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = MaterialTheme.colorScheme.error,
                             onClick = onDeleteClick
                         )
                     }
@@ -105,7 +108,7 @@ fun ScheduleDetailCard(
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.Top) {
                     Icon(
-                        Icons.Outlined.Info, // 🌟 FIX: Ikon garis
+                        Icons.Outlined.Info,
                         contentDescription = null,
                         tint = statusColor,
                         modifier = Modifier.size(16.dp).padding(top = 2.dp)
@@ -141,59 +144,53 @@ fun ScheduleDetailCard(
                     )
                 }
             } else {
-                bookedStudents.forEach { student -> StudentListItem(student) }
-            }
-        }
-    }
-}
-
-@Composable
-private fun StudentListItem(student: StudentBookingUiModel) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = student.nama,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = student.npm,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                if (student.keterangan.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                bookedStudents.forEach { student ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        border = BorderStroke(0.5.dp, statusColor.copy(alpha = 0.8f))
                     ) {
-                        Text(
-                            text = "Agenda: ${student.keterangan}",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontStyle = FontStyle.Italic
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp)
+                        ) {
+                            Text(
+                                text = student.nama,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = student.npm,
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            if (student.keterangan.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = statusColor.copy(alpha = 0.1f)
+                                ) {
+                                    Text(
+                                        text = "Agenda: ${student.keterangan}",
+                                        fontSize = 12.sp,
+                                        color = statusColor,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        fontStyle = FontStyle.Normal
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

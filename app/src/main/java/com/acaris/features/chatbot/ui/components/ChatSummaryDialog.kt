@@ -14,25 +14,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomTextField
-import com.acaris.core.ui.components.glowShadow // 🌟 Pastikan ini diimport
+import com.acaris.core.ui.components.glowShadow
 
 @Composable
 fun ChatSummaryDialog(
     showDialog: Boolean,
     summaryText: String,
-    isReadOnly: Boolean = false, // 🌟 PENENTU WUJUD DIALOG
+    isReadOnly: Boolean = false,
     onDismiss: () -> Unit,
-    onConfirm: ((String) -> Unit)? = null // Opsional untuk Read-Only
+    onConfirm: ((String) -> Unit)? = null
 ) {
     if (!showDialog) return
 
-    // State untuk menyimpan hasil editan (hanya relevan jika isReadOnly = false)
     var editedSummary by remember(summaryText) { mutableStateOf(summaryText) }
 
     CustomDialog(
         showDialog = showDialog,
         onDismissRequest = onDismiss,
-        // Tombol menyesuaikan dengan mode
         confirmText = if (isReadOnly) "Tutup" else "Simpan",
         onConfirm = {
             if (isReadOnly) {
@@ -58,9 +56,6 @@ fun ChatSummaryDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 if (isReadOnly) {
-                    // ==========================================
-                    // 🌟 WUJUD 1: READ-ONLY (Untuk History Detail)
-                    // ==========================================
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -82,9 +77,6 @@ fun ChatSummaryDialog(
                         )
                     }
                 } else {
-                    // ==========================================
-                    // 🌟 WUJUD 2: EDITABLE (Saat Chatbot Selesai)
-                    // ==========================================
                     Text(
                         text = "Aca merangkum poin bimbinganmu seperti di bawah ini. Silakan edit jika ada yang kurang tepat sebelum disimpan ke riwayat.",
                         fontSize = 13.sp,

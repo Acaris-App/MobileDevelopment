@@ -17,7 +17,6 @@ fun MahasiswaTabSection(
     onViewDocument: (String) -> Unit,
     onUploadOrEditDocument: (type: String, semester: Int?, existingDocId: String?) -> Unit,
     onDeleteDocument: (String) -> Unit,
-    // 🌟 FIX 1: Tambahkan aksi klik untuk chatbot
     onNavigateToChatbotDetail: (String) -> Unit
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }

@@ -23,7 +23,6 @@ class ChatbotHistoryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ChatbotHistoryUiState())
     val uiState: StateFlow<ChatbotHistoryUiState> = _uiState.asStateFlow()
 
-    // 🌟 1. FUNGSI UNTUK HALAMAN LIST (API ASLI)
     fun loadHistory() {
         _uiState.update { it.copy(isLoadingList = true, errorMessage = null) }
 
@@ -45,7 +44,6 @@ class ChatbotHistoryViewModel @Inject constructor(
         }
     }
 
-    // 🌟 2. FUNGSI UNTUK HALAMAN DETAIL (API ASLI)
     fun loadChatDetail(sessionId: String) {
         val selectedHistoryItem = _uiState.value.historyList.find { it.sessionId == sessionId }
         val foundSummary = selectedHistoryItem?.title ?: "Tidak ada ringkasan untuk sesi ini."
@@ -75,7 +73,6 @@ class ChatbotHistoryViewModel @Inject constructor(
         }
     }
 
-    // 🌟 3. FUNGSI BANTUAN UI
     fun toggleSummaryDialog(show: Boolean) {
         _uiState.update { it.copy(showSummaryDialog = show) }
     }

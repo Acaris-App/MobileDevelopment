@@ -243,8 +243,6 @@ fun MainNavHost(
                         popUpTo(startDestination) { inclusive = true }
                     }
                 },
-                onNavigateToEditDataDiri = { navController.navigate(Screen.EditDataDiri.route) },
-                onNavigateToChangePassword = { navController.navigate(Screen.ChangePassword.route) }
             )
         }
 

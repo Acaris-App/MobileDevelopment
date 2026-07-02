@@ -31,11 +31,11 @@ import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomCircularIconButton
 import com.acaris.core.ui.components.CustomDialog
-import com.acaris.core.ui.components.CustomDropdownField // 🌟 IMPORT CUSTOM DROPDOWN
+import com.acaris.core.ui.components.CustomDropdownField
 import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
-import com.acaris.core.ui.components.CustomTextField // 🌟 IMPORT CUSTOM TEXT FIELD
+import com.acaris.core.ui.components.CustomTextField
 import com.acaris.core.utils.ImageUtils
 import com.acaris.features.profile.presentation.viewmodel.ProfileViewModel
 import java.util.Calendar
@@ -52,7 +52,6 @@ fun EditDataDiriScreen(
 
     var selectedPhotoUri by remember { mutableStateOf<Uri?>(null) }
     var showConfirmDialog by remember { mutableStateOf(false) }
-
     var showZoomedImage by remember { mutableStateOf(false) }
 
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
@@ -64,12 +63,12 @@ fun EditDataDiriScreen(
         }
     }
 
-    val isDataChanged = state.userProfile?.let {
+    val isDataChanged = state.profileData?.let {
         state.name != it.name ||
                 state.identifier != it.identifier ||
-                state.angkatan != (it.angkatan?.toString() ?: "") ||
-                state.ipk != (it.ipk?.toString() ?: "") ||
-                state.semester != (it.currentSemester?.toString() ?: "") ||
+                state.angkatan != it.rawAngkatan ||
+                state.ipk != it.rawIpk ||
+                state.semester != it.rawSemester ||
                 selectedPhotoUri != null
     } ?: false
 
@@ -92,12 +91,12 @@ fun EditDataDiriScreen(
             onConfirm = {
                 showConfirmDialog = false
 
-                val textChanged = state.userProfile?.let {
+                val textChanged = state.profileData?.let {
                     state.name != it.name ||
                             state.identifier != it.identifier ||
-                            state.angkatan != (it.angkatan?.toString() ?: "") ||
-                            state.ipk != (it.ipk?.toString() ?: "") ||
-                            state.semester != (it.currentSemester?.toString() ?: "")
+                            state.angkatan != it.rawAngkatan ||
+                            state.ipk != it.rawIpk ||
+                            state.semester != it.rawSemester
                 } ?: false
 
                 if (textChanged) {
@@ -213,7 +212,7 @@ fun EditDataDiriScreen(
                                 .clickable { showZoomedImage = true },
                             contentAlignment = Alignment.Center
                         ) {
-                            val imageToLoad = selectedPhotoUri ?: state.userProfile?.profilePictureUrl
+                            val imageToLoad = selectedPhotoUri ?: state.profileData?.profilePictureUrl
 
                             if (imageToLoad == null || imageToLoad.toString().isEmpty()) {
                                 Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.primary)
@@ -252,18 +251,18 @@ fun EditDataDiriScreen(
                         value = state.email,
                         onValueChange = {},
                         label = "Email (Tidak dapat diubah)",
-                        readOnly = true // Email tidak boleh diubah!
+                        readOnly = true
                     )
 
                     CustomTextField(
                         value = state.identifier,
                         onValueChange = { profileViewModel.onIdentifierChanged(it) },
-                        label = if (state.userProfile?.role == "mahasiswa") "NPM" else "NIP",
+                        label = state.profileData?.identifierLabel ?: "NPM / NIP",
                         placeholder = "Masukkan identitas Anda",
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
 
-                    if (state.userProfile?.role == "mahasiswa") {
+                    if (state.profileData?.isMahasiswa == true) {
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -313,7 +312,7 @@ fun EditDataDiriScreen(
             }
 
             if (showZoomedImage) {
-                val imageToLoad = selectedPhotoUri ?: state.userProfile?.profilePictureUrl
+                val imageToLoad = selectedPhotoUri ?: state.profileData?.profilePictureUrl
 
                 CustomImageZoomDialog(
                     imageUrl = imageToLoad?.toString(),

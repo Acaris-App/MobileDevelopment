@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM
+import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.ui.components.glowShadow
 import com.acaris.features.monitoring_mahasiswa.presentation.model.MahasiswaBimbinganUiModel
 
@@ -29,7 +29,6 @@ fun MahasiswaItemCard(
     mahasiswa: MahasiswaBimbinganUiModel,
     onClick: () -> Unit
 ) {
-    // 🌟 STATE BARU: Untuk melacak status Zoom Gambar
     var showZoomedImage by remember { mutableStateOf(false) }
 
     Card(
@@ -38,7 +37,7 @@ fun MahasiswaItemCard(
             .glowShadow(
                 color = MaterialTheme.colorScheme.tertiary,
                 alpha = 0.4f,
-                blurRadius = 6.dp,
+                blurRadius = 4.dp,
                 borderRadius = 16.dp
             )
             .clickable { onClick() },
@@ -57,7 +56,7 @@ fun MahasiswaItemCard(
                     .size(56.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer)
-                    .clickable { showZoomedImage = true }, // 🌟 AKSI KLIK FOTO
+                    .clickable { showZoomedImage = true },
                 contentAlignment = Alignment.Center
             ) {
                 if (mahasiswa.profilePictureUrl.isNullOrBlank()) {
@@ -94,27 +93,25 @@ fun MahasiswaItemCard(
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(8.dp)) // Sedikit dilebarkan jarak atasnya
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // 🌟 FIX: Info Akademik sekarang menggunakan border
                 Text(
                     text = mahasiswa.infoAkademik,
-                    fontSize = 11.sp, // Dikecilkan sedikit agar lebih pas sebagai badge
+                    fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .border(
                             width = 0.5.dp,
                             color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(50) // Membuatnya melengkung seperti kapsul
+                            shape = RoundedCornerShape(50)
                         )
-                        .padding(horizontal = 10.dp, vertical = 4.dp) // Jarak dalam teks ke garis border
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
                 )
             }
         }
     }
 
-    // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
     if (showZoomedImage) {
         CustomImageZoomDialog(
             imageUrl = mahasiswa.profilePictureUrl,

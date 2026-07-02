@@ -23,7 +23,6 @@ class UserManagementRepositoryImpl @Inject constructor(
     private val localDataSource: UserLocalDataSource
 ) : UserManagementRepository {
 
-    // 🌟 Aliran data reaktif (Single Source of Truth)
     private val _usersFlow = MutableStateFlow<List<User>>(emptyList())
     override val usersFlow = _usersFlow.asStateFlow()
 
@@ -81,7 +80,6 @@ class UserManagementRepositoryImpl @Inject constructor(
             if (response.status == "success" || response.status == "200") {
                 val user = response.data?.toDomain() ?: throw Exception("Data kosong")
 
-                // 🌟 UPDATE LOKAL & REAKTIF: Masukkan Admin baru ke paling atas daftar
                 currentUsersList.add(0, user)
                 _usersFlow.emit(currentUsersList.toList())
                 localDataSource.saveUsersToCache(currentUsersList)

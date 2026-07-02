@@ -1,6 +1,7 @@
 package com.acaris.features.dashboard.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,12 +25,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
-import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM KITA
+import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
+import com.acaris.core.ui.theme.StatusSelesaiText
 import com.acaris.features.dashboard.presentation.viewmodel.AdminDashboardViewModel
 import com.acaris.features.dashboard.ui.components.DashboardStatCard
-import com.acaris.features.dashboard.ui.components.LeaderboardItemData
-import com.acaris.features.dashboard.ui.components.LeaderboardSection
+import com.acaris.features.dashboard.ui.components.LeaderboardItemData // 🌟 TETAP DI LOCAL COMPONENTS DASHBOARD
+import com.acaris.features.dashboard.ui.components.LeaderboardSection // 🌟 TETAP DI LOCAL COMPONENTS DASHBOARD
 
 @Composable
 fun AdminDashboardScreen(
@@ -38,8 +40,6 @@ fun AdminDashboardScreen(
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
     val lifecycleOwner = LocalLifecycleOwner.current
-
-    // 🌟 STATE BARU: Untuk melacak apakah foto admin sedang di-zoom
     var showZoomedImage by remember { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner) {
@@ -106,7 +106,7 @@ fun AdminDashboardScreen(
                                     .size(56.dp)
                                     .clip(CircleShape)
                                     .background(Color.LightGray)
-                                    .clickable { showZoomedImage = true } // 🌟 TAMBAHKAN AKSI KLIK DI SINI
+                                    .clickable { showZoomedImage = true }
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
@@ -118,10 +118,18 @@ fun AdminDashboardScreen(
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "NIP: ${data.nipAdmin}",
-                                    fontSize = 12.sp,
+                                    text = data.nipAdmin,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Medium
+                                    modifier = Modifier
+                                        .border(
+                                            width = 0.5.dp,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            shape = RoundedCornerShape(50)
+                                        )
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(50))
+                                        .padding(horizontal = 10.dp, vertical = 1.dp)
                                 )
                             }
                         }
@@ -169,39 +177,50 @@ fun AdminDashboardScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
+                    val color1 = StatusSelesaiText
                     LeaderboardSection(
                         title = "Top 5 Dosen (Bimbingan Terbanyak)",
                         icon = Icons.Default.Star,
-                        iconColor = Color(0xFFFFC107),
+                        iconColor = color1,
                         items = data.topDosenBimbingan.map { LeaderboardItemData(it.nama, "NIP: ${it.nip}", it.total) },
-                        emptyMessage = "Belum ada data bimbingan dosen."
+                        emptyMessage = "Belum ada data bimbingan dosen.",
+                        containerColor = color1.copy(alpha = 0.05f),
+                        borderColor = color1,
+                        glowColor = color1
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    val color2 = MaterialTheme.colorScheme.secondary
                     LeaderboardSection(
                         title = "Top 5 Mahasiswa (Bimbingan Teraktif)",
                         icon = Icons.Default.TrendingUp,
-                        iconColor = Color(0xFF4CAF50),
+                        iconColor = color2,
                         items = data.topMahasiswaBimbingan.map { LeaderboardItemData(it.nama, "NPM: ${it.npm}", it.total) },
-                        emptyMessage = "Belum ada data bimbingan mahasiswa."
+                        emptyMessage = "Belum ada data bimbingan mahasiswa.",
+                        containerColor = color2.copy(alpha = 0.1f),
+                        borderColor = color2,
+                        glowColor = color2
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    val color3 = MaterialTheme.colorScheme.tertiary
                     LeaderboardSection(
                         title = "Top 5 Pengguna Chatbot",
                         icon = Icons.Default.SmartToy,
-                        iconColor = Color(0xFF9C27B0),
+                        iconColor = color3,
                         items = data.topMahasiswaChatbot.map { LeaderboardItemData(it.nama, "NPM: ${it.npm}", it.total) },
-                        emptyMessage = "Belum ada data interaksi chatbot."
+                        emptyMessage = "Belum ada data interaksi chatbot.",
+                        containerColor = color3.copy(alpha = 0.1f),
+                        borderColor = color3,
+                        glowColor = color3
                     )
 
                     Spacer(modifier = Modifier.height(120.dp))
                 }
             }
 
-            // 🌟 PANGGIL KOMPONEN ZOOM JIKA STATUS TRUE
             if (showZoomedImage && uiState.dashboardData != null) {
                 CustomImageZoomDialog(
                     imageUrl = uiState.dashboardData?.fotoAdmin?.ifEmpty { null },

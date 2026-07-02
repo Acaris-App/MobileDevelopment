@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 val AcarisPrimary = Color(0xFF3674B5)
-val AcarisSecondary = Color(0xFF578FCA)
 val AcarisTertiary = Color(0xFFA1E3F9)
 val Acarispink = Color(0xFFF2BAE8)
 

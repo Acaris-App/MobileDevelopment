@@ -55,7 +55,7 @@ fun ChatbotHistoryItemCard(
             ) {
                 Text(
                     text = date,
-                    fontSize = 12.sp,
+                    fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold
                 )

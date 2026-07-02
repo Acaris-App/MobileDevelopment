@@ -1,11 +1,29 @@
 package com.acaris.features.profile.presentation.model
 
-import com.acaris.features.profile.domain.model.UserProfile
+data class ProfileUiModel(
+    val id: String,
+    val name: String,
+    val email: String,
+    val identifier: String,
+    val identifierLabel: String,
+    val role: String,
+    val displayRole: String,
+    val profilePictureUrl: String,
+    val angkatan: String,
+    val currentSemester: String,
+    val ipk: String,
+    val dosenPa: String,
+    val isMahasiswa: Boolean,
+
+    val rawAngkatan: String,
+    val rawSemester: String,
+    val rawIpk: String
+)
 
 data class ProfileState(
     val isLoading: Boolean = false,
     val isUploadingPhoto: Boolean = false,
-    val userProfile: UserProfile? = null,
+    val profileData: ProfileUiModel? = null,
     val errorMessage: String? = null,
     val successMessage: String? = null,
 

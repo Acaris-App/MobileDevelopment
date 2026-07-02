@@ -29,7 +29,7 @@ data class ScheduleResponse(
     @SerializedName("status") val status: String?,
     @SerializedName("keterangan") val keterangan: String?,
     @SerializedName("booking_id") val bookingId: String?,
-    @SerializedName("mahasiswa_agenda") val mahasiswaAgenda: String?,
+    @SerializedName("agenda", alternate = ["mahasiswa_agenda"]) val mahasiswaAgenda: String?,
     @SerializedName("booked_students") val bookedStudents: List<StudentBookingResponse>? = null
 )
 

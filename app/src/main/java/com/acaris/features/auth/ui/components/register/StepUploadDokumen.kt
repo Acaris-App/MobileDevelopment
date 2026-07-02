@@ -20,7 +20,6 @@ import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.core.ui.components.CustomPrimaryButton
 import com.acaris.core.utils.FileUtils
-// 🌟 IMPORT SHARED COMPONENT
 import com.acaris.features.documents_mahasiswa.presentation.model.SharedDocumentUiModel
 import com.acaris.features.documents_mahasiswa.ui.components.SharedDocumentManager
 import java.io.File
@@ -117,7 +116,6 @@ fun StepUploadDokumen(
         }
     }
 
-    // 🌟 MAPPING STATE LOKAL KE UI MODEL NETRAL
     val mappedDocuments = uploadedDocs.map { (key, info) ->
         val parts = key.split("_")
         val type = parts[0]
@@ -151,13 +149,11 @@ fun StepUploadDokumen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 🌟 PANGGIL SHARED COMPONENT DI SINI
         SharedDocumentManager(
             documents = mappedDocuments,
             currentSemester = semester,
             isReadOnly = false,
             onViewDocument = {
-                // Beri tahu user kalau file belum bisa dilihat selama proses registrasi
                 android.widget.Toast.makeText(context, "Pratinjau dokumen tersedia setelah pendaftaran selesai.", android.widget.Toast.LENGTH_SHORT).show()
             },
             onUploadDocument = { type, sem, _ ->
@@ -166,11 +162,9 @@ fun StepUploadDokumen(
                 launcher.launch("application/pdf")
             },
             onDeleteDocument = { docId ->
-                // Cari key (misal: "krs_2") berdasarkan ID dokumen
                 val entry = uploadedDocs.entries.find { it.value.documentId == docId }
                 if (entry != null) {
                     onDeleteFile(docId) {
-                        // Hapus dari state lokal jika berhasil dihapus di server
                         uploadedDocs = uploadedDocs - entry.key
                     }
                 }

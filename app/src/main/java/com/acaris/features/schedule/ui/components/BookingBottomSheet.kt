@@ -100,17 +100,13 @@ fun BookingBottomSheet(
                 CustomOutlinedButton(
                     text = "Batal",
                     onClick = onDismiss,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp)
+                    modifier = Modifier.weight(1f)
                 )
                 CustomPrimaryButton(
                     text = "Booking",
                     onClick = { onSubmit(agenda) },
                     enabled = agenda.isNotBlank(),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp)
+                    modifier = Modifier.weight(1f)
                 )
             }
         }

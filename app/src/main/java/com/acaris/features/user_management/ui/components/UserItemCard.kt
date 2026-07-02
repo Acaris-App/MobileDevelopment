@@ -110,11 +110,12 @@ fun UserItemCard(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
-            Spacer(modifier = Modifier.height(12.dp))
 
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (isMahasiswa) {
+                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     UserDetailRow("Angkatan", user.angkatan?.toString() ?: "-")
                     Spacer(modifier = Modifier.height(6.dp))
 
@@ -133,6 +134,9 @@ fun UserItemCard(
                     UserDetailRow("Total Bimbingan", "${user.totalBimbingan ?: 0} Kali")
                 }
                 else if (user.role.lowercase() == "dosen") {
+                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     UserDetailRow("Kelas Bimbingan", user.kodeKelas ?: "-")
                     Spacer(modifier = Modifier.height(6.dp))
 
@@ -142,7 +146,6 @@ fun UserItemCard(
                     UserDetailRow("Total Sesi Bimbingan", "${user.totalBimbingan ?: 0} Sesi")
                 }
                 else {
-                    UserDetailRow("Hak Akses", "Administrator Sistem")
                 }
             }
 
@@ -205,7 +208,6 @@ fun UserItemCard(
         }
     }
 
-    // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
     if (showZoomedImage) {
         CustomImageZoomDialog(
             imageUrl = user.profilePictureUrl,

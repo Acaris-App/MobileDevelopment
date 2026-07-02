@@ -19,9 +19,9 @@ class UpdateKnowledgeDocumentUseCase @Inject constructor(
                 return Result.failure(Exception("Gagal! Dokumen pengganti harus berformat .pdf"))
             }
 
-            val maxFileSize = 5L * 1024 * 1024
+            val maxFileSize = 50L * 1024 * 1024
             if (file.length() > maxFileSize) {
-                return Result.failure(Exception("Ukuran file pengganti terlalu besar! Maksimal 5 MB."))
+                return Result.failure(Exception("Ukuran file pengganti terlalu besar! Maksimal 50 MB."))
             }
         }
 

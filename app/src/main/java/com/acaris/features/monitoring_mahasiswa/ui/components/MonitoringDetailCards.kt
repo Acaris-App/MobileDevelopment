@@ -7,24 +7,21 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPORT KOMPONEN ZOOM
+import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.ui.components.glowShadow
 import com.acaris.features.monitoring_mahasiswa.presentation.model.DetailMahasiswaUiModel
-import com.acaris.features.monitoring_mahasiswa.presentation.model.DokumenBimbinganUiModel
 
 @Composable
 fun DetailProfilMahasiswaCard(
@@ -51,7 +48,6 @@ fun DetailProfilMahasiswaCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // FOTO PROFIL
                 Box(
                     modifier = Modifier
                         .size(150.dp)
@@ -79,12 +75,10 @@ fun DetailProfilMahasiswaCard(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // DATA DIRI
                 MonitoringDataLine(label = "Nama", value = detail.name)
                 MonitoringDataLine(label = "NPM", value = detail.npm)
                 MonitoringDataLine(label = "Email", value = detail.email)
 
-                // 🌟 FIX: Angkatan & Semester sekarang dipisah persis seperti di profil
                 MonitoringDataLine(label = "Angkatan", value = detail.angkatan)
                 MonitoringDataLine(label = "Semester Saat Ini", value = detail.semester)
 

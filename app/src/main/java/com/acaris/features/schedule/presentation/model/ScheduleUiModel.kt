@@ -4,6 +4,7 @@ data class ScheduleUiModel(
     val id: String,
     val title: String,
     val date: String = "",
+    val rawDate: String = "",
     val time: String,
     val quotaInfo: String,
     val status: String,

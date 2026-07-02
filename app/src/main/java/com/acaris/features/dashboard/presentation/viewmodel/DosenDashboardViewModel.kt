@@ -22,7 +22,6 @@ import javax.inject.Inject
 @HiltViewModel
 class DosenDashboardViewModel @Inject constructor(
     private val getDashboardDosenUseCase: GetDashboardDosenUseCase,
-    // 🌟 SUNTIKAN: Mengambil UseCase Schedule
     private val getMonthlySchedulesUseCase: GetMonthlySchedulesUseCase
 ) : ViewModel() {
 
@@ -45,7 +44,6 @@ class DosenDashboardViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(isLoading = false, dashboardData = uiData)
                     }
-                    // 🌟 Tarik data kalender full setelah dashboard utama dosen termuat
                     fetchFullMonthlySchedules(_currentMonth.value.year, _currentMonth.value.monthValue)
                 },
                 onFailure = { error ->
@@ -57,7 +55,6 @@ class DosenDashboardViewModel @Inject constructor(
         }
     }
 
-    // 🌟 LOGIKA PEWARNAAN DIANUT DARI SCHEDULE VIEWMODEL DOSEN KAPTEN
     private fun fetchFullMonthlySchedules(year: Int, month: Int) {
         viewModelScope.launch {
             val result = getMonthlySchedulesUseCase(year, month)

@@ -1,5 +1,6 @@
 package com.acaris.features.chatbot.ui.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,14 +13,16 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,8 +35,10 @@ import com.acaris.core.ui.components.CustomLoadingOverlay
 import com.acaris.features.chatbot.presentation.viewmodel.ChatbotViewModel
 import com.acaris.features.chatbot.ui.components.ChatBubble
 import com.acaris.features.chatbot.ui.components.ChatInputBar
-import com.acaris.features.chatbot.ui.components.ChatSummaryDialog // 🌟 PANGGIL KOMPONEN KITA
+import com.acaris.features.chatbot.ui.components.ChatSummaryDialog
+import com.acaris.features.chatbot.ui.components.GeneratingSummaryOverlay
 import com.acaris.features.chatbot.ui.components.TypingIndicator
+import com.acaris.R
 
 enum class ChatbotMenuOption(val label: String, val icon: ImageVector) {
     END_SESSION("Akhiri Sesi", Icons.Default.CheckCircle),
@@ -161,11 +166,13 @@ fun ChatbotScreen(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.SmartToy,
-                            contentDescription = "Aca Robot",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(28.dp)
+                        Image(
+                            painter = painterResource(id = R.drawable.ekspresi1),
+                            contentDescription = "Profil Aca",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Aca (Chatbot)", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
@@ -216,8 +223,19 @@ fun ChatbotScreen(
                         .align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ekspresi2),
+                        contentDescription = "Aca Menyapa",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Text(
-                        text = "🤖\nHalo! Ada yang bisa Aca bantu?",
+                        text = "Halo! Ada yang bisa Aca bantu?",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -225,7 +243,7 @@ fun ChatbotScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tanyakan seputar format dokumen, alur bimbingan skripsi, atau administrasi akademik lainnya.",
+                        text = "Tanyakan seputar kebutuhan akademik kamu",
                         fontSize = 13.sp,
                         color = Color.Gray,
                         textAlign = TextAlign.Center
@@ -249,23 +267,38 @@ fun ChatbotScreen(
                     if (uiState.isSending) {
                         item {
                             Box(modifier = Modifier.padding(vertical = 4.dp)) {
-                                Card(
-                                    shape = RoundedCornerShape(16.dp, 16.dp, 16.dp, 0.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                                    )
+                                Row(
+                                    verticalAlignment = Alignment.Bottom,
+                                    horizontalArrangement = Arrangement.Start
                                 ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                                    ) {
-                                        Text(
-                                            text = "Aca sedang mengetik",
-                                            fontSize = 13.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                    Image(
+                                        painter = painterResource(id = R.drawable.ekspresi3),
+                                        contentDescription = "Aca Mengetik",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .clip(CircleShape)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Card(
+                                        shape = RoundedCornerShape(16.dp, 16.dp, 16.dp, 0.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.secondary.copy(0.8f)
                                         )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        TypingIndicator()
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                                        ) {
+                                            Text(
+                                                text = "Aca sedang mengetik",
+                                                fontSize = 13.sp,
+                                                color = Color.Black
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            TypingIndicator()
+                                        }
                                     }
                                 }
                             }
@@ -307,7 +340,12 @@ fun ChatbotScreen(
         onConfirm = { finalText -> viewModel.submitFinalSummary(finalText) }
     )
 
-    if (uiState.isLoading || uiState.isGeneratingSummary) {
-        CustomLoadingOverlay(isLoading = true)
+    // 🌟 PEMISAHAN LOGIKA OVERLAY LOADING
+    if (uiState.isLoading) {
+        CustomLoadingOverlay(isLoading = true) // Loading biasa
+    }
+
+    if (uiState.isGeneratingSummary) {
+        GeneratingSummaryOverlay() // Animasi khusus generate AI
     }
 }

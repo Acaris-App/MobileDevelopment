@@ -1,18 +1,11 @@
 package com.acaris.features.monitoring_mahasiswa.presentation.mapper
 
+import com.acaris.core.utils.DateUtils
 import com.acaris.features.monitoring_mahasiswa.domain.model.RiwayatBimbingan
 import com.acaris.features.monitoring_mahasiswa.presentation.model.RiwayatBimbinganUiModel
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 fun RiwayatBimbingan.toUiModel(): RiwayatBimbinganUiModel {
-    val formattedDate = try {
-        val dateObj = LocalDate.parse(this.date)
-        dateObj.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy", Locale("id", "ID")))
-    } catch (e: Exception) {
-        this.date
-    }
+    val formattedDate = DateUtils.formatShortDateToIndo(this.date)
 
     val isPast = this.isExpired()
 

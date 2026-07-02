@@ -40,7 +40,6 @@ fun ForgotPasswordScreen(
         if (state.currentStep == ForgotPasswordStep.SUCCESS) { showSuccessDialog = true }
     }
 
-    // Dialog Error
     if (state.errorMessage != null) {
         CustomDialog(
             showDialog = true,

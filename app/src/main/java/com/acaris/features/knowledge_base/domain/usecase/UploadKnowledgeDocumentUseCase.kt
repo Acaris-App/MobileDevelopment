@@ -18,9 +18,9 @@ class UploadKnowledgeDocumentUseCase @Inject constructor(
             return Result.failure(Exception("Gagal! AI Aca hanya bisa membaca file berformat .pdf"))
         }
 
-        val maxFileSize = 5L * 1024 * 1024
+        val maxFileSize = 50L * 1024 * 1024
         if (file.length() > maxFileSize) {
-            return Result.failure(Exception("Ukuran file terlalu besar! Maksimal 5 MB."))
+            return Result.failure(Exception("Ukuran file terlalu besar! Maksimal 50 MB."))
         }
 
         return repository.uploadKnowledgeDocument(title, category, file)

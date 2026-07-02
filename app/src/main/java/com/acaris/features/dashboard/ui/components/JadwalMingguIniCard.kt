@@ -19,7 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.acaris.core.ui.components.glowShadow
 import com.acaris.core.ui.theme.StatusAvailableText
+import com.acaris.core.ui.theme.StatusBookedText
 import com.acaris.core.ui.theme.StatusFullText
 import com.acaris.core.ui.theme.StatusSelesaiText
 import com.acaris.features.dashboard.presentation.model.JadwalMingguIniUiModel
@@ -34,18 +36,24 @@ fun JadwalMingguIniCard(
     val (statusText, statusColor) = when (jadwal.status) {
         ScheduleStatus.SELESAI -> "SELESAI" to StatusSelesaiText
         ScheduleStatus.AVAILABLE -> "TERSEDIA" to StatusAvailableText
-        else -> "DIPESAN" to StatusFullText
+        ScheduleStatus.FULL -> "DIPESAN" to StatusFullText
+        else -> "DIPESAN" to StatusBookedText
     }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(2.dp, RoundedCornerShape(16.dp), clip = false)
+            .glowShadow(
+                color = statusColor,
+                alpha = 0.4f,
+                blurRadius = 4.dp,
+                borderRadius = 16.dp
+            )
             .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, statusColor.copy(alpha = 0.8f))
+        border = BorderStroke(0.5.dp, statusColor.copy(alpha = 0.8f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // HEADER: Tanggal, Waktu, & Status
@@ -134,8 +142,7 @@ fun JadwalMingguIniCard(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface
                         ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        border = BorderStroke(0.5.dp, statusColor.copy(alpha = 0.8f))
                     ) {
                         Column(
                             modifier = Modifier
@@ -160,14 +167,13 @@ fun JadwalMingguIniCard(
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Surface(
                                     shape = RoundedCornerShape(6.dp),
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                    color = statusColor.copy(alpha = 0.1f)
                                 ) {
                                     Text(
                                         text = "Agenda: ${mahasiswa.agenda}",
                                         fontSize = 12.sp,
-                                        color = MaterialTheme.colorScheme.primary,
+                                        color = statusColor,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                        fontStyle = FontStyle.Italic
                                     )
                                 }
                             }

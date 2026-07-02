@@ -1,5 +1,6 @@
 package com.acaris.features.dashboard.ui.components
 
+import androidx.compose.foundation.border // 🌟 Tambahkan import ini
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.acaris.core.ui.components.glowShadow
 
 data class LeaderboardItemData(val title: String, val subtitle: String, val value: String)
 
@@ -21,9 +23,13 @@ fun LeaderboardSection(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     iconColor: Color,
     items: List<LeaderboardItemData>,
-    emptyMessage: String
+    emptyMessage: String,
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    borderColor: Color = Color.Transparent,
+    glowColor: Color = Color.Transparent
 ) {
-    Column {
+    Column(modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
@@ -31,12 +37,26 @@ fun LeaderboardSection(
         }
         Spacer(modifier = Modifier.height(12.dp))
 
+        val cardModifier = Modifier
+            .fillMaxWidth()
+            .glowShadow(
+                color = glowColor,
+                alpha = if (glowColor != Color.Transparent) 0.4f else 0f,
+                blurRadius = 4F.dp,
+                borderRadius = 16.dp
+            )
+            .border(
+                width = if (borderColor != Color.Transparent) 1.dp else 0.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(16.dp)
+            )
+
         if (items.isEmpty()) {
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(2.dp)
+                modifier = cardModifier,
+                colors = CardDefaults.cardColors(containerColor = containerColor),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(if (glowColor == Color.Transparent) 2.dp else 0.dp) // Matikan elevasi bawaan jika pakai glow
             ) {
                 Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
                     Text(emptyMessage, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, textAlign = TextAlign.Center)
@@ -44,10 +64,10 @@ fun LeaderboardSection(
             }
         } else {
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = cardModifier,
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(2.dp)
+                colors = CardDefaults.cardColors(containerColor = containerColor),
+                elevation = CardDefaults.cardElevation(if (glowColor == Color.Transparent) 2.dp else 0.dp)
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     items.forEachIndexed { index, item ->
@@ -55,34 +75,30 @@ fun LeaderboardSection(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Angka Peringkat (1, 2, 3...)
                             Surface(
                                 shape = CircleShape,
-                                color = if (index < 3) iconColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface,
+                                color = iconColor.copy(alpha = 0.2f),
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
                                         text = "${index + 1}",
                                         fontWeight = FontWeight.Bold,
-                                        color = if (index < 3) iconColor else Color.Gray,
+                                        color = iconColor,
                                         fontSize = 14.sp
                                     )
                                 }
                             }
                             Spacer(modifier = Modifier.width(16.dp))
 
-                            // Nama & ID
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(item.title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                                 Text(item.subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
 
-                            // Total Nilai
                             Text(item.value, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
                         }
 
-                        // Garis pemisah kecuali untuk item terakhir
                         if (index < items.size - 1) {
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
                         }

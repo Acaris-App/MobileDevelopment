@@ -28,7 +28,7 @@ class RegisterViewModel @Inject constructor(
     private val uploadDocumentUseCase: UploadDocumentUseCase,
     private val updateDocumentUseCase: UpdateDocumentUseCase,
     private val deleteDocumentUseCase: DeleteDocumentUseCase,
-    private val calculateSemesterUseCase: CalculateSemesterUseCase // 🌟 SUNTIKKAN DI SINI
+    private val calculateSemesterUseCase: CalculateSemesterUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterState())

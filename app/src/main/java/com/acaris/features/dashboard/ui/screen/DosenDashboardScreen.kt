@@ -1,6 +1,5 @@
 package com.acaris.features.dashboard.ui.screen
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,7 +31,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
-import com.acaris.core.utils.DateUtils // 🌟 IMPORT DATEUTILS
+import com.acaris.core.utils.DateUtils
 import com.acaris.features.dashboard.presentation.viewmodel.DosenDashboardViewModel
 import com.acaris.features.dashboard.ui.components.DashboardStatCard
 import com.acaris.features.dashboard.ui.components.JadwalMingguIniCard
@@ -142,9 +141,17 @@ fun DosenDashboardScreen(
 
                                 Text(
                                     text = data.nipDosen,
-                                    fontSize = 12.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier
+                                        .border(
+                                            width = 0.5.dp,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            shape = RoundedCornerShape(50)
+                                        )
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(50))
+                                        .padding(horizontal = 10.dp, vertical = 1.dp)
                                 )
 
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -245,7 +252,6 @@ fun DosenDashboardScreen(
                                 JadwalMingguIniCard(
                                     jadwal = jadwal,
                                     onClick = {
-                                        // 🌟 MENGGUNAKAN UTILS UNTUK PARSING
                                         val apiDate = DateUtils.formatUiDateToApiDate(jadwal.date)
                                         onNavigateToSchedule(apiDate)
                                     }
@@ -259,9 +265,12 @@ fun DosenDashboardScreen(
                     LeaderboardSection(
                         title = "Top 5 Mahasiswa (Bimbingan Teraktif)",
                         icon = Icons.Default.TrendingUp,
-                        iconColor = Color(0xFF4CAF50),
+                        iconColor = MaterialTheme.colorScheme.secondary,
                         items = data.topMahasiswaBimbingan.map { LeaderboardItemData(it.nama, "NPM: ${it.npm}", it.total) },
-                        emptyMessage = "Belum ada data bimbingan mahasiswa."
+                        emptyMessage = "Belum ada data bimbingan mahasiswa.",
+                        containerColor = MaterialTheme.colorScheme.secondary.copy(0.1f),
+                        borderColor = MaterialTheme.colorScheme.secondary,
+                        glowColor = MaterialTheme.colorScheme.secondary
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -269,11 +278,13 @@ fun DosenDashboardScreen(
                     LeaderboardSection(
                         title = "Top 5 Pengguna Chatbot",
                         icon = Icons.Default.SmartToy,
-                        iconColor = Color(0xFF9C27B0),
+                        iconColor = MaterialTheme.colorScheme.tertiary,
                         items = data.topMahasiswaChatbot.map { LeaderboardItemData(it.nama, "NPM: ${it.npm}", it.total) },
-                        emptyMessage = "Belum ada data interaksi chatbot."
+                        emptyMessage = "Belum ada data interaksi chatbot.",
+                        containerColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f),
+                        borderColor = MaterialTheme.colorScheme.tertiary,
+                        glowColor = MaterialTheme.colorScheme.tertiary
                     )
-
                     Spacer(modifier = Modifier.height(120.dp))
                 }
             }
