@@ -12,6 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,8 +29,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.acaris.core.ui.components.CustomChipTabRow
 import com.acaris.core.ui.components.CustomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
-import com.acaris.core.ui.components.CustomSearchAndSortBar // 🌟 MENGGUNAKAN KOMPONEN GLOBAL
-import com.acaris.core.ui.components.SortItem // 🌟 MENGGUNAKAN KOMPONEN GLOBAL
+import com.acaris.core.ui.components.CustomSearchAndSortBar
+import com.acaris.core.ui.components.SortItem
 import com.acaris.features.user_management.presentation.model.UserUiModel
 import com.acaris.features.user_management.presentation.viewmodel.UserManagementViewModel
 import com.acaris.features.user_management.ui.components.UserItemCard
@@ -48,11 +50,21 @@ fun UserManagementScreen(
     val selectedTabIndex = tabs.indexOf(state.currentRole).coerceAtLeast(0)
 
     var searchQuery by remember { mutableStateOf(state.currentSearch) }
+
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+
     LaunchedEffect(searchQuery) {
         delay(500L)
         if (searchQuery != state.currentSearch) {
             viewModel.setSearchQuery(searchQuery)
             viewModel.loadUsers(isRefresh = true)
+        }
+    }
+
+    LaunchedEffect(state.isLoading) {
+        if (!state.isLoading) {
+            isRefreshing = false
         }
     }
 
@@ -193,7 +205,13 @@ fun UserManagementScreen(
             }
         }
     ) { innerPadding ->
-        Box(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.loadUsers(isRefresh = true)
+            },
+            state = pullToRefreshState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -293,7 +311,7 @@ fun UserManagementScreen(
                 }
             }
 
-            if (state.isLoading || state.isActionLoading) {
+            if ((state.isLoading && !isRefreshing) || state.isActionLoading) {
                 CustomLoadingOverlay(isLoading = true)
             }
         }

@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,8 +34,17 @@ fun ChatbotHistoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+
     LaunchedEffect(Unit) {
         viewModel.loadHistory()
+    }
+
+    LaunchedEffect(uiState.isLoadingList) {
+        if (!uiState.isLoadingList) {
+            isRefreshing = false
+        }
     }
 
     if (uiState.errorMessage != null && !uiState.isLoadingList) {
@@ -83,48 +94,61 @@ fun ChatbotHistoryScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            if (uiState.historyList.isEmpty() && !uiState.isLoadingList) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.History,
-                        contentDescription = null,
-                        modifier = Modifier.size(80.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Belum ada riwayat bimbingan.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 16.sp
-                    )
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(uiState.historyList) { item ->
-                        ChatbotHistoryItemCard(
-                            title = item.title,
-                            date = item.date,
-                            status = item.status,
-                            onClick = {
-                                viewModel.loadChatDetail(item.sessionId)
-                                onNavigateToDetail(item.sessionId)
-                            }
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.loadHistory()
+            },
+            state = pullToRefreshState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (uiState.historyList.isEmpty() && !uiState.isLoadingList) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.History,
+                            contentDescription = null,
+                            modifier = Modifier.size(80.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Belum ada riwayat bimbingan.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 16.sp
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(uiState.historyList) { item ->
+                            ChatbotHistoryItemCard(
+                                title = item.title,
+                                date = item.date,
+                                status = item.status,
+                                onClick = {
+                                    viewModel.loadChatDetail(item.sessionId)
+                                    onNavigateToDetail(item.sessionId)
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
-    if (uiState.isLoadingList) {
+    if (uiState.isLoadingList && !isRefreshing) {
         CustomLoadingOverlay(isLoading = true)
     }
 }

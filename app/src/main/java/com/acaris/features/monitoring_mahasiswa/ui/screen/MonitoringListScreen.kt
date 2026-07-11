@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,8 +30,17 @@ fun MonitoringListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+
     LaunchedEffect(Unit) {
         viewModel.fetchDaftarMahasiswa()
+    }
+
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            isRefreshing = false
+        }
     }
 
     Scaffold(
@@ -59,57 +70,68 @@ fun MonitoringListScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (uiState.filteredListMahasiswa.isEmpty() && !uiState.isLoading && uiState.errorMessage == null) {
-                    Text(
-                        text = if (uiState.searchQuery.isNotBlank()) "Mahasiswa tidak ditemukan." else "Belum ada mahasiswa bimbingan.",
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(bottom = 90.dp),
-                        color = Color.Gray
-                    )
-                } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(
-                            start = 24.dp,
-                            end = 24.dp,
-                            top = 8.dp,
-                            bottom = 100.dp
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(uiState.filteredListMahasiswa) { mahasiswa ->
-                            MahasiswaItemCard(
-                                mahasiswa = mahasiswa,
-                                onClick = { onNavigateToDetail(mahasiswa.id) }
-                            )
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    isRefreshing = true
+                    viewModel.fetchDaftarMahasiswa()
+                },
+                state = pullToRefreshState,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    if (uiState.filteredListMahasiswa.isEmpty() && !uiState.isLoading && uiState.errorMessage == null) {
+                        Text(
+                            text = if (uiState.searchQuery.isNotBlank()) "Mahasiswa tidak ditemukan." else "Belum ada mahasiswa bimbingan.",
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(bottom = 90.dp),
+                            color = Color.Gray
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(
+                                start = 24.dp,
+                                end = 24.dp,
+                                top = 8.dp,
+                                bottom = 100.dp
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(uiState.filteredListMahasiswa) { mahasiswa ->
+                                MahasiswaItemCard(
+                                    mahasiswa = mahasiswa,
+                                    onClick = { onNavigateToDetail(mahasiswa.id) }
+                                )
+                            }
                         }
                     }
-                }
 
-                if (uiState.errorMessage != null && uiState.listMahasiswa.isEmpty()) {
-                    CustomDialog(
-                        showDialog = true,
-                        onDismissRequest = {
-                            viewModel.resetError()
-                        },
-                        content = {
-                            Text(
-                                text = uiState.errorMessage ?: "Tidak ada koneksi internet atau terjadi kesalahan.",
-                                fontSize = 16.sp,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        },
-                        confirmText = "Coba Lagi",
-                        onConfirm = {
-                            viewModel.fetchDaftarMahasiswa()
-                        }
-                    )
-                }
+                    if (uiState.errorMessage != null && uiState.listMahasiswa.isEmpty()) {
+                        CustomDialog(
+                            showDialog = true,
+                            onDismissRequest = {
+                                viewModel.resetError()
+                            },
+                            content = {
+                                Text(
+                                    text = uiState.errorMessage ?: "Tidak ada koneksi internet atau terjadi kesalahan.",
+                                    fontSize = 16.sp,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            confirmText = "Coba Lagi",
+                            onConfirm = {
+                                viewModel.fetchDaftarMahasiswa()
+                            }
+                        )
+                    }
 
-                if (uiState.isLoading) {
-                    CustomLoadingOverlay(isLoading = true)
+                    if (uiState.isLoading && !isRefreshing) {
+                        CustomLoadingOverlay(isLoading = true)
+                    }
                 }
             }
         }

@@ -11,6 +11,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +35,7 @@ import com.acaris.features.documents_mahasiswa.ui.components.SharedDocumentManag
 import com.acaris.features.profile.presentation.viewmodel.ProfileViewModel
 import com.acaris.features.profile.ui.components.ProfileInfoCard
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
@@ -54,6 +57,9 @@ fun ProfileScreen(
     var showReplaceDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -71,6 +77,12 @@ fun ProfileScreen(
     LaunchedEffect(isMahasiswa) {
         if (isMahasiswa) {
             documentViewModel.loadDocuments()
+        }
+    }
+
+    LaunchedEffect(profileState.isLoading, documentState.isLoading) {
+        if (!profileState.isLoading && !documentState.isLoading) {
+            isRefreshing = false
         }
     }
 
@@ -197,7 +209,18 @@ fun ProfileScreen(
     }
 
     Scaffold { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                profileViewModel.loadProfile()
+                if (isMahasiswa) {
+                    documentViewModel.loadDocuments()
+                }
+            },
+            state = pullToRefreshState,
+            modifier = Modifier.fillMaxSize()
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -258,7 +281,8 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(120.dp))
             }
 
-            if (profileState.isLoading || documentState.isLoading) {
+            // Mencegah overlay muncul saat ditarik dari atas (biar cuma animasi refresh aja)
+            if ((profileState.isLoading || documentState.isLoading) && !isRefreshing) {
                 CustomLoadingOverlay(isLoading = true)
             }
         }

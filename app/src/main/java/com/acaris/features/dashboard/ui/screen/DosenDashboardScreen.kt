@@ -11,6 +11,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,6 +58,9 @@ fun DosenDashboardScreen(
 
     var showZoomedImage by remember { mutableStateOf(false) }
 
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -67,8 +72,24 @@ fun DosenDashboardScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            isRefreshing = false
+        }
+    }
+
     Scaffold { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.loadDashboard()
+            },
+            state = pullToRefreshState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
 
             uiState.dashboardData?.let { data ->
                 Column(
@@ -296,7 +317,7 @@ fun DosenDashboardScreen(
                 )
             }
 
-            if (uiState.isLoading) {
+            if (uiState.isLoading && !isRefreshing) {
                 CustomLoadingOverlay(isLoading = true)
             }
         }

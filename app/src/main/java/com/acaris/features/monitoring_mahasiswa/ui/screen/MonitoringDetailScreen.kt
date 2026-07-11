@@ -6,6 +6,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,10 +42,19 @@ fun MonitoringDetailScreen(
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Data Diri", "Dokumen", "Bimbingan", "Chatbot")
 
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+
     LaunchedEffect(mahasiswaId) {
         viewModel.fetchDetailMahasiswa(mahasiswaId)
         viewModel.fetchHistoryBimbingan(mahasiswaId)
         viewModel.fetchChatbotHistory(mahasiswaId)
+    }
+
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            isRefreshing = false
+        }
     }
 
     Scaffold(
@@ -62,149 +73,164 @@ fun MonitoringDetailScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
-
-            uiState.detailMahasiswa?.let { detail ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    CustomChipTabRow(
-                        tabs = tabs,
-                        selectedTabIndex = selectedTabIndex,
-                        onTabSelected = { selectedTabIndex = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.fetchDetailMahasiswa(mahasiswaId)
+                viewModel.fetchHistoryBimbingan(mahasiswaId)
+                viewModel.fetchChatbotHistory(mahasiswaId)
+            },
+            state = pullToRefreshState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                uiState.detailMahasiswa?.let { detail ->
                     Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(scrollState)
-                            .padding(horizontal = 24.dp),
+                        modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        when (selectedTabIndex) {
-                            0 -> {
-                                DetailProfilMahasiswaCard(detail = detail)
-                            }
-                            1 -> {
-                                val mappedDocuments = detail.dokumen.map { doc ->
-                                    val typeLowerCase = when {
-                                        doc.title.contains("KRS", ignoreCase = true) -> "krs"
-                                        doc.title.contains("KHS", ignoreCase = true) -> "khs"
-                                        doc.title.contains("Transkrip", ignoreCase = true) -> "transkrip"
-                                        else -> "unknown"
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        CustomChipTabRow(
+                            tabs = tabs,
+                            selectedTabIndex = selectedTabIndex,
+                            onTabSelected = { selectedTabIndex = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(scrollState)
+                                .padding(horizontal = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            when (selectedTabIndex) {
+                                0 -> {
+                                    DetailProfilMahasiswaCard(detail = detail)
+                                }
+                                1 -> {
+                                    val mappedDocuments = detail.dokumen.map { doc ->
+                                        val typeLowerCase = when {
+                                            doc.title.contains("KRS", ignoreCase = true) -> "krs"
+                                            doc.title.contains("KHS", ignoreCase = true) -> "khs"
+                                            doc.title.contains("Transkrip", ignoreCase = true) -> "transkrip"
+                                            else -> "unknown"
+                                        }
+
+                                        val semesterMatch = Regex("Semester\\s+(\\d+)", RegexOption.IGNORE_CASE).find(doc.title)
+                                        val extractedSemester = semesterMatch?.groupValues?.get(1)?.toIntOrNull()
+
+                                        SharedDocumentUiModel(
+                                            id = doc.id,
+                                            type = typeLowerCase,
+                                            semester = extractedSemester,
+                                            fileUrl = doc.fileUrl,
+                                            uploadedAt = doc.uploadedAt
+                                        )
                                     }
 
-                                    val semesterMatch = Regex("Semester\\s+(\\d+)", RegexOption.IGNORE_CASE).find(doc.title)
-                                    val extractedSemester = semesterMatch?.groupValues?.get(1)?.toIntOrNull()
+                                    val currentSemester = detail.semester.toIntOrNull() ?: 1
 
-                                    SharedDocumentUiModel(
-                                        id = doc.id,
-                                        type = typeLowerCase,
-                                        semester = extractedSemester,
-                                        fileUrl = doc.fileUrl,
-                                        uploadedAt = doc.uploadedAt
+                                    SharedDocumentManager(
+                                        documents = mappedDocuments,
+                                        currentSemester = currentSemester,
+                                        isReadOnly = true,
+                                        onViewDocument = { url ->
+                                            if (url.isNotBlank()) uriHandler.openUri(url)
+                                        }
                                     )
                                 }
-
-                                val currentSemester = detail.semester.toIntOrNull() ?: 1
-
-                                SharedDocumentManager(
-                                    documents = mappedDocuments,
-                                    currentSemester = currentSemester,
-                                    isReadOnly = true,
-                                    onViewDocument = { url ->
-                                        if (url.isNotBlank()) uriHandler.openUri(url)
-                                    }
-                                )
-                            }
-                            2 -> {
-                                if (uiState.historyList.isEmpty() && !uiState.isLoading) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 32.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = "Belum ada riwayat bimbingan.",
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            style = MaterialTheme.typography.bodyLarge
-                                        )
-                                    }
-                                } else {
-                                    Column(modifier = Modifier.fillMaxWidth()) {
-                                        uiState.historyList.forEach { history ->
-                                            RiwayatBimbinganCard(riwayat = history)
-                                            Spacer(modifier = Modifier.height(16.dp))
-                                        }
-                                    }
-                                }
-                            }
-                            3 -> {
-                                if (uiState.historyChatbotList.isEmpty() && !uiState.isLoading) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 32.dp),
-                                        verticalArrangement = Arrangement.Center,
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Text(
-                                            text = "Belum ada riwayat bimbingan dengan Aca.",
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            fontSize = 16.sp
-                                        )
-                                    }
-                                } else {
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        uiState.historyChatbotList.forEach { item ->
-                                            ChatbotHistoryItemCard(
-                                                title = item.title,
-                                                date = item.date,
-                                                status = item.status,
-                                                onClick = {
-                                                    onNavigateToChatbotDetail(detail.id, item.sessionId)
-                                                }
+                                2 -> {
+                                    if (uiState.historyList.isEmpty() && !uiState.isLoading) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 32.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "Belum ada riwayat bimbingan.",
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                style = MaterialTheme.typography.bodyLarge
                                             )
                                         }
+                                    } else {
+                                        Column(modifier = Modifier.fillMaxWidth()) {
+                                            uiState.historyList.forEach { history ->
+                                                RiwayatBimbinganCard(riwayat = history)
+                                                Spacer(modifier = Modifier.height(16.dp))
+                                            }
+                                        }
+                                    }
+                                }
+                                3 -> {
+                                    if (uiState.historyChatbotList.isEmpty() && !uiState.isLoading) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 32.dp),
+                                            verticalArrangement = Arrangement.Center,
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Text(
+                                                text = "Belum ada riwayat bimbingan dengan Aca.",
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                fontSize = 16.sp
+                                            )
+                                        }
+                                    } else {
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            uiState.historyChatbotList.forEach { item ->
+                                                ChatbotHistoryItemCard(
+                                                    title = item.title,
+                                                    date = item.date,
+                                                    status = item.status,
+                                                    onClick = {
+                                                        onNavigateToChatbotDetail(detail.id, item.sessionId)
+                                                    }
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
+
+                            Spacer(modifier = Modifier.height(40.dp))
                         }
-
-                        Spacer(modifier = Modifier.height(40.dp))
                     }
                 }
-            }
 
-            if (uiState.errorMessage != null && uiState.detailMahasiswa == null) {
-                Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = uiState.errorMessage ?: "Terjadi kesalahan", color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { viewModel.fetchDetailMahasiswa(mahasiswaId) }) {
-                        Text("Coba Lagi")
+                if (uiState.errorMessage != null && uiState.detailMahasiswa == null) {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = uiState.errorMessage ?: "Terjadi kesalahan", color = MaterialTheme.colorScheme.error)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = {
+                            viewModel.fetchDetailMahasiswa(mahasiswaId)
+                            viewModel.fetchHistoryBimbingan(mahasiswaId)
+                            viewModel.fetchChatbotHistory(mahasiswaId)
+                        }) {
+                            Text("Coba Lagi")
+                        }
                     }
                 }
-            }
 
-            if (uiState.isLoading) {
-                CustomLoadingOverlay(isLoading = true)
+                if (uiState.isLoading && !isRefreshing) {
+                    CustomLoadingOverlay(isLoading = true)
+                }
             }
         }
     }

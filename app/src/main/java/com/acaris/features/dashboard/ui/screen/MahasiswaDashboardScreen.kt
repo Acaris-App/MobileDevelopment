@@ -11,6 +11,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,7 +30,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.ui.components.CustomLoadingOverlay
-import com.acaris.core.utils.DateUtils // 🌟 IMPORT DATEUTILS
+import com.acaris.core.utils.DateUtils
 import com.acaris.features.dashboard.presentation.viewmodel.MahasiswaDashboardViewModel
 import com.acaris.features.dashboard.ui.components.DashboardStatCard
 import com.acaris.features.dashboard.ui.components.UpcomingBimbinganCard
@@ -50,6 +52,9 @@ fun MahasiswaDashboardScreen(
     var zoomedImageUrl by remember { mutableStateOf<String?>(null) }
     var showZoomedImage by remember { mutableStateOf(false) }
 
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -61,8 +66,24 @@ fun MahasiswaDashboardScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            isRefreshing = false
+        }
+    }
+
     Scaffold { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.loadDashboard()
+            },
+            state = pullToRefreshState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
 
             uiState.dashboardData?.let { data ->
                 Column(
@@ -76,7 +97,9 @@ fun MahasiswaDashboardScreen(
                     if (uiState.errorMessage != null) {
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Row(
@@ -104,17 +127,23 @@ fun MahasiswaDashboardScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Column(
-                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Card(
-                                modifier = Modifier.weight(1f).fillMaxWidth(),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
                                 Column(
-                                    modifier = Modifier.fillMaxSize().padding(12.dp),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(12.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
@@ -158,13 +187,17 @@ fun MahasiswaDashboardScreen(
                             }
 
                             Card(
-                                modifier = Modifier.weight(1f).fillMaxWidth(),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
                                 Column(
-                                    modifier = Modifier.fillMaxSize().padding(12.dp),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(12.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
@@ -209,24 +242,32 @@ fun MahasiswaDashboardScreen(
                         }
 
                         Column(
-                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             DashboardStatCard(
-                                modifier = Modifier.fillMaxWidth().weight(1f),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
                                 icon = Icons.Default.Stars,
                                 title = "IPK",
                                 value = data.ipk,
                                 iconColor = Color(0xFFFF9800)
                             )
                             DashboardStatCard(
-                                modifier = Modifier.fillMaxWidth().weight(1f),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
                                 icon = Icons.Default.School,
                                 title = "Semester",
                                 value = data.semesterSaatIni
                             )
                             DashboardStatCard(
-                                modifier = Modifier.fillMaxWidth().weight(1f),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
                                 icon = Icons.Default.History,
                                 title = "Bimbingan Smt Ini",
                                 value = data.bimbinganSemesterIni
@@ -323,7 +364,7 @@ fun MahasiswaDashboardScreen(
                 )
             }
 
-            if (uiState.isLoading) {
+            if (uiState.isLoading && !isRefreshing) {
                 CustomLoadingOverlay(isLoading = true)
             }
         }

@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +43,9 @@ fun MahasiswaScheduleScreen(
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+
     LaunchedEffect(initialSelectedDate) {
         if (initialSelectedDate != null) {
             try {
@@ -48,7 +53,6 @@ fun MahasiswaScheduleScreen(
                 selectedDate = parsedDate
                 currentMonth = YearMonth.from(parsedDate)
             } catch (e: Exception) {
-                // Abaikan
             }
         }
     }
@@ -66,6 +70,12 @@ fun MahasiswaScheduleScreen(
 
     LaunchedEffect(state.isSuccess) {
         if (state.isSuccess) { showSuccessDialog = true }
+    }
+
+    LaunchedEffect(state.isLoading) {
+        if (!state.isLoading) {
+            isRefreshing = false
+        }
     }
 
     if (showSuccessDialog) {
@@ -126,60 +136,72 @@ fun MahasiswaScheduleScreen(
     }
 
     Scaffold { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding() + 16.dp,
-                    bottom = 120.dp,
-                    start = 24.dp,
-                    end = 24.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                item {
-                    CustomCalendar(
-                        selectedDate = selectedDate,
-                        onDateSelected = { date -> selectedDate = date },
-                        currentMonth = currentMonth,
-                        onMonthChanged = { newMonth -> currentMonth = newMonth },
-                        scheduleStatusMap = state.monthlyScheduleMap
-                    )
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    val displayDate = selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("id", "ID")))
-                    Text(
-                        text = "Jadwal Tersedia ($displayDate)",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                if (state.dailySchedules.isEmpty() && !state.isLoading) {
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.fetchMonthlySchedules(currentMonth.year, currentMonth.monthValue)
+                viewModel.fetchDailySchedule(selectedDate.toString())
+            },
+            state = pullToRefreshState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        top = 16.dp,
+                        bottom = 120.dp,
+                        start = 24.dp,
+                        end = 24.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                     item {
-                        Box(modifier = Modifier.fillMaxWidth().height(150.dp), contentAlignment = Alignment.Center) {
-                            Text("Tidak ada jadwal pada tanggal ini.", color = Color.Gray)
-                        }
-                    }
-                } else {
-                    items(state.dailySchedules) { schedule ->
-                        MahasiswaScheduleCard(
-                            schedule = schedule,
-                            onClick = {
-                                if (!schedule.isBookedByMe && !schedule.isFull) {
-                                    selectedScheduleToBook = schedule
-                                }
-                            }
+                        CustomCalendar(
+                            selectedDate = selectedDate,
+                            onDateSelected = { date -> selectedDate = date },
+                            currentMonth = currentMonth,
+                            onMonthChanged = { newMonth -> currentMonth = newMonth },
+                            scheduleStatusMap = state.monthlyScheduleMap
                         )
                     }
-                }
-            }
 
-            if (state.isLoading) {
-                CustomLoadingOverlay(isLoading = true)
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val displayDate = selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("id", "ID")))
+                        Text(
+                            text = "Jadwal Tersedia ($displayDate)",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    if (state.dailySchedules.isEmpty() && !state.isLoading && !isRefreshing) {
+                        item {
+                            Box(modifier = Modifier.fillMaxWidth().height(150.dp), contentAlignment = Alignment.Center) {
+                                Text("Tidak ada jadwal pada tanggal ini.", color = Color.Gray)
+                            }
+                        }
+                    } else {
+                        items(state.dailySchedules) { schedule ->
+                            MahasiswaScheduleCard(
+                                schedule = schedule,
+                                onClick = {
+                                    if (!schedule.isBookedByMe && !schedule.isFull) {
+                                        selectedScheduleToBook = schedule
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+
+                if (state.isLoading && !isRefreshing) {
+                    CustomLoadingOverlay(isLoading = true)
+                }
             }
         }
     }

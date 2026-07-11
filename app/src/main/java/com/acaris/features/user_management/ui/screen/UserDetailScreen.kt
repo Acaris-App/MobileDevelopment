@@ -5,12 +5,14 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable // 🌟 IMPOR CLICKABLE
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.acaris.core.ui.components.CustomBackButton
 import com.acaris.core.ui.components.CustomDialog
-import com.acaris.core.ui.components.CustomImageZoomDialog // 🌟 IMPOR KOMPONEN ZOOM KITA
+import com.acaris.core.ui.components.CustomImageZoomDialog
 import com.acaris.core.utils.FileUtils
 import com.acaris.features.user_management.presentation.viewmodel.UserDetailViewModel
 import com.acaris.features.user_management.ui.components.MahasiswaTabSection
@@ -53,8 +55,17 @@ fun UserDetailScreen(
 
     var showZoomedImage by remember { mutableStateOf(false) }
 
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+
     LaunchedEffect(userId) {
         viewModel.loadUserDetail(userId)
+    }
+
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            isRefreshing = false
+        }
     }
 
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -155,7 +166,7 @@ fun UserDetailScreen(
                                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                                 modifier = Modifier
                                     .size(48.dp)
-                                    .clickable { showZoomedImage = true } // 🌟 AKSI KLIK FOTO
+                                    .clickable { showZoomedImage = true }
                             ) {
                                 if (!user.profilePictureUrl.isNullOrEmpty()) {
                                     AsyncImage(model = user.profilePictureUrl, contentDescription = "Foto Profil", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
@@ -208,40 +219,52 @@ fun UserDetailScreen(
             )
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (uiState.errorMessage != null) {
-                Text("Error: ${uiState.errorMessage}", color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center).padding(16.dp))
-            } else {
-                uiState.user?.let { user ->
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        if (user.role.lowercase() == "mahasiswa") {
-                            MahasiswaTabSection(
-                                uiState = uiState,
-                                onViewDocument = { url ->
-                                    if (url.isNotBlank()) uriHandler.openUri(url)
-                                },
-                                onUploadOrEditDocument = { type, semester, existingDocId ->
-                                    pendingUploadType = type
-                                    pendingUploadSemester = semester
-                                    if (existingDocId != null) {
-                                        documentIdToUpdate = existingDocId
-                                        showReplaceDialog = true
-                                    } else {
-                                        launcher.launch("application/pdf")
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.loadUserDetail(userId)
+            },
+            state = pullToRefreshState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (uiState.isLoading && !isRefreshing) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                } else if (uiState.errorMessage != null) {
+                    Text("Error: ${uiState.errorMessage}", color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center).padding(16.dp))
+                } else {
+                    uiState.user?.let { user ->
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            if (user.role.lowercase() == "mahasiswa") {
+                                MahasiswaTabSection(
+                                    uiState = uiState,
+                                    onViewDocument = { url ->
+                                        if (url.isNotBlank()) uriHandler.openUri(url)
+                                    },
+                                    onUploadOrEditDocument = { type, semester, existingDocId ->
+                                        pendingUploadType = type
+                                        pendingUploadSemester = semester
+                                        if (existingDocId != null) {
+                                            documentIdToUpdate = existingDocId
+                                            showReplaceDialog = true
+                                        } else {
+                                            launcher.launch("application/pdf")
+                                        }
+                                    },
+                                    onDeleteDocument = { docId ->
+                                        documentIdToDelete = docId
+                                    },
+                                    onNavigateToChatbotDetail = { sessionId ->
+                                        onNavigateToChatbotDetail(user.id, sessionId)
                                     }
-                                },
-                                onDeleteDocument = { docId ->
-                                    documentIdToDelete = docId
-                                },
-                                onNavigateToChatbotDetail = { sessionId ->
-                                    onNavigateToChatbotDetail(user.id, sessionId)
+                                )
+                            } else {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Text("Detail dokumen dan bimbingan tidak tersedia untuk peran ${user.role}.")
                                 }
-                            )
-                        } else {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text("Detail dokumen dan bimbingan tidak tersedia untuk peran ${user.role}.")
                             }
                         }
                     }
@@ -250,7 +273,6 @@ fun UserDetailScreen(
         }
     }
 
-    // 🌟 PANGGIL KOMPONEN DIALOG MENGGUNAKAN BLOK IF
     if (showZoomedImage) {
         CustomImageZoomDialog(
             imageUrl = uiState.user?.profilePictureUrl,

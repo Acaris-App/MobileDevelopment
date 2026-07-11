@@ -11,6 +11,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +35,7 @@ import com.acaris.features.dashboard.ui.components.DashboardStatCard
 import com.acaris.features.dashboard.ui.components.LeaderboardItemData // 🌟 TETAP DI LOCAL COMPONENTS DASHBOARD
 import com.acaris.features.dashboard.ui.components.LeaderboardSection // 🌟 TETAP DI LOCAL COMPONENTS DASHBOARD
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
     viewModel: AdminDashboardViewModel = hiltViewModel()
@@ -41,6 +44,9 @@ fun AdminDashboardScreen(
     val scrollState = rememberScrollState()
     val lifecycleOwner = LocalLifecycleOwner.current
     var showZoomedImage by remember { mutableStateOf(false) }
+
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -52,8 +58,24 @@ fun AdminDashboardScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            isRefreshing = false
+        }
+    }
+
     Scaffold { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.loadDashboard()
+            },
+            state = pullToRefreshState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
 
             uiState.dashboardData?.let { data ->
                 Column(
@@ -228,7 +250,7 @@ fun AdminDashboardScreen(
                 )
             }
 
-            if (uiState.isLoading) {
+            if (uiState.isLoading && !isRefreshing) {
                 CustomLoadingOverlay(isLoading = true)
             }
         }

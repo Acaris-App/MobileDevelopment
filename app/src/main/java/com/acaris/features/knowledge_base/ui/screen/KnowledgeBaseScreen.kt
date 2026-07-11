@@ -11,12 +11,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PictureAsPdf
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,10 +43,8 @@ fun KnowledgeBaseScreen(
     val categories = listOf("Peraturan Akademik", "Jadwal", "Kurikulum", "Peraturan Rektor", "Kalender Akademik")
 
     var showUploadDialog by remember { mutableStateOf(false) }
-
     var isEditMode by remember { mutableStateOf(false) }
     var editDocumentId by remember { mutableStateOf<String?>(null) }
-
     var uploadTargetCategory by remember { mutableStateOf("") }
     var uploadTitle by remember { mutableStateOf("") }
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
@@ -52,12 +53,21 @@ fun KnowledgeBaseScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var documentToDelete by remember { mutableStateOf<KnowledgeUiModel?>(null) }
 
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
             selectedFileUri = it
             selectedFileName = FileUtils.getFileName(context, it)
+        }
+    }
+
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            isRefreshing = false
         }
     }
 
@@ -75,7 +85,13 @@ fun KnowledgeBaseScreen(
     }
 
     Scaffold { innerPadding ->
-        Box(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.fetchDocuments()
+            },
+            state = pullToRefreshState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -94,7 +110,7 @@ fun KnowledgeBaseScreen(
                             .fillMaxWidth()
                             .padding(top = 8.dp, bottom = 8.dp)
                             .padding(horizontal = 16.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                 }
 
@@ -134,13 +150,12 @@ fun KnowledgeBaseScreen(
                 }
             }
 
-            if (uiState.isLoading || uiState.isUploading) {
+            if ((uiState.isLoading && !isRefreshing) || uiState.isUploading) {
                 CustomLoadingOverlay(isLoading = true)
             }
         }
     }
 
-    // DIALOG UPLOAD & UPDATE
     CustomDialog(
         showDialog = showUploadDialog,
         onDismissRequest = { showUploadDialog = false },
@@ -225,7 +240,6 @@ fun KnowledgeBaseScreen(
         onDismiss = { showUploadDialog = false }
     )
 
-    // DIALOG HAPUS
     CustomDialog(
         showDialog = showDeleteDialog,
         onDismissRequest = { showDeleteDialog = false },
@@ -237,14 +251,14 @@ fun KnowledgeBaseScreen(
                     text = "Yakin ingin menghapus dokumen '${documentToDelete?.title}'?",
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Jika dihapus, Anda bisa mengupload dokumen baru di kategori ini.",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.error,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    textAlign = TextAlign.Center
                 )
             }
         },
